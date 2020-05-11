@@ -1,0 +1,137 @@
+/* Variables *************************************************************** */
+
+$frozen-column--z-index: 2;
+
+/* Mixins ****************************************************************** */
+
+@mixin flex-row() {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Common ****************************************************************** */
+
+.yac-table-row {
+  @include flex-row();
+
+  position: relative;
+
+  &::before {
+    content: "";
+    height: 100%;
+    left: 0;
+    position: absolute;
+  }
+}
+
+.yac-table-cell {
+  @include flex-row();
+
+  box-sizing: content-box;
+  position: relative;
+
+  &.frozen {
+    height: 100%;
+    left: 0;
+    position: absolute;
+    z-index: $frozen-column--z-index;
+  }
+}
+
+.yac-table-cell-content {
+  flex-grow: 1;
+
+  &.center {
+    text-align: center;
+  }
+
+  &.left {
+    text-align: left;
+  }
+
+  &.right {
+    text-align: right;
+  }
+}
+
+/* Header ****************************************************************** */
+
+.yac-table-header {
+  overflow-x: hidden;
+
+  .yac-table-cell {
+    align-items: center;
+  }
+}
+
+.yac-table-resize-handle {
+  height: 100%;
+}
+
+.yac-table-sort-asc-handle,
+.yac-table-sort-desc-handle {
+  border-left-color: transparent;
+  border-left-style: solid;
+  border-right-color: transparent;
+  border-right-style: solid;
+  height: 0;
+  position: absolute;
+  width: 0;
+}
+
+.yac-table-sort-asc-handle {
+  border-bottom-style: solid;
+  margin-bottom: 1px;
+  bottom: 50%;
+}
+
+.yac-table-sort-desc-handle {
+  border-top-style: solid;
+  margin-top: 1px;
+  top: 50%;
+}
+
+/* Body ******************************************************************** */
+
+.yac-table-body {
+  max-width: 100%;
+  overflow: overlay;
+
+  & > div {
+    overflow: hidden;
+    will-change: transform;
+
+    & > div {
+      will-change: transform;
+    }
+  }
+
+  .yac-table-row {
+    &.hidden {
+      display: none;
+    }
+
+    &.selected::before {
+      z-index: calc(#{$frozen-column--z-index} + 1);
+    }
+  }
+}
+
+.yac-table-expand-toggler {
+  @include flex-row();
+
+  align-items: center;
+  justify-content: center;
+
+  &.hidden {
+    display: none;
+  }
+
+  & > i {
+    transform: rotate(-45deg);
+
+    &.active {
+      transform: rotate(45deg);
+    }
+  }
+}

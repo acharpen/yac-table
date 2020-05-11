@@ -1,0 +1,208 @@
+/* Constants *************************************************************** */
+
+$dark: #424242;
+$light: #eee;
+$primary: #bdbdbd;
+$selection: #283593;
+
+$resize-handle-width: 8px;
+$sort-handle-width: 6px;
+
+/* Mixins ****************************************************************** */
+
+@mixin transition($property) {
+  transition: $property 0.25s ease-in;
+}
+
+/* Common ****************************************************************** */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.yac-table-row {
+  cursor: pointer;
+
+  &::before {
+    width: 4px;
+  }
+}
+
+// NOTE: `yac-table-cell` elements must have a background color
+.yac-table-cell {
+  background-color: #fff;
+}
+
+.yac-table-cell-content {
+  overflow: hidden;
+  padding: 0 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Header ****************************************************************** */
+
+.yac-table-header {
+  &.resizable {
+    .yac-table-sort-asc-handle,
+    .yac-table-sort-desc-handle {
+      right: $resize-handle-width;
+    }
+  }
+
+  .yac-table-cell {
+    cursor: pointer;
+
+    &.sortable {
+      .yac-table-cell-content {
+        margin-right: calc(#{$sort-handle-width} * 2);
+      }
+    }
+  }
+
+  .yac-table-row {
+    border-bottom: 1px solid $dark;
+    height: 32px;
+
+    &:hover {
+      .yac-table-resize-handle {
+        &::before {
+          background-color: $primary;
+        }
+
+        &:hover::before {
+          background-color: $dark;
+        }
+      }
+
+      .yac-table-sort-asc-handle {
+        &:not(.active) {
+          border-bottom-color: $primary;
+        }
+
+        &:hover {
+          border-bottom-color: $dark;
+        }
+      }
+
+      .yac-table-sort-desc-handle {
+        &:not(.active) {
+          border-top-color: $primary;
+        }
+
+        &:hover {
+          border-top-color: $dark;
+        }
+      }
+    }
+  }
+}
+
+.yac-table-resize-handle {
+  align-items: center;
+  cursor: ew-resize;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  position: relative;
+  width: $resize-handle-width;
+
+  &::before {
+    @include transition(background-color);
+
+    background-color: transparent;
+    content: "";
+    height: 50%;
+    width: 1px;
+  }
+}
+
+.yac-table-sort-asc-handle {
+  @include transition(border-bottom-color);
+
+  border-bottom-color: transparent;
+  border-bottom-width: $sort-handle-width;
+
+  &.active {
+    border-bottom-color: $dark;
+  }
+}
+
+.yac-table-sort-desc-handle {
+  @include transition(border-top-color);
+
+  border-top-color: transparent;
+  border-top-width: $sort-handle-width;
+
+  &.active {
+    border-top-color: $dark;
+  }
+}
+
+.yac-table-sort-asc-handle,
+.yac-table-sort-desc-handle {
+  border-left-width: $sort-handle-width;
+  border-right-width: $sort-handle-width;
+  cursor: pointer;
+}
+
+/* Body ******************************************************************** */
+
+.yac-table-body {
+  &::-webkit-scrollbar {
+    background-color: $light;
+    height: 8px;
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $primary;
+  }
+
+  &.resizable {
+    .yac-table-cell {
+      &.sortable {
+        .yac-table-cell-content {
+          margin-right: calc(#{$sort-handle-width} * 2 + #{$resize-handle-width});
+        }
+      }
+    }
+  }
+
+  .yac-table-cell {
+    &.sortable {
+      .yac-table-cell-content {
+        margin-right: calc(#{$sort-handle-width} * 2);
+      }
+    }
+  }
+
+  .yac-table-row {
+    &.selected {
+      &::before {
+        background-color: $selection;
+      }
+    }
+  }
+}
+
+.yac-table-expand-toggler {
+  cursor: pointer;
+  max-width: 24px;
+  min-width: 24px;
+
+  &:hover > i,
+  & > i.active {
+    @include transition(border-color);
+
+    border-color: $dark;
+  }
+
+  & > i {
+    border: solid $primary;
+    border-width: 0 2px 2px 0;
+    padding: 3px;
+  }
+}
