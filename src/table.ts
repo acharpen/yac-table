@@ -80,6 +80,8 @@ abstract class AbstractTable<T> {
     this.manageListenersOnSortHandles(EventListenerManageMode.ADD);
     this.manageListenersOnTableBody(EventListenerManageMode.ADD);
     this.manageListenersOnTableNodes(EventListenerManageMode.ADD);
+
+    this.hideUnusedTableNodeElts();
   }
 
   // ////////////////////////////////////////////////////////////////////////////
