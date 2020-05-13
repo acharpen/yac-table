@@ -127,6 +127,10 @@ abstract class AbstractTable<T> {
     this.setActiveNodeIndexes();
   }
 
+  public getNodes(): readonly NodeView<T>[] {
+    return this.nodes.map((node) => this.createNodeView(node));
+  }
+
   public selectNode(nodeId: number): void {
     this.toggleNodeSelection(nodeId, true);
   }
