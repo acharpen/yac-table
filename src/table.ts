@@ -168,6 +168,16 @@ abstract class AbstractTable<T> {
     }
   }
 
+  public updateNodeHeight(nodeHeight: number): void {
+    this.options.nodeHeight = nodeHeight;
+
+    this.tableNodeElts.forEach((nodeElt) => {
+      nodeElt.style.height = `${this.options.nodeHeight}px`;
+    });
+
+    this.setTableBodyHeight();
+  }
+
   // ////////////////////////////////////////////////////////////////////////////
 
   protected createNodeView(node: Node<T>): NodeView<T> {
@@ -243,7 +253,7 @@ abstract class AbstractTable<T> {
       this.tableBodyElt.firstElementChild!.firstElementChild!.appendChild(nodeElt);
     });
 
-    this.tableBodyElt.style.height = `${this.options.visibleNodesCount * this.options.nodeHeight}px`;
+    this.setTableBodyHeight();
   }
 
   private computeFirstVisibleNodeIndex(): number {
@@ -466,6 +476,10 @@ abstract class AbstractTable<T> {
       .map((nodeElt) => DomUtils.getEltComputedWidth(nodeElt as HTMLElement))
       .reduce((acc, x) => acc + x, 0);
     this.updateTableWidth(`${width}px`);
+  }
+
+  private setTableBodyHeight(): void {
+    this.tableBodyElt.style.height = `${this.options.visibleNodesCount * this.options.nodeHeight}px`;
   }
 
   private setVirtualTableHeight(): void {
