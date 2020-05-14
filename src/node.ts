@@ -1,9 +1,9 @@
 export interface Node<T> {
   id: number;
   isExpanded: boolean;
-  isFiltered: boolean;
   isHidden: boolean;
   isLeaf: boolean;
+  isMatching: boolean;
   isSelected: boolean;
   level: number;
   value: T;

@@ -101,30 +101,27 @@ abstract class AbstractTable<T> {
   }
 
   public filter(matchFn: (value: T) => boolean): void {
-    const aux = (node: Node<T>, nodeIndex: number) => {
-      const children: Node<T>[] = [];
-      let nextnodeIndex = nodeIndex + 1;
+    const nodesLength = this.nodes.length;
 
-      while (nextnodeIndex < this.nodes.length && this.nodes[nextnodeIndex].level > node.level) {
-        if (this.nodes[nextnodeIndex].level === node.level + 1) {
-          Array.prototype.push(children, aux(this.nodes[nextnodeIndex], nextnodeIndex));
+    for (let i = nodesLength - 1; i >= 0; i--) {
+      const node = this.nodes[i];
+
+      node.isMatching = matchFn(node.value);
+
+      if (!node.isMatching && !node.isLeaf) {
+        let nextnodeIndex = i + 1;
+
+        while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+          if (this.nodes[nextnodeIndex].isMatching) {
+            node.isMatching = true;
+            break;
+          }
+          nextnodeIndex++;
         }
-        nextnodeIndex++;
       }
+    }
 
-      const hasChildren = children.some((childNode) => childNode.isFiltered);
-      node.isFiltered = hasChildren || matchFn(node.value);
-      node.isLeaf = !hasChildren;
-
-      return [node, ...children];
-    };
-
-    this.nodes
-      .map((node, i) => ({ node, i }))
-      .filter(({ node }) => node.level === 0)
-      .forEach(({ node, i }) => ({ node, subtree: aux(node, i) }));
-
-    this.setActiveNodeIndexes();
+    this.setNodes(this.nodes);
   }
 
   public getNodes(): readonly NodeView<T>[] {
@@ -140,27 +137,41 @@ abstract class AbstractTable<T> {
 
     if (targetColumn && targetColumn.sortFeature) {
       const compareWithOrderFn = (a: T, b: T) => compareFn(a, b) * (mode === 'desc' ? -1 : 1);
-      const aux = (node: Node<T>, nodeIndex: number) => {
-        const children: Node<T>[] = [];
-        let nextnodeIndex = nodeIndex + 1;
+      const nodesLength = this.nodes.length;
+      const rootNodes = [];
+      const sortedChildrenByParentNodeId = new Map<number, Node<T>[]>();
 
-        while (nextnodeIndex < this.nodes.length && this.nodes[nextnodeIndex].level > node.level) {
+      for (let i = 0; i < nodesLength; i++) {
+        const node = this.nodes[i];
+        const children = [];
+        let nextnodeIndex = i + 1;
+
+        while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
           if (this.nodes[nextnodeIndex].level === node.level + 1) {
-            Array.prototype.push(children, aux(this.nodes[nextnodeIndex], nextnodeIndex));
+            children.push(this.nodes[nextnodeIndex]);
           }
           nextnodeIndex++;
         }
 
-        return [node, ...children.sort((a, b) => compareWithOrderFn(a.value, b.value))];
-      };
+        sortedChildrenByParentNodeId.set(
+          node.id,
+          children.sort((a, b) => compareWithOrderFn(a.value, b.value) * -1)
+        );
 
-      const sortedNodes = this.nodes
-        .map((node, i) => ({ node, i }))
-        .filter(({ node }) => node.level === 0)
-        .map(({ node, i }) => ({ node, subtree: aux(node, i) }))
-        .sort((a, b) => compareWithOrderFn(a.node.value, b.node.value))
-        .map((rootNode) => rootNode.subtree)
-        .reduce((acc, x) => acc.concat(x), []);
+        if (node.level === 0) {
+          rootNodes.push(node);
+        }
+      }
+
+      const sortedNodes = [];
+      const stack = rootNodes.sort((a, b) => compareWithOrderFn(a.value, b.value) * -1);
+
+      while (stack.length > 0) {
+        const node = stack.pop() as Node<T>;
+
+        sortedNodes.push(node);
+        Array.prototype.push.apply(stack, sortedChildrenByParentNodeId.get(node.id) as Node<T>[]);
+      }
 
       this.resetSortHandles();
       this.setColumnSortMode(targetColumn, mode);
@@ -208,7 +219,7 @@ abstract class AbstractTable<T> {
     for (let i = 0; i < nodesLength; i++) {
       const node = this.nodes[i];
 
-      if (!node.isFiltered && !node.isHidden) {
+      if (node.isMatching && !node.isHidden) {
         this.activeNodeIndexes.push(i);
       }
     }
@@ -794,9 +805,9 @@ export class ListTable<T extends object> extends AbstractTable<T> {
     return items.map((item) => ({
       id: this.generateId(),
       isExpanded: false,
-      isFiltered: false,
       isHidden: false,
       isLeaf: true,
+      isMatching: true,
       isSelected: false,
       level: 0,
       value: item
@@ -924,9 +935,9 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
         level,
         id: this.generateId(),
         isExpanded: false,
-        isFiltered: false,
         isHidden: level > 0,
         isLeaf: item.children.length === 0,
+        isMatching: true,
         isSelected: false,
         value: item.value
       });
