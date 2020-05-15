@@ -371,8 +371,8 @@ abstract class AbstractTable<T> {
 
   private getColumnSortHandles(headerCellElt: HTMLElement): { sortAscElt: HTMLElement; sortDescElt: HTMLElement } {
     const headerCellContentElts = headerCellElt.children;
-    const sortAscElt = DomUtils.getEltByClassName(headerCellContentElts, AbstractTable.RESIZE_HANDLE_CLASS);
-    const sortDescElt = DomUtils.getEltByClassName(headerCellContentElts, AbstractTable.RESIZE_HANDLE_CLASS);
+    const sortAscElt = DomUtils.getEltByClassName(headerCellContentElts, AbstractTable.SORT_ASC_HANDLE_CLASS);
+    const sortDescElt = DomUtils.getEltByClassName(headerCellContentElts, AbstractTable.SORT_DESC_HANDLE_CLASS);
 
     return { sortAscElt: sortAscElt as HTMLElement, sortDescElt: sortDescElt as HTMLElement };
   }
