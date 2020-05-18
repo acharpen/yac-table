@@ -97,9 +97,9 @@ const table = new TreeTable(tableContainerElt, {
 tableContainerElt.addEventListener('onToggleNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
   const node = event.detail.node;
   if (node.isExpanded) {
-    table.collapseNodes(node.id);
+    table.collapseNodes([node.id]);
   } else {
-    table.expandNodes(node.id);
+    table.expandNodes([node.id]);
   }
 });
 
@@ -151,8 +151,8 @@ table.setData(treeData);
 tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
   const node = event.detail.node;
   if (node.isSelected) {
-    table.deselectNodes(node.id);
+    table.deselectNodes([node.id]);
   } else {
-    table.selectNodes(node.id);
+    table.selectNodes([node.id]);
   }
 });

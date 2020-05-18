@@ -86,7 +86,7 @@ abstract class AbstractTable<T> {
 
   // ////////////////////////////////////////////////////////////////////////////
 
-  public deselectNodes(...nodeIds: number[]): void {
+  public deselectNodes(nodeIds: number[]): void {
     this.toggleNodesSelection(nodeIds, false);
   }
 
@@ -124,7 +124,7 @@ abstract class AbstractTable<T> {
     this.setNodes(this.nodes);
   }
 
-  public selectNodes(...nodeIds: number[]): void {
+  public selectNodes(nodeIds: number[]): void {
     this.toggleNodesSelection(nodeIds, true);
   }
 
@@ -192,9 +192,9 @@ abstract class AbstractTable<T> {
   // ////////////////////////////////////////////////////////////////////////////
 
   protected createTableCell(column: Column<T>): HTMLElement {
-    const elt = DomUtils.createDiv(AbstractTable.CELL_CLASS);
+    const elt = DomUtils.createDiv([AbstractTable.CELL_CLASS]);
     elt.style.width = this.computeInitialColumnWidth(column);
-    elt.appendChild(DomUtils.createDiv(AbstractTable.CELL_CONTENT_CLASS, column.align));
+    elt.appendChild(DomUtils.createDiv([AbstractTable.CELL_CONTENT_CLASS, column.align]));
 
     if (column.sortFeature) {
       elt.classList.add('sortable');
@@ -279,7 +279,7 @@ abstract class AbstractTable<T> {
   }
 
   private createTableBody(): HTMLElement {
-    const elt = DomUtils.createDiv(AbstractTable.BODY_CLASS);
+    const elt = DomUtils.createDiv([AbstractTable.BODY_CLASS]);
     elt.appendChild(DomUtils.createDiv()).appendChild(DomUtils.createDiv());
 
     if (this.options.resizeFeature) {
@@ -290,7 +290,7 @@ abstract class AbstractTable<T> {
   }
 
   private createTableHeader(): HTMLElement {
-    const elt = DomUtils.createDiv(AbstractTable.HEADER_CLASS);
+    const elt = DomUtils.createDiv([AbstractTable.HEADER_CLASS]);
 
     if (this.options.resizeFeature) {
       elt.classList.add('resizable');
@@ -300,32 +300,32 @@ abstract class AbstractTable<T> {
   }
 
   private createTableHeaderCell(column: Column<T>): HTMLElement {
-    const elt = DomUtils.createDiv(AbstractTable.CELL_CLASS);
+    const elt = DomUtils.createDiv([AbstractTable.CELL_CLASS]);
     elt.style.width = this.computeInitialColumnWidth(column);
     elt.appendChild(this.createTableHeaderCellContent(column));
 
     if (column.sortFeature) {
       elt.classList.add('sortable');
-      elt.appendChild(DomUtils.createDiv(AbstractTable.SORT_ASC_HANDLE_CLASS));
-      elt.appendChild(DomUtils.createDiv(AbstractTable.SORT_DESC_HANDLE_CLASS));
+      elt.appendChild(DomUtils.createDiv([AbstractTable.SORT_ASC_HANDLE_CLASS]));
+      elt.appendChild(DomUtils.createDiv([AbstractTable.SORT_DESC_HANDLE_CLASS]));
     }
 
     if (this.options.resizeFeature) {
-      elt.appendChild(DomUtils.createDiv(AbstractTable.RESIZE_HANDLE_CLASS));
+      elt.appendChild(DomUtils.createDiv([AbstractTable.RESIZE_HANDLE_CLASS]));
     }
 
     return elt;
   }
 
   private createTableHeaderCellContent(column: Column<T>): HTMLElement {
-    const elt = DomUtils.createDiv(AbstractTable.CELL_CONTENT_CLASS, column.align);
+    const elt = DomUtils.createDiv([AbstractTable.CELL_CONTENT_CLASS, column.align]);
     elt.textContent = column.title;
 
     return elt;
   }
 
   private createTableHeaderRow(): HTMLElement {
-    const elt = DomUtils.createDiv(AbstractTable.ROW_CLASS);
+    const elt = DomUtils.createDiv([AbstractTable.ROW_CLASS]);
 
     this.columns.forEach((column) => {
       elt.appendChild(this.createTableHeaderCell(column));
@@ -335,7 +335,7 @@ abstract class AbstractTable<T> {
   }
 
   private createTableNode(): HTMLElement {
-    const elt = DomUtils.createDiv(AbstractTable.ROW_CLASS);
+    const elt = DomUtils.createDiv([AbstractTable.ROW_CLASS]);
     elt.style.height = `${this.options.nodeHeight}px`;
 
     this.columns.forEach((column) => {
@@ -833,7 +833,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.manageListenersOnNodeToggles(EventListenerManageMode.ADD);
   }
 
-  public collapseNodes(...nodeIds: number[]): void {
+  public collapseNodes(nodeIds: number[]): void {
     this.toggleNodesVisibility(nodeIds, { isExpanded: false });
   }
 
@@ -843,7 +843,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE);
   }
 
-  public expandNodes(...nodeIds: number[]): void {
+  public expandNodes(nodeIds: number[]): void {
     this.toggleNodesVisibility(nodeIds, { isExpanded: true });
   }
 
@@ -903,7 +903,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
   }
 
   private createExpandToggler(): HTMLElement {
-    const elt = DomUtils.createDiv(TreeTable.EXPAND_TOGGLER_CLASS);
+    const elt = DomUtils.createDiv([TreeTable.EXPAND_TOGGLER_CLASS]);
     elt.appendChild(DomUtils.createElt('i'));
 
     return elt;
