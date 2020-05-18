@@ -86,8 +86,8 @@ abstract class AbstractTable<T> {
 
   // ////////////////////////////////////////////////////////////////////////////
 
-  public deselectNode(nodeId: number): void {
-    this.toggleNodeSelection(nodeId, false);
+  public deselectNodes(...nodeIds: number[]): void {
+    this.toggleNodesSelection(nodeIds, false);
   }
 
   public destroy(): void {
@@ -124,8 +124,8 @@ abstract class AbstractTable<T> {
     this.setNodes(this.nodes);
   }
 
-  public selectNode(nodeId: number): void {
-    this.toggleNodeSelection(nodeId, true);
+  public selectNodes(...nodeIds: number[]): void {
+    this.toggleNodesSelection(nodeIds, true);
   }
 
   public sort(columnField: string, mode: SortMode, compareFn: (a: T, b: T) => number): void {
@@ -494,13 +494,15 @@ abstract class AbstractTable<T> {
     this.visibleNodeIndexes = this.activeNodeIndexes.slice(startIndex, startIndex + this.virtualNodesCount);
   }
 
-  private toggleNodeSelection(nodeId: number, isSelected: boolean): void {
-    const targetNode = this.nodes.find((node) => node.id === nodeId);
+  private toggleNodesSelection(nodeIds: number[], isSelected: boolean): void {
+    (nodeIds.length > 0
+      ? (nodeIds.map((nodeId) => this.nodes.find((node) => node.id === nodeId)).filter((node) => !!node) as Node<T>[])
+      : this.nodes
+    ).forEach((node) => {
+      node.isSelected = isSelected;
+    });
 
-    if (targetNode) {
-      targetNode.isSelected = isSelected;
-      this.updateVisibleNodes();
-    }
+    this.updateVisibleNodes();
   }
 
   private updateFrozenColumnPosition(): void {
@@ -831,8 +833,8 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.manageListenersOnNodeToggles(EventListenerManageMode.ADD);
   }
 
-  public collapseNode(nodeId: number): void {
-    this.toggleNodeChildrenVisibility(nodeId, { isExpanded: false });
+  public collapseNodes(...nodeIds: number[]): void {
+    this.toggleNodesVisibility(nodeIds, { isExpanded: false });
   }
 
   public destroy(): void {
@@ -841,8 +843,8 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE);
   }
 
-  public expandNode(nodeId: number): void {
-    this.toggleNodeChildrenVisibility(nodeId, { isExpanded: true });
+  public expandNodes(...nodeIds: number[]): void {
+    this.toggleNodesVisibility(nodeIds, { isExpanded: true });
   }
 
   public setData(items: TreeNode<T>[]): void {
@@ -913,8 +915,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     const stack = [];
 
     for (let i = itemsLength - 1; i >= 0; i--) {
-      const item = items[i];
-      stack.push({ item, level: 0 });
+      stack.push({ item: items[i], level: 0 });
     }
 
     while (stack.length > 0) {
@@ -981,30 +982,44 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     return !isExpandTogglerElt && !isExpandTogglerWrapperElt;
   }
 
-  private toggleNodeChildrenVisibility(targetNodeId: number, { isExpanded }: { isExpanded: boolean }): void {
-    const targetNodeIndex = this.nodes.findIndex((node) => node.id === targetNodeId);
+  private toggleNodesVisibility(nodeIds: number[], { isExpanded }: { isExpanded: boolean }): void {
+    const nodeIndexes: number[] = [];
+    const nodesLength = this.nodes.length;
 
-    if (targetNodeIndex !== -1) {
-      const aux = (node: Node<T>, nodeIndex: number) => {
-        let nextnodeIndex = nodeIndex + 1;
+    const aux = (node: Node<T>, nodeIndex: number) => {
+      let nextnodeIndex = nodeIndex + 1;
 
-        while (nextnodeIndex < this.nodes.length && this.nodes[nextnodeIndex].level > node.level) {
-          if (this.nodes[nextnodeIndex].level === node.level + 1) {
-            this.nodes[nextnodeIndex].isHidden = !node.isExpanded || !isExpanded;
-            aux(this.nodes[nextnodeIndex], nextnodeIndex);
-          }
-          nextnodeIndex++;
+      while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+        if (this.nodes[nextnodeIndex].level === node.level + 1) {
+          this.nodes[nextnodeIndex].isHidden = !isExpanded || !node.isExpanded;
+          aux(this.nodes[nextnodeIndex], nextnodeIndex);
         }
-      };
+        nextnodeIndex++;
+      }
+    };
 
-      const targetNode = this.nodes[targetNodeIndex];
-      targetNode.isExpanded = isExpanded;
-
-      aux(targetNode, targetNodeIndex);
-
-      this.setActiveNodeIndexes();
-
-      this.updateVisibleNodes();
+    if (nodeIds.length > 0) {
+      Array.prototype.push.apply(
+        nodeIndexes,
+        nodeIds.map((nodeId) => this.nodes.findIndex((node) => node.id === nodeId)).filter((i) => i !== -1)
+      );
+    } else {
+      for (let i = 0; i < nodesLength; i++) {
+        if (!this.nodes[i].isLeaf) {
+          nodeIndexes.push(i);
+        }
+      }
     }
+
+    nodeIndexes.forEach((i) => {
+      const node = this.nodes[i];
+      node.isExpanded = isExpanded;
+
+      aux(node, i);
+    });
+
+    this.setActiveNodeIndexes();
+
+    this.updateVisibleNodes();
   }
 }
