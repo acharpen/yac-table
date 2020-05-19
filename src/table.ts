@@ -128,7 +128,7 @@ abstract class AbstractTable<T> {
     this.toggleNodesSelection(nodeIds, true);
   }
 
-  public sort(columnField: string, mode: SortMode, compareFn: (a: T, b: T) => number): void {
+  public sort(columnField: keyof T, mode: SortMode, compareFn: (a: T, b: T) => number): void {
     const targetColumn = this.columns.find((column) => column.field === columnField);
 
     if (targetColumn && targetColumn.sortFeature) {
