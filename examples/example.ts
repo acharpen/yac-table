@@ -3,6 +3,8 @@
 import { Node } from '../src/node';
 import { ListTable, TreeTable } from '../src/table';
 
+type DataType = { col1: string; col2: string; col3: string; col4: string };
+
 const defaultTableOptions = {
   frozenFirstColumn: true,
   nodeHeight: 40,
@@ -10,20 +12,14 @@ const defaultTableOptions = {
   visibleNodesCount: 10
 };
 
-const defaultCellFormatter = (
-  columnField: string,
-  value: { col1: string; col2: string; col3: string; col4: string }
-) => {
+const defaultCellFormatter = (columnField: keyof DataType, value: DataType) => {
   const fragment = document.createDocumentFragment();
   fragment.textContent = value[columnField];
 
   return fragment;
 };
 
-const col1CellFormatter = (
-  _columnField: string,
-  _value: { col1: string; col2: string; col3: string; col4: string }
-) => {
+const col1CellFormatter = (_columnField: keyof DataType, _value: DataType) => {
   const fragment = document.createDocumentFragment();
   const aElt = document.createElement('a');
   aElt.textContent = 'Test';
@@ -37,14 +33,14 @@ const col1CellFormatter = (
 const columnOptions = [
   {
     align: 'left' as const,
-    field: 'col1',
+    field: 'col1' as const,
     formatter: col1CellFormatter,
     sortFeature: true,
     title: 'col1'
   },
   {
     align: 'left' as const,
-    field: 'col2',
+    field: 'col2' as const,
     formatter: defaultCellFormatter,
     sortFeature: true,
     title: 'col2',
@@ -52,25 +48,19 @@ const columnOptions = [
   },
   {
     align: 'right' as const,
-    field: 'col3',
+    field: 'col3' as const,
     formatter: defaultCellFormatter,
     sortFeature: true,
     title: 'col3'
   },
   {
     align: 'left' as const,
-    field: 'col4',
+    field: 'col4' as const,
     formatter: defaultCellFormatter,
     sortFeature: true,
     title: 'col4'
   }
 ];
-
-const callbacks = {
-  'link-test': (value: { col1: string; col2: string; col3: string; col4: string }) => {
-    console.log(`Cell: ${value.col1}`);
-  }
-};
 
 const tableContainerElt = document.getElementById('table');
 
@@ -78,7 +68,7 @@ const tableContainerElt = document.getElementById('table');
 
 // const table = new ListTable(tableContainerElt, {
 //   columnOptions,
-//   tableOptions: { ...defaultTableOptions, callbacks }
+//   tableOptions: { ...defaultTableOptions }
 // });
 
 // const listData = [...Array(1e5).keys()].map((i) => {
@@ -91,7 +81,7 @@ const tableContainerElt = document.getElementById('table');
 
 const table = new TreeTable(tableContainerElt, {
   columnOptions,
-  tableOptions: { ...defaultTableOptions, callbacks, childNodeOffset: 8 }
+  tableOptions: { ...defaultTableOptions, childNodeOffset: 8 }
 });
 
 tableContainerElt.addEventListener('onToggleNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
