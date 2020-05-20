@@ -32,7 +32,7 @@ abstract class AbstractTable<T> {
   protected readonly tableNodeElts: HTMLElement[];
 
   protected readonly columns: Column<T>[];
-  protected readonly options: TableOptions<T>;
+  protected readonly options: TableOptions;
   protected readonly virtualNodesCount: number;
 
   protected nodes: Node<T>[];
@@ -46,7 +46,7 @@ abstract class AbstractTable<T> {
 
   protected constructor(
     rootElt: HTMLElement,
-    { columnOptions, tableOptions }: { columnOptions: ColumnOptions<T>[]; tableOptions: TableOptions<T> }
+    { columnOptions, tableOptions }: { columnOptions: ColumnOptions<T>[]; tableOptions: TableOptions }
   ) {
     this.activeNodeIndexes = [];
     this.columns = columnOptions.map((column) => ({ ...column, sortMode: 'default' }));
@@ -92,7 +92,6 @@ abstract class AbstractTable<T> {
 
   public destroy(): void {
     // Remove listeners
-    this.manageListenersOnUserSpecificElts(EventListenerManageMode.REMOVE);
     this.manageListenersOnTableNodes(EventListenerManageMode.REMOVE);
     this.manageListenersOnTableBody(EventListenerManageMode.REMOVE);
     this.manageListenersOnSortHandles(EventListenerManageMode.REMOVE);
@@ -236,13 +235,11 @@ abstract class AbstractTable<T> {
     this.displayVisibleNodes(startIndex);
     this.setVisibleNodeIndexes(startIndex);
 
-    this.manageListenersOnUserSpecificElts(EventListenerManageMode.REMOVE);
     this.resetTableNodeElts();
 
     this.populateVisibleNodes();
 
     this.hideUnusedTableNodeElts();
-    this.manageListenersOnUserSpecificElts(EventListenerManageMode.ADD);
     this.markSelectedNodes();
   }
 
@@ -620,34 +617,6 @@ abstract class AbstractTable<T> {
     });
   }
 
-  private manageListenersOnUserSpecificElts(mode: EventListenerManageMode): void {
-    if (this.options.callbacks) {
-      const callbacks = this.options.callbacks as { [id: string]: (value: T) => void };
-
-      this.tableNodeElts.forEach((nodeElt, i) => {
-        Array.from(nodeElt.children).forEach((cellElt) => {
-          Object.keys(callbacks).forEach((userSpecificEltId) => {
-            const elts = (cellElt as HTMLElement).querySelectorAll(`[id="${userSpecificEltId}"]`);
-
-            if (elts && elts.length === 1) {
-              const userSpecificElt = elts.item(0) as HTMLElement;
-
-              DomUtils.manageEventListener(
-                userSpecificElt,
-                'mouseup',
-                (event) => {
-                  callbacks[userSpecificEltId](this.nodes[this.visibleNodeIndexes[i]].value);
-                  event.stopPropagation();
-                },
-                mode
-              );
-            }
-          });
-        });
-      });
-    }
-  }
-
   private onClickTableHeaderCell(event: Event, columnIndex: number): void {
     const eventElt = event.target as HTMLElement;
 
@@ -775,7 +744,7 @@ abstract class AbstractTable<T> {
 export class ListTable<T extends object> extends AbstractTable<T> {
   public constructor(
     rootElt: HTMLElement,
-    options: { columnOptions: ColumnOptions<T>[]; tableOptions: ListTableOptions<T> }
+    options: { columnOptions: ColumnOptions<T>[]; tableOptions: ListTableOptions }
   ) {
     super(rootElt, options);
   }
@@ -823,7 +792,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
 
   public constructor(
     rootElt: HTMLElement,
-    options: { columnOptions: ColumnOptions<T>[]; tableOptions: TreeTableOptions<T> }
+    options: { columnOptions: ColumnOptions<T>[]; tableOptions: TreeTableOptions }
   ) {
     super(rootElt, options);
 

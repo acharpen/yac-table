@@ -1,13 +1,12 @@
-export interface TableOptions<T> {
+export interface TableOptions {
   frozenFirstColumn: boolean;
   nodeHeight: number;
   resizeFeature: boolean;
   visibleNodesCount: number;
-  callbacks?: { [id: string]: (obj: T) => void };
 }
 
-export interface ListTableOptions<T> extends TableOptions<T> {}
+export interface ListTableOptions extends TableOptions {}
 
-export interface TreeTableOptions<T> extends TableOptions<T> {
+export interface TreeTableOptions extends TableOptions {
   childNodeOffset: number;
 }
