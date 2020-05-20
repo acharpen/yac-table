@@ -186,7 +186,7 @@ abstract class AbstractTable<T> {
 
   // ////////////////////////////////////////////////////////////////////////////
 
-  protected abstract onClickNode(event: Event, nodeIndex: number): void;
+  protected abstract dispatchEventClickNode(originalEvent: Event, node: Node<T>): void;
 
   // ////////////////////////////////////////////////////////////////////////////
 
@@ -617,6 +617,10 @@ abstract class AbstractTable<T> {
     });
   }
 
+  private onClickNode(event: Event, nodeIndex: number): void {
+    this.dispatchEventClickNode(event, this.nodes[this.visibleNodeIndexes[nodeIndex]]);
+  }
+
   private onClickTableHeaderCell(event: Event, columnIndex: number): void {
     const eventElt = event.target as HTMLElement;
 
@@ -654,12 +658,12 @@ abstract class AbstractTable<T> {
       requestTick();
     };
     const stopResize = (stopEvent: Event) => {
-      window.removeEventListener('mouseup', stopResize, { capture: true });
-      window.removeEventListener('mousemove', resize);
-
       stopEvent.stopPropagation();
 
       this.isResizing = false;
+
+      window.removeEventListener('mouseup', stopResize, { capture: true });
+      window.removeEventListener('mousemove', resize);
     };
     const updateColumnSize = () => {
       ticking = false;
@@ -753,8 +757,9 @@ export class ListTable<T extends object> extends AbstractTable<T> {
     this.setNodes(this.createNodes(items));
   }
 
-  protected onClickNode(event: Event, nodeIndex: number): void {
-    this.dispatchEventClickNode(event, this.nodes[this.visibleNodeIndexes[nodeIndex]]);
+  protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
+    const event = DomUtils.createEvent('onClickNode', { event: originalEvent, node: this.createNodeView(node) });
+    this.rootElt.dispatchEvent(event);
   }
 
   private createNodes(items: T[]): Node<T>[] {
@@ -772,11 +777,6 @@ export class ListTable<T extends object> extends AbstractTable<T> {
 
   private createNodeView(node: Node<T>): ListNodeView<T> {
     return { id: node.id, value: node.value, isSelected: node.isSelected };
-  }
-
-  private dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
-    const event = DomUtils.createEvent('onClickNode', { event: originalEvent, node: this.createNodeView(node) });
-    this.rootElt.dispatchEvent(event);
   }
 }
 
@@ -830,10 +830,9 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     return elt;
   }
 
-  protected onClickNode(event: Event, nodeIndex: number): void {
-    if (this.shouldDispatchNodeClickEvent(event.target as HTMLElement)) {
-      this.dispatchEventClickNode(event, this.nodes[this.visibleNodeIndexes[nodeIndex]]);
-    }
+  protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
+    const event = DomUtils.createEvent('onClickNode', { event: originalEvent, node: this.createNodeView(node) });
+    this.rootElt.dispatchEvent(event);
   }
 
   protected updateVisibleNodes(): void {
@@ -916,11 +915,6 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     return { id: node.id, value: node.value, isSelected: node.isSelected, isExpanded: node.isExpanded };
   }
 
-  private dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
-    const event = DomUtils.createEvent('onClickNode', { event: originalEvent, node: this.createNodeView(node) });
-    this.rootElt.dispatchEvent(event);
-  }
-
   private dispatchEventToggleNode(originalEvent: Event, node: Node<T>): void {
     const event = DomUtils.createEvent('onToggleNode', { event: originalEvent, node: this.createNodeView(node) });
     this.rootElt.dispatchEvent(event);
@@ -932,6 +926,8 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
         nodeElt.firstElementChild!.firstElementChild as HTMLElement,
         'mouseup',
         (event) => {
+          event.stopPropagation();
+
           this.onToggleNode(event, i);
         },
         mode
@@ -941,14 +937,6 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
 
   private onToggleNode(event: Event, nodeIndex: number): void {
     this.dispatchEventToggleNode(event, this.nodes[this.visibleNodeIndexes[nodeIndex]]);
-  }
-
-  private shouldDispatchNodeClickEvent(elt: HTMLElement): boolean {
-    const isExpandTogglerElt =
-      elt.parentNode && (elt.parentNode as HTMLElement).classList.contains(TreeTable.EXPAND_TOGGLER_CLASS);
-    const isExpandTogglerWrapperElt = elt.classList.contains(TreeTable.EXPAND_TOGGLER_CLASS);
-
-    return !isExpandTogglerElt && !isExpandTogglerWrapperElt;
   }
 
   private toggleNodesVisibility(nodeIds: number[], { isExpanded }: { isExpanded: boolean }): void {
