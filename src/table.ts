@@ -168,7 +168,6 @@ abstract class AbstractTable<T> {
         Array.prototype.push.apply(stack, sortedChildrenByParentNodeId.get(node.id) as Node<T>[]);
       }
 
-      this.resetSortHandles();
       this.setColumnSortMode(targetColumn, mode);
       this.setNodes(sortedNodes);
     }
@@ -225,6 +224,7 @@ abstract class AbstractTable<T> {
   protected setNodes(nodes: Node<T>[]): void {
     this.nodes = nodes;
 
+    this.resetSortHandles();
     this.setActiveNodeIndexes();
 
     this.updateVisibleNodes();
