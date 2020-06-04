@@ -168,8 +168,9 @@ abstract class AbstractTable<T> {
         Array.prototype.push.apply(stack, sortedChildrenByParentNodeId.get(node.id) as Node<T>[]);
       }
 
+      this.setTable(sortedNodes);
+
       this.setColumnSortMode(targetColumn, mode);
-      this.setNodes(sortedNodes);
     }
   }
 
@@ -221,10 +222,14 @@ abstract class AbstractTable<T> {
     this.setVirtualTableHeight();
   }
 
+  protected setTable(nodes: Node<T>[]): void {
+    this.resetSortHandles();
+    this.setNodes(nodes);
+  }
+
   protected setNodes(nodes: Node<T>[]): void {
     this.nodes = nodes;
 
-    this.resetSortHandles();
     this.setActiveNodeIndexes();
 
     this.updateVisibleNodes();
@@ -754,7 +759,7 @@ export class ListTable<T extends object> extends AbstractTable<T> {
   }
 
   public setData(items: T[]): void {
-    this.setNodes(this.createNodes(items));
+    this.setTable(this.createNodes(items));
   }
 
   protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
@@ -817,7 +822,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
   }
 
   public setData(items: TreeNode<T>[]): void {
-    this.setNodes(this.createNodes(items));
+    this.setTable(this.createNodes(items));
   }
 
   protected createTableCell(column: Column<T>): HTMLElement {
