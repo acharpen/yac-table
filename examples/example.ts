@@ -12,20 +12,19 @@ const defaultTableOptions = {
   visibleNodesCount: 10
 };
 
-const defaultCellFormatter = (columnField: keyof DataType, value: DataType) => {
+const col1CellFormatter = (_columnField: keyof DataType, _value: DataType) => {
   const fragment = document.createDocumentFragment();
-  fragment.textContent = value[columnField];
+  const elt = document.createElement('a');
+  elt.textContent = 'Test';
+
+  fragment.appendChild(elt);
 
   return fragment;
 };
 
-const col1CellFormatter = (_columnField: keyof DataType, _value: DataType) => {
+const defaultCellFormatter = (columnField: keyof DataType, value: DataType) => {
   const fragment = document.createDocumentFragment();
-  const aElt = document.createElement('a');
-  aElt.textContent = 'Test';
-  aElt.id = 'link-test';
-
-  fragment.appendChild(aElt);
+  fragment.textContent = value[columnField];
 
   return fragment;
 };
