@@ -104,7 +104,6 @@ abstract class AbstractTable<T> {
 
     for (let i = nodesLength - 1; i >= 0; i--) {
       const node = this.nodes[i];
-
       node.isMatching = matchFn(node.value);
 
       if (!node.isMatching && !node.isLeaf) {
