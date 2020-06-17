@@ -638,13 +638,11 @@ abstract class AbstractTable<T> {
   }
 
   private onResizeColumn(startEvent: MouseEvent, headerCellElt: HTMLElement, targetColumn: Column<T>): void {
-    const computeEltWidth = (elt: HTMLElement) => Number(elt.style.width.replace('px', ''));
-
     const columnIndex = this.columns.findIndex((column) => column.field === targetColumn.field);
     const isFirstColumn = targetColumn.field === this.columns[0].field;
-    const originalColumnWidth = computeEltWidth(headerCellElt);
+    const originalColumnWidth = DomUtils.getEltComputedWidth(headerCellElt);
     const originalPageX = startEvent.pageX;
-    const originalTableWidth = computeEltWidth(this.tableBodyElt.firstElementChild as HTMLElement);
+    const originalTableWidth = DomUtils.getEltComputedWidth(this.tableBodyElt.firstElementChild as HTMLElement);
 
     let eventPageX: number;
     let ticking = false;
