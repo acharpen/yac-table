@@ -6,4 +6,4 @@ export interface Column<T> extends ColumnOptions<T> {
   sortMode: SortMode;
 }
 
-export type ColumnView<T> = Pick<Column<T>, 'id' | 'sortMode'>;
+export type ColumnView<T> = Pick<Column<T>, 'field' | 'formatter' | 'sortMode'>;

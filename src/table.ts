@@ -276,7 +276,7 @@ abstract class AbstractTable<T> {
   }
 
   private createColumnView(column: Column<T>): ColumnView<T> {
-    return { id: column.id, sortMode: column.sortMode };
+    return { field: column.field, formatter: column.formatter, sortMode: column.sortMode };
   }
 
   private createTableBody(): HTMLElement {
