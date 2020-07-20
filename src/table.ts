@@ -276,7 +276,7 @@ abstract class AbstractTable<T> {
   }
 
   private createColumnView(column: Column<T>): ColumnView<T> {
-    return { field: column.field, formatter: column.formatter, sortMode: column.sortMode };
+    return { field: column.field, sortMode: column.sortMode };
   }
 
   private createTableBody(): HTMLElement {
@@ -442,7 +442,7 @@ abstract class AbstractTable<T> {
   }
 
   private setColumnSortMode(targetColumn: Column<T>, sortMode: SortMode): void {
-    const targetColumnIndex = this.columns.findIndex((column) => column.field === targetColumn.field);
+    const targetColumnIndex = this.columns.findIndex((column) => column.id === targetColumn.id);
     const headerCellElt = this.tableHeaderRowElt.children[targetColumnIndex] as HTMLElement;
     const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
 
@@ -638,8 +638,8 @@ abstract class AbstractTable<T> {
   }
 
   private onResizeColumn(startEvent: MouseEvent, headerCellElt: HTMLElement, targetColumn: Column<T>): void {
-    const columnIndex = this.columns.findIndex((column) => column.field === targetColumn.field);
-    const isFirstColumn = targetColumn.field === this.columns[0].field;
+    const columnIndex = this.columns.findIndex((column) => column.id === targetColumn.id);
+    const isFirstColumn = targetColumn.id === this.columns[0].id;
     const originalColumnWidth = DomUtils.getEltComputedWidth(headerCellElt);
     const originalPageX = startEvent.pageX;
     const originalTableWidth = DomUtils.getEltComputedWidth(this.tableBodyElt.firstElementChild as HTMLElement);
@@ -825,7 +825,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
   protected createTableCell(column: Column<T>): HTMLElement {
     const elt = super.createTableCell(column);
 
-    if (column.field === this.columns[0].field) {
+    if (column.id === this.columns[0].id) {
       elt.insertAdjacentElement('afterbegin', this.createExpandToggler());
     }
 
