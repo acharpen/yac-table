@@ -49,7 +49,7 @@ abstract class AbstractTable<T> {
     { columnOptions, tableOptions }: { columnOptions: ColumnOptions<T>[]; tableOptions: TableOptions }
   ) {
     this.activeNodeIndexes = [];
-    this.columns = columnOptions.map((column) => ({ ...column, sortMode: 'default' }));
+    this.columns = columnOptions.map((column, i) => ({ ...column, id: i, sortMode: 'default' }));
     this.counter = 0;
     this.currentScrollX = 0;
     this.currentScrollY = 0;
@@ -276,7 +276,7 @@ abstract class AbstractTable<T> {
   }
 
   private createColumnView(column: Column<T>): ColumnView<T> {
-    return { field: column.field, sortMode: column.sortMode };
+    return { id: column.id, sortMode: column.sortMode };
   }
 
   private createTableBody(): HTMLElement {
