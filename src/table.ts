@@ -181,6 +181,7 @@ abstract class AbstractTable<T> {
     });
 
     this.setTableBodyHeight();
+    this.setVirtualTableHeight();
   }
 
   // ////////////////////////////////////////////////////////////////////////////
