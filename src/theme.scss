@@ -190,6 +190,7 @@ $sort-handle-width: 6px;
 
 .yac-table-expand-toggler {
   cursor: pointer;
+  min-width: 24px;
   width: 24px;
 
   &:hover > i,
