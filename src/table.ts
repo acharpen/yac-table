@@ -823,7 +823,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.toggleNodesVisibility(nodeIds, { isExpanded: true });
   }
 
-  public getNodes(): ListNodeView<T>[] {
+  public getNodes(): TreeNodeView<T>[] {
     return this.nodes.map((node) => this.createNodeView(node));
   }
 
