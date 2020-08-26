@@ -756,6 +756,10 @@ export class ListTable<T extends object> extends AbstractTable<T> {
     super(rootElt, options);
   }
 
+  public getNodes(): ListNodeView<T>[] {
+    return this.nodes.map((node) => this.createNodeView(node));
+  }
+
   public setData(items: T[]): void {
     this.setTable(this.createNodes(items));
   }
@@ -817,6 +821,10 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
 
   public expandNodes(nodeIds: number[]): void {
     this.toggleNodesVisibility(nodeIds, { isExpanded: true });
+  }
+
+  public getNodes(): ListNodeView<T>[] {
+    return this.nodes.map((node) => this.createNodeView(node));
   }
 
   public setData(items: TreeNode<T>[]): void {
