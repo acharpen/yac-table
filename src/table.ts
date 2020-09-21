@@ -32,7 +32,7 @@ abstract class AbstractTable<T> {
   protected readonly tableNodeElts: HTMLElement[];
 
   protected readonly columns: Column<T>[];
-  protected readonly options: TableOptions;
+  protected readonly options: TableOptions<T>;
   protected readonly virtualNodesCount: number;
 
   protected nodes: Node<T>[];
@@ -46,7 +46,7 @@ abstract class AbstractTable<T> {
 
   protected constructor(
     rootElt: HTMLElement,
-    { columnOptions, tableOptions }: { columnOptions: ColumnOptions<T>[]; tableOptions: TableOptions }
+    { columnOptions, tableOptions }: { columnOptions: ColumnOptions<T>[]; tableOptions: TableOptions<T> }
   ) {
     this.activeNodeIndexes = [];
     this.columns = columnOptions.map((column, i) => ({ ...column, id: i, sortMode: 'default' }));
@@ -245,7 +245,6 @@ abstract class AbstractTable<T> {
     this.populateVisibleNodes();
 
     this.hideUnusedTableNodeElts();
-    this.markSelectedNodes();
   }
 
   // ////////////////////////////////////////////////////////////////////////////
@@ -388,16 +387,6 @@ abstract class AbstractTable<T> {
     }
   }
 
-  private markSelectedNodes(): void {
-    const visibleNodesLength = this.visibleNodeIndexes.length;
-
-    for (let i = 0; i < visibleNodesLength; i++) {
-      if (this.nodes[this.visibleNodeIndexes[i]].isSelected) {
-        this.tableNodeElts[i].classList.add('selected');
-      }
-    }
-  }
-
   private populateCellContent(cellElt: HTMLElement, column: Column<T>, node: Node<T>): void {
     const cellContentElt = cellElt.lastElementChild as HTMLElement;
     const documentFragment = column.formatter(column.field, node.value);
@@ -411,14 +400,34 @@ abstract class AbstractTable<T> {
   }
 
   private populateVisibleNodes(): void {
+    const columnsLength = this.columns.length;
+    const defaultColor = { backgroundColor: 'inherit', color: 'inherit' };
     const visibleNodesLength = this.visibleNodeIndexes.length;
 
     for (let i = 0; i < visibleNodesLength; i++) {
-      const cellElts = this.tableNodeElts[i].children;
-      const cellEltsLength = cellElts.length;
+      const node = this.nodes[this.visibleNodeIndexes[i]];
+      const nodeElt = this.tableNodeElts[i];
 
-      for (let j = 0; j < cellEltsLength; j++) {
-        this.populateCellContent(cellElts[j] as HTMLElement, this.columns[j], this.nodes[this.visibleNodeIndexes[i]]);
+      for (let j = 0; j < columnsLength; j++) {
+        const cellElt = nodeElt.children[j] as HTMLElement;
+        const column = this.columns[j];
+
+        this.populateCellContent(cellElt, column, node);
+
+        // Update cell color
+        if (this.options.cellColor) {
+          this.setColor(cellElt, this.options.cellColor(node.value, column) ?? defaultColor);
+        }
+      }
+
+      // Update row color
+      if (this.options.rowColor) {
+        this.setColor(nodeElt, this.options.rowColor(node.value) ?? defaultColor);
+      }
+
+      // Mark selection
+      if (node.isSelected) {
+        nodeElt.classList.add('selected');
       }
     }
   }
@@ -440,6 +449,11 @@ abstract class AbstractTable<T> {
     for (let i = 0; i < nodeEltsLength; i++) {
       this.tableNodeElts[i].classList.remove('hidden', 'selected');
     }
+  }
+
+  private setColor(elt: HTMLElement, { backgroundColor, color }: { backgroundColor: string; color: string }): void {
+    elt.style.backgroundColor = backgroundColor;
+    elt.style.color = color;
   }
 
   private setColumnSortMode(targetColumn: Column<T>, sortMode: SortMode): void {
@@ -751,7 +765,7 @@ abstract class AbstractTable<T> {
 export class ListTable<T extends object> extends AbstractTable<T> {
   public constructor(
     rootElt: HTMLElement,
-    options: { columnOptions: ColumnOptions<T>[]; tableOptions: ListTableOptions }
+    options: { columnOptions: ColumnOptions<T>[]; tableOptions: ListTableOptions<T> }
   ) {
     super(rootElt, options);
   }
@@ -799,7 +813,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
 
   public constructor(
     rootElt: HTMLElement,
-    options: { columnOptions: ColumnOptions<T>[]; tableOptions: TreeTableOptions }
+    options: { columnOptions: ColumnOptions<T>[]; tableOptions: TreeTableOptions<T> }
   ) {
     super(rootElt, options);
 
