@@ -401,12 +401,13 @@ abstract class AbstractTable<T> {
 
   private populateVisibleNodes(): void {
     const columnsLength = this.columns.length;
-    const defaultColor = { backgroundColor: 'inherit', color: 'inherit' };
+    const defaultCellColor = { backgroundColor: '', color: '' };
     const visibleNodesLength = this.visibleNodeIndexes.length;
 
     for (let i = 0; i < visibleNodesLength; i++) {
       const node = this.nodes[this.visibleNodeIndexes[i]];
       const nodeElt = this.tableNodeElts[i];
+      const rowColor = this.options.rowColor?.(node.value);
 
       for (let j = 0; j < columnsLength; j++) {
         const cellElt = nodeElt.children[j] as HTMLElement;
@@ -415,14 +416,9 @@ abstract class AbstractTable<T> {
         this.populateCellContent(cellElt, column, node);
 
         // Update cell color
-        if (this.options.cellColor) {
-          this.setColor(cellElt, this.options.cellColor(node.value, column) ?? defaultColor);
-        }
-      }
-
-      // Update row color
-      if (this.options.rowColor) {
-        this.setColor(nodeElt, this.options.rowColor(node.value) ?? defaultColor);
+        const cellColor = this.options.cellColor?.(node.value, column) ?? rowColor ?? defaultCellColor;
+        cellElt.style.backgroundColor = cellColor.backgroundColor;
+        cellElt.style.color = cellColor.color;
       }
 
       // Mark selection
@@ -449,11 +445,6 @@ abstract class AbstractTable<T> {
     for (let i = 0; i < nodeEltsLength; i++) {
       this.tableNodeElts[i].classList.remove('hidden', 'selected');
     }
-  }
-
-  private setColor(elt: HTMLElement, { backgroundColor, color }: { backgroundColor: string; color: string }): void {
-    elt.style.backgroundColor = backgroundColor;
-    elt.style.color = color;
   }
 
   private setColumnSortMode(targetColumn: Column<T>, sortMode: SortMode): void {

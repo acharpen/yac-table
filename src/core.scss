@@ -1,6 +1,7 @@
 /* Variables *************************************************************** */
 
-$frozen-column--z-index: 2;
+$z-index-base: 1;
+$frozen-column--z-index: calc(#{$z-index-base} + 1);
 
 /* Mixins ****************************************************************** */
 
@@ -29,6 +30,7 @@ $frozen-column--z-index: 2;
 
   box-sizing: content-box;
   position: relative;
+  z-index: $z-index-base;
 
   &.frozen {
     height: 100%;
