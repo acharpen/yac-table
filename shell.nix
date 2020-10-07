@@ -3,5 +3,5 @@
 with pkgs;
 
 mkShell {
-  buildInputs = [ nodejs-13_x yarn ];
+  buildInputs = [ nodejs-14_x yarn ];
 }
