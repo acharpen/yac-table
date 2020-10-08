@@ -3,6 +3,7 @@ import { ColumnOptions } from './column-options';
 import { DomUtils, EventListenerManageMode } from './dom-utils';
 import { ListNodeView, Node, TreeNode, TreeNodeView } from './node';
 import { SortMode } from './sort-utils';
+import { WidthUnit } from './styles-utils';
 import { ListTableOptions, TableOptions, TreeTableOptions } from './table-options';
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -31,10 +32,9 @@ abstract class AbstractTable<T> {
   protected readonly tableHeaderRowElt: HTMLElement;
   protected readonly tableNodeElts: HTMLElement[];
 
-  protected readonly columns: Column<T>[];
   protected readonly options: TableOptions<T>;
   protected readonly virtualNodesCount: number;
-
+  protected columns: Column<T>[];
   protected nodes: Node<T>[];
   protected visibleNodeIndexes: number[];
 
@@ -85,6 +85,72 @@ abstract class AbstractTable<T> {
   }
 
   // ////////////////////////////////////////////////////////////////////////////
+
+  public addColumn(
+    columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: WidthUnit } },
+    position: 'start' | 'end',
+    columnField?: keyof T
+  ): void {
+    const atStart = position === 'start';
+    const columnIndex = !!columnField ? this.columns.findIndex((column) => column.field === columnField) : -1;
+    const newColumnId = this.columns.map((column) => column.id).reduce((acc, x) => (x > acc ? x : acc), 0) + 1;
+    const newColumnIndex =
+      columnIndex !== -1 ? (atStart ? columnIndex : columnIndex + 1) : atStart ? 0 : this.columns.length;
+    const newColumn: Column<T> = { ...columnOption, id: newColumnId, sortMode: 'default' };
+    const isNewLastColumn = newColumnIndex === this.columns.length;
+
+    const insertNewElt = (newElt: HTMLElement, parentElt: HTMLElement) => {
+      if (isNewLastColumn) {
+        parentElt.appendChild(newElt);
+      } else {
+        parentElt.insertBefore(newElt, parentElt.childNodes.item(newColumnIndex + 1));
+      }
+    };
+
+    this.columns.splice(newColumnIndex, 0, newColumn);
+
+    this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
+
+    if (this.options.frozenFirstColumn && newColumnIndex === 0) {
+      this.unfreezeFirstColumn();
+    }
+
+    const newCellElt = this.createTableHeaderCell(newColumn);
+    insertNewElt(newCellElt, this.tableHeaderRowElt);
+
+    this.tableNodeElts.forEach((tableNodeElt) => {
+      insertNewElt(this.createTableCell(newColumn), tableNodeElt);
+    });
+
+    if (this.options.frozenFirstColumn && newColumnIndex === 0) {
+      this.freezeFirstColumn();
+    }
+
+    this.updateVisibleNodes();
+  }
+
+  public deleteColumn(columnField: keyof T): void {
+    const columnIndex = this.columns.findIndex((column) => column.field === columnField);
+
+    if (columnIndex !== -1) {
+      this.columns = this.columns.filter((column) => column.field !== columnField);
+
+      this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
+
+      const cellElt = this.tableHeaderRowElt.childNodes.item(columnIndex);
+      this.tableHeaderRowElt.removeChild(cellElt);
+
+      this.tableNodeElts.forEach((tableNodeElt) => {
+        tableNodeElt.removeChild(tableNodeElt.childNodes.item(columnIndex));
+      });
+
+      if (this.options.frozenFirstColumn && columnIndex === 0) {
+        this.freezeFirstColumn();
+      }
+
+      this.updateVisibleNodes();
+    }
+  }
 
   public deselectNodes(nodeIds: number[]): void {
     this.toggleNodesSelection(nodeIds, false);
@@ -509,6 +575,20 @@ abstract class AbstractTable<T> {
     });
 
     this.updateVisibleNodes();
+  }
+
+  private unfreezeFirstColumn(): void {
+    const firstHeaderCellElt = this.tableHeaderRowElt.children[0] as HTMLElement;
+
+    // Remove 'frozen' class to first column cells
+    firstHeaderCellElt.classList.remove('frozen');
+
+    this.tableNodeElts.forEach((nodeElt) => {
+      (nodeElt.children[0] as HTMLElement).classList.remove('frozen');
+    });
+
+    // Update offset of next column
+    this.updateUnfrozenColumns('');
   }
 
   private updateFrozenColumnPosition(): void {
