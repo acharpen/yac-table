@@ -417,8 +417,8 @@ abstract class AbstractTable<T> {
 
         // Update cell color
         const cellColor = this.options.cellColor?.(node.value, column) ?? rowColor ?? defaultCellColor;
-        cellElt.style.backgroundColor = cellColor.backgroundColor;
-        cellElt.style.color = cellColor.color;
+        cellElt.style.backgroundColor = cellColor.backgroundColor ?? cellElt.style.backgroundColor;
+        cellElt.style.color = cellColor.color ?? cellElt.style.color;
       }
 
       // Mark selection
