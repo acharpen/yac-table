@@ -379,11 +379,10 @@ abstract class AbstractTable<T> {
   }
 
   private hideUnusedTableNodeElts(): void {
-    const nodeEltsToHide = this.tableNodeElts.slice(this.visibleNodeIndexes.length);
-    const nodeEltsToHideLength = nodeEltsToHide.length;
+    const nodeEltsLength = this.tableNodeElts.length;
 
-    for (let i = 0; i < nodeEltsToHideLength; i++) {
-      nodeEltsToHide[i].classList.add('hidden');
+    for (let i = this.visibleNodeIndexes.length; i < nodeEltsLength; i++) {
+      this.tableNodeElts[i].classList.add('hidden');
     }
   }
 
