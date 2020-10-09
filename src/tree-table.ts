@@ -19,8 +19,6 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
 
     this.childNodeOffset = options.tableOptions.childNodeOffset;
     this.expandTogglerWidth = this.computeExpandTogglerWidth();
-
-    this.manageListenersOnNodeToggles(EventListenerManageMode.ADD);
   }
 
   public collapseNodes(nodeIds: number[]): void {
@@ -30,7 +28,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
   public destroy(): void {
     super.destroy();
 
-    this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE);
+    this.removeListenersOnNodeToggles();
   }
 
   public expandNodes(nodeIds: number[]): void {
@@ -45,11 +43,11 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.setTable(this.createNodes(items));
   }
 
-  protected createTableCell(column: Column<T>): HTMLElement {
-    const elt = super.createTableCell(column);
+  protected createTableCell(column: Column<T>, nodeIndex: number): HTMLElement {
+    const elt = super.createTableCell(column, nodeIndex);
 
     if (column.id === this.columns[0].id) {
-      elt.insertAdjacentElement('afterbegin', this.createExpandToggler());
+      elt.insertAdjacentElement('afterbegin', this.createExpandToggler(nodeIndex));
     }
 
     return elt;
@@ -95,9 +93,11 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     return elts.length > 0 ? DomUtils.getEltComputedWidth(elts[0] as HTMLElement) : 0;
   }
 
-  private createExpandToggler(): HTMLElement {
+  private createExpandToggler(nodeIndex: number): HTMLElement {
     const elt = DomUtils.createDiv([TreeTable.EXPAND_TOGGLER_CLASS]);
     elt.appendChild(DomUtils.createElt('i'));
+
+    this.manageListenersOnNodeToggles(EventListenerManageMode.ADD, elt, nodeIndex);
 
     return elt;
   }
@@ -145,18 +145,23 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.rootElt.dispatchEvent(event);
   }
 
-  private manageListenersOnNodeToggles(mode: EventListenerManageMode): void {
-    this.tableNodeElts.forEach((nodeElt, i) => {
-      DomUtils.manageEventListener(
-        nodeElt.firstElementChild!.firstElementChild as HTMLElement,
-        'mouseup',
-        (event) => {
-          event.stopPropagation();
+  private manageListenersOnNodeToggles(mode: EventListenerManageMode, elt: HTMLElement, nodeIndex: number): void {
+    DomUtils.manageEventListener(
+      elt,
+      'mouseup',
+      (event) => {
+        event.stopPropagation();
 
-          this.onToggleNode(event, i);
-        },
-        mode
-      );
+        this.onToggleNode(event, nodeIndex);
+      },
+      mode
+    );
+  }
+
+  private removeListenersOnNodeToggles(): void {
+    this.tableNodeElts.forEach((nodeElt, i) => {
+      const toggleElt = nodeElt.firstElementChild!.firstElementChild as HTMLElement;
+      this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE, toggleElt, i);
     });
   }
 

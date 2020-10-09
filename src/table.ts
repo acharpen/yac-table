@@ -108,8 +108,8 @@ export abstract class AbstractTable<T> {
     const newCellElt = this.createTableHeaderCell(newColumn, newColumnIndex);
     insertNewElt(newCellElt, this.tableHeaderRowElt);
 
-    this.tableNodeElts.forEach((tableNodeElt) => {
-      insertNewElt(this.createTableCell(newColumn), tableNodeElt);
+    this.tableNodeElts.forEach((tableNodeElt, i) => {
+      insertNewElt(this.createTableCell(newColumn, i), tableNodeElt);
     });
 
     if (this.options.frozenFirstColumn && newColumnIndex === 0) {
@@ -128,7 +128,7 @@ export abstract class AbstractTable<T> {
       this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
 
       const cellElt = this.tableHeaderRowElt.childNodes.item(columnIndex);
-      this.manageListenersOnTableHeaderCell(EventListenerManageMode.REMOVE, cellElt as HTMLElement, columnIndex);
+      this.removeListenersOnTableHeaderCell(cellElt as HTMLElement, columnIndex);
       this.tableHeaderRowElt.removeChild(cellElt);
 
       this.tableNodeElts.forEach((tableNodeElt) => {
@@ -242,7 +242,7 @@ export abstract class AbstractTable<T> {
 
   // ////////////////////////////////////////////////////////////////////////////
 
-  protected createTableCell(column: Column<T>): HTMLElement {
+  protected createTableCell(column: Column<T>, _nodeIndex: number): HTMLElement {
     const elt = DomUtils.createDiv([AbstractTable.CELL_CLASS]);
     elt.style.width = this.computeInitialColumnWidth(column);
     elt.appendChild(DomUtils.createDiv([AbstractTable.CELL_CONTENT_CLASS, column.align]));
@@ -405,7 +405,7 @@ export abstract class AbstractTable<T> {
     this.manageListenersOnTableNode(EventListenerManageMode.ADD, elt, nodeIndex);
 
     this.columns.forEach((column) => {
-      elt.appendChild(this.createTableCell(column));
+      elt.appendChild(this.createTableCell(column, nodeIndex));
     });
 
     return elt;
@@ -801,39 +801,27 @@ export abstract class AbstractTable<T> {
   private removeListeners(): void {
     this.removeListenersOnTableNodes();
     this.manageListenersOnTableBody(EventListenerManageMode.REMOVE, this.tableBodyElt);
-    this.removeListenersOnSortHandles();
-    this.removeListenersOnResizeHandles();
     this.removeListenersOnTableHeaderCells();
   }
 
-  private removeListenersOnResizeHandles(): void {
+  private removeListenersOnTableHeaderCell(elt: HTMLElement, columnIndex: number): void {
+    // Sort handles
+    const { sortAscElt, sortDescElt } = this.getColumnSortHandles(elt);
+    this.manageListenersOnSortHandles(EventListenerManageMode.REMOVE, sortAscElt, sortDescElt, columnIndex);
+
+    // Resize handle
     if (this.options.resizeFeature) {
-      const headerCellElts = this.tableHeaderRowElt.children;
-
-      this.columns.forEach((_, i) => {
-        const headerCellElt = headerCellElts[i];
-        const resizeHandleElt = DomUtils.getEltByClassName(headerCellElt.children, AbstractTable.RESIZE_HANDLE_CLASS);
-
-        this.manageListenersOnResizeHandle(EventListenerManageMode.REMOVE, resizeHandleElt as HTMLElement, i);
-      });
+      const resizeHandleElt = DomUtils.getEltByClassName(elt.children, AbstractTable.RESIZE_HANDLE_CLASS);
+      this.manageListenersOnResizeHandle(EventListenerManageMode.REMOVE, resizeHandleElt as HTMLElement, columnIndex);
     }
-  }
 
-  private removeListenersOnSortHandles(): void {
-    const headerCellElts = this.tableHeaderRowElt.children;
-
-    this.columns.forEach((column, i) => {
-      if (column.sortFeature) {
-        const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElts[i] as HTMLElement);
-
-        this.manageListenersOnSortHandles(EventListenerManageMode.REMOVE, sortAscElt, sortDescElt, i);
-      }
-    });
+    // Others
+    this.manageListenersOnTableHeaderCell(EventListenerManageMode.REMOVE, elt, columnIndex);
   }
 
   private removeListenersOnTableHeaderCells(): void {
     Array.from(this.tableHeaderRowElt.children).forEach((cellElt, i) => {
-      this.manageListenersOnTableHeaderCell(EventListenerManageMode.REMOVE, cellElt as HTMLElement, i);
+      this.removeListenersOnTableHeaderCell(cellElt as HTMLElement, i);
     });
   }
 
