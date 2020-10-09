@@ -15,6 +15,7 @@
     "start": "sh ./scripts/start.sh"
   },
   "devDependencies": {
+    "@rollup/plugin-multi-entry": "4.0.0",
     "@rollup/plugin-typescript": "6.0.0",
     "@types/node": "14.11.5",
     "husky": "4.3.0",

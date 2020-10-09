@@ -1,13 +1,15 @@
+import multi from '@rollup/plugin-multi-entry';
 import typescript from '@rollup/plugin-typescript';
 import { terser } from 'rollup-plugin-terser';
 
 export default {
-  input: 'src/table.ts',
+  input: ['src/list-table.ts', 'src/tree-table.ts'],
   output: {
     dir: './lib',
     format: 'es'
   },
   plugins: [
+    multi(),
     typescript({
       declaration: true,
       declarationDir: './lib',
