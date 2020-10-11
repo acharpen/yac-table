@@ -1,7 +1,8 @@
 // tslint:disable
 
 import { Node } from '../src/node';
-import { ListTable, TreeTable } from '../src/table';
+import { ListTable } from '../src/list-table';
+import { TreeTable } from '../src/tree-table';
 
 type DataType = { col1: string; col2: string; col3: string; col4: string };
 
