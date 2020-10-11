@@ -1,6 +1,6 @@
 {
   "name": "yac-table",
-  "version": "0.33.0",
+  "version": "0.34.0",
   "license": "LGPL-3.0-or-later",
   "main": "./lib/table.js",
   "types": "./lib/index.d.ts",
