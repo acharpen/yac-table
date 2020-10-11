@@ -40,6 +40,10 @@ export class DomUtils {
     return parseFloat(getComputedStyle(elt, undefined).getPropertyValue('width').replace('px', ''));
   }
 
+  public static getEltWidth(elt: HTMLElement): number {
+    return parseFloat(elt.style.width.replace('px', ''));
+  }
+
   public static manageEventListener<K extends keyof HTMLElementEventMap>(
     elt: HTMLElement,
     type: K,

@@ -2,6 +2,7 @@ import { Column } from './column';
 import { ColumnOptions } from './column-options';
 import { DomUtils, EventListenerManageMode } from './dom-utils';
 import { Node, TreeNode, TreeNodeView } from './node';
+import { ColumnWidthUnit } from './styles-utils';
 import { AbstractTable } from './table';
 import { TreeTableOptions } from './table-options';
 
@@ -43,11 +44,11 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.setTable(this.createNodes(items));
   }
 
-  protected createTableCell(column: Column<T>, nodeIndex: number): HTMLElement {
-    const elt = super.createTableCell(column, nodeIndex);
+  protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
+    const elt = super.createTableCell(column, ctx);
 
     if (column.id === this.columns[0].id) {
-      elt.insertAdjacentElement('afterbegin', this.createExpandToggler(nodeIndex));
+      this.addExpandTogglerElt(elt, ctx.nodeIndex);
     }
 
     return elt;
@@ -56,6 +57,36 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
   protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
     const event = DomUtils.createEvent('onClickNode', { event: originalEvent, node: this.createNodeView(node) });
     this.rootElt.dispatchEvent(event);
+  }
+
+  protected handleAddColumn(
+    columnToAddOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
+    newColumnIndex: number
+  ): void {
+    if (newColumnIndex === 0) {
+      this.tableNodeElts.forEach((nodeElt, i) => {
+        const toggleElt = nodeElt.firstElementChild!.firstElementChild as HTMLElement;
+
+        this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE, toggleElt, i);
+        toggleElt.remove();
+      });
+    }
+
+    super.handleAddColumn(columnToAddOption, newColumnIndex);
+  }
+
+  protected handleDeleteColumn(columnField: keyof T, columnIndex: number): void {
+    if (columnIndex === 0) {
+      this.removeListenersOnNodeToggles();
+
+      if (this.columns.length > 1) {
+        this.tableNodeElts.forEach((nodeElt, i) => {
+          this.addExpandTogglerElt(nodeElt.children[1] as HTMLElement, i);
+        });
+      }
+    }
+
+    super.handleDeleteColumn(columnField, columnIndex);
   }
 
   protected updateVisibleNodes(): void {
@@ -85,6 +116,10 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
         }
       }
     }
+  }
+
+  private addExpandTogglerElt(cellElt: HTMLElement, nodeIndex: number): void {
+    cellElt.insertAdjacentElement('afterbegin', this.createExpandToggler(nodeIndex));
   }
 
   private computeExpandTogglerWidth(): number {

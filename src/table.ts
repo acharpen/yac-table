@@ -3,7 +3,7 @@ import { ColumnOptions } from './column-options';
 import { DomUtils, EventListenerManageMode } from './dom-utils';
 import { Node } from './node';
 import { SortMode } from './sort-utils';
-import { WidthUnit } from './styles-utils';
+import { ColumnWidthUnit } from './styles-utils';
 import { TableOptions } from './table-options';
 
 export abstract class AbstractTable<T> {
@@ -19,7 +19,6 @@ export abstract class AbstractTable<T> {
   private static readonly SORT_DESC_HANDLE_CLASS: string = `${AbstractTable.VENDOR_PREFIX}-sort-desc-handle`;
 
   private static readonly COLUMN_MIN_WIDTH: number = 40;
-  private static readonly INITIAL_COLUMN_WIDTH: string = '0px';
   private static readonly VIRTUAL_SCROLL_PADDING: number = 2;
 
   protected readonly rootElt: HTMLElement;
@@ -65,9 +64,7 @@ export abstract class AbstractTable<T> {
 
     this.hideUnusedTableNodeElts();
 
-    this.setInitialColumnsWidth();
-
-    this.setInitialTableWidth();
+    this.setInitialWidths();
 
     if (this.options.frozenFirstColumn) {
       this.freezeFirstColumn();
@@ -77,69 +74,23 @@ export abstract class AbstractTable<T> {
   // ////////////////////////////////////////////////////////////////////////////
 
   public addColumn(
-    columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: WidthUnit } },
+    columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
     position: 'start' | 'end',
-    columnField?: keyof T
+    refColumnField?: keyof T
   ): void {
     const atStart = position === 'start';
-    const columnIndex = !!columnField ? this.columns.findIndex((column) => column.field === columnField) : -1;
-    const newColumnId = this.columns.map((column) => column.id).reduce((acc, x) => (x > acc ? x : acc), 0) + 1;
+    const refColumnIndex = !!refColumnField ? this.columns.findIndex((column) => column.field === refColumnField) : -1;
     const newColumnIndex =
-      columnIndex !== -1 ? (atStart ? columnIndex : columnIndex + 1) : atStart ? 0 : this.columns.length;
-    const newColumn: Column<T> = { ...columnOption, id: newColumnId, sortMode: 'default' };
-    const isNewLastColumn = newColumnIndex === this.columns.length;
+      refColumnIndex !== -1 ? (atStart ? refColumnIndex : refColumnIndex + 1) : atStart ? 0 : this.columns.length;
 
-    const insertNewElt = (newElt: HTMLElement, parentElt: HTMLElement) => {
-      if (isNewLastColumn) {
-        parentElt.appendChild(newElt);
-      } else {
-        parentElt.insertBefore(newElt, parentElt.childNodes.item(newColumnIndex + 1));
-      }
-    };
-
-    this.columns.splice(newColumnIndex, 0, newColumn);
-
-    this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
-
-    if (this.options.frozenFirstColumn && newColumnIndex === 0) {
-      this.unfreezeFirstColumn();
-    }
-
-    const newCellElt = this.createTableHeaderCell(newColumn, newColumnIndex);
-    insertNewElt(newCellElt, this.tableHeaderRowElt);
-
-    this.tableNodeElts.forEach((tableNodeElt, i) => {
-      insertNewElt(this.createTableCell(newColumn, i), tableNodeElt);
-    });
-
-    if (this.options.frozenFirstColumn && newColumnIndex === 0) {
-      this.freezeFirstColumn();
-    }
-
-    this.updateVisibleNodes();
+    this.handleAddColumn(columnOption, newColumnIndex);
   }
 
   public deleteColumn(columnField: keyof T): void {
     const columnIndex = this.columns.findIndex((column) => column.field === columnField);
 
     if (columnIndex !== -1) {
-      this.columns = this.columns.filter((column) => column.field !== columnField);
-
-      this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
-
-      const cellElt = this.tableHeaderRowElt.childNodes.item(columnIndex);
-      this.removeListenersOnTableHeaderCell(cellElt as HTMLElement, columnIndex);
-      this.tableHeaderRowElt.removeChild(cellElt);
-
-      this.tableNodeElts.forEach((tableNodeElt) => {
-        tableNodeElt.removeChild(tableNodeElt.childNodes.item(columnIndex));
-      });
-
-      if (this.options.frozenFirstColumn && columnIndex === 0) {
-        this.freezeFirstColumn();
-      }
-
-      this.updateVisibleNodes();
+      this.handleDeleteColumn(columnField, columnIndex);
     }
   }
 
@@ -242,9 +193,8 @@ export abstract class AbstractTable<T> {
 
   // ////////////////////////////////////////////////////////////////////////////
 
-  protected createTableCell(column: Column<T>, _nodeIndex: number): HTMLElement {
+  protected createTableCell(column: Column<T>, _ctx: { nodeIndex: number }): HTMLElement {
     const elt = DomUtils.createDiv([AbstractTable.CELL_CLASS]);
-    elt.style.width = this.computeInitialColumnWidth(column);
     elt.appendChild(DomUtils.createDiv([AbstractTable.CELL_CONTENT_CLASS, column.align]));
 
     if (column.sortFeature) {
@@ -256,6 +206,98 @@ export abstract class AbstractTable<T> {
 
   protected generateId(): number {
     return this.counter++;
+  }
+
+  protected handleAddColumn(
+    columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
+    newColumnIndex: number
+  ): void {
+    const isNewLastColumn = newColumnIndex === this.columns.length;
+    const newColumnId = this.columns.map((column) => column.id).reduce((acc, x) => (x > acc ? x : acc), 0) + 1;
+    const newColumn: Column<T> = { ...columnOption, id: newColumnId, sortMode: 'default' };
+    const newColumnWidth = this.convertInPixel(columnOption.width);
+
+    const insertNewElt = (elt: HTMLElement, parentElt: HTMLElement) => {
+      if (isNewLastColumn) {
+        parentElt.appendChild(elt);
+      } else {
+        parentElt.insertBefore(elt, parentElt.children[newColumnIndex]);
+      }
+
+      elt.style.width = `${newColumnWidth}px`;
+    };
+
+    //
+    this.columns.splice(newColumnIndex, 0, newColumn);
+
+    // Clear frozen context
+    if (this.options.frozenFirstColumn && (newColumnIndex === 0 || newColumnIndex === 1)) {
+      this.updateUnfrozenColumns('');
+
+      if (newColumnIndex === 0) {
+        (this.tableHeaderRowElt.children[0] as HTMLElement).classList.remove('frozen');
+        this.tableNodeElts.forEach((nodeElt) => {
+          (nodeElt.children[0] as HTMLElement).classList.remove('frozen');
+        });
+      }
+    }
+
+    this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
+
+    // Add new elements
+    insertNewElt(this.createTableHeaderCell(newColumn, { columnIndex: newColumnIndex }), this.tableHeaderRowElt);
+    this.tableNodeElts.forEach((nodeElt, i) => {
+      insertNewElt(this.createTableCell(newColumn, { nodeIndex: i }), nodeElt);
+    });
+
+    // Update frozen context
+    if (this.options.frozenFirstColumn && (newColumnIndex === 0 || newColumnIndex === 1)) {
+      if (newColumnIndex === 0) {
+        this.freezeFirstColumn();
+      } else {
+        this.updateUnfrozenColumns((this.tableHeaderRowElt.children[0] as HTMLElement).style.width);
+      }
+    }
+
+    //
+    this.updateTableWidth(`${DomUtils.getEltWidth(this.tableBodyElt) + newColumnWidth}px`);
+    this.updateVisibleNodes();
+  }
+
+  protected handleDeleteColumn(columnField: keyof T, columnIndex: number): void {
+    const columnWidth = DomUtils.getEltWidth(this.tableHeaderRowElt.children[columnIndex] as HTMLElement);
+
+    //
+    this.columns = this.columns.filter((column) => column.field !== columnField);
+
+    // Clear frozen context
+    if (this.options.frozenFirstColumn && columnIndex === 0) {
+      this.updateUnfrozenColumns('');
+    }
+
+    this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
+
+    // Remove elements
+    const cellElt = this.tableHeaderRowElt.childNodes[columnIndex];
+    this.removeListenersOnTableHeaderCell(cellElt as HTMLElement, columnIndex);
+    cellElt.remove();
+
+    this.tableNodeElts.forEach((tableNodeElt) => {
+      tableNodeElt.childNodes[columnIndex].remove();
+    });
+
+    // Update frozen context
+    if (this.options.frozenFirstColumn && (columnIndex === 0 || columnIndex === 1)) {
+      if (columnIndex === 0) {
+        this.freezeFirstColumn();
+      } else {
+        this.updateUnfrozenColumns((this.tableHeaderRowElt.children[0] as HTMLElement).style.width);
+      }
+    }
+
+    //
+    this.updateTableWidth(`${DomUtils.getEltWidth(this.tableBodyElt) - columnWidth}px`);
+    this.updateVisibleNodes();
   }
 
   protected setActiveNodeIndexes(): void {
@@ -319,12 +361,14 @@ export abstract class AbstractTable<T> {
     return Math.max(0, index);
   }
 
-  private computeInitialColumnWidth(column: Column<T>): string {
-    return column.width
-      ? column.width.unit === '%'
-        ? `${DomUtils.getEltComputedWidth(this.rootElt) * (column.width.value / 100)}px`
-        : `${column.width.value}${column.width.unit}`
-      : AbstractTable.INITIAL_COLUMN_WIDTH;
+  private convertInPixel({ value, unit }: { value: number; unit: ColumnWidthUnit }): number {
+    switch (unit) {
+      case '%':
+        return DomUtils.getEltComputedWidth(this.rootElt) * (value / 100);
+
+      default:
+        return value;
+    }
   }
 
   private createColumnView(column: Column<T>): ColumnView<T> {
@@ -354,12 +398,11 @@ export abstract class AbstractTable<T> {
     return elt;
   }
 
-  private createTableHeaderCell(column: Column<T>, columnIndex: number): HTMLElement {
+  private createTableHeaderCell(column: Column<T>, ctx: { columnIndex: number }): HTMLElement {
     const elt = DomUtils.createDiv([AbstractTable.CELL_CLASS]);
-    elt.style.width = this.computeInitialColumnWidth(column);
     elt.appendChild(this.createTableHeaderCellContent(column));
 
-    this.manageListenersOnTableHeaderCell(EventListenerManageMode.ADD, elt, columnIndex);
+    this.manageListenersOnTableHeaderCell(EventListenerManageMode.ADD, elt, ctx.columnIndex);
 
     if (column.sortFeature) {
       const sortAscElt = DomUtils.createDiv([AbstractTable.SORT_ASC_HANDLE_CLASS]);
@@ -368,14 +411,14 @@ export abstract class AbstractTable<T> {
       elt.appendChild(sortAscElt);
       elt.appendChild(sortDescElt);
 
-      this.manageListenersOnSortHandles(EventListenerManageMode.ADD, sortAscElt, sortDescElt, columnIndex);
+      this.manageListenersOnSortHandles(EventListenerManageMode.ADD, sortAscElt, sortDescElt, ctx.columnIndex);
     }
 
     if (this.options.resizeFeature) {
       const resizeHandleElt = DomUtils.createDiv([AbstractTable.RESIZE_HANDLE_CLASS]);
       elt.appendChild(resizeHandleElt);
 
-      this.manageListenersOnResizeHandle(EventListenerManageMode.ADD, resizeHandleElt, columnIndex);
+      this.manageListenersOnResizeHandle(EventListenerManageMode.ADD, resizeHandleElt, ctx.columnIndex);
     }
 
     return elt;
@@ -392,27 +435,27 @@ export abstract class AbstractTable<T> {
     const elt = DomUtils.createDiv([AbstractTable.ROW_CLASS]);
 
     this.columns.forEach((column, i) => {
-      elt.appendChild(this.createTableHeaderCell(column, i));
+      elt.appendChild(this.createTableHeaderCell(column, { columnIndex: i }));
     });
 
     return elt;
   }
 
-  private createTableNode(nodeIndex: number): HTMLElement {
+  private createTableNode(ctx: { nodeIndex: number }): HTMLElement {
     const elt = DomUtils.createDiv([AbstractTable.ROW_CLASS]);
     elt.style.height = `${this.options.nodeHeight}px`;
 
-    this.manageListenersOnTableNode(EventListenerManageMode.ADD, elt, nodeIndex);
+    this.manageListenersOnTableNode(EventListenerManageMode.ADD, elt, ctx.nodeIndex);
 
     this.columns.forEach((column) => {
-      elt.appendChild(this.createTableCell(column, nodeIndex));
+      elt.appendChild(this.createTableCell(column, ctx));
     });
 
     return elt;
   }
 
   private createTableNodes(): HTMLElement[] {
-    return [...Array(this.virtualNodesCount).keys()].map((_, i) => this.createTableNode(i));
+    return [...Array(this.virtualNodesCount).keys()].map((_, i) => this.createTableNode({ nodeIndex: i }));
   }
 
   private displayVisibleNodes(startIndex: number): void {
@@ -525,31 +568,48 @@ export abstract class AbstractTable<T> {
     }
   }
 
-  private setInitialColumnsWidth(): void {
-    const headerCellElts = this.tableHeaderRowElt.children;
-    const widths = Array.from(headerCellElts).map((node) => DomUtils.getEltComputedWidth(node as HTMLElement));
-    const columnsCount = widths.filter((width) => width === 0).length;
-    const columnsWidth = widths.reduce((acc, x) => acc + x, 0);
-    const remainingWidth = DomUtils.getEltComputedWidth(this.rootElt) - columnsWidth;
+  private setInitialWidths(): void {
+    let columnsWidth = 0;
 
-    Array.from(headerCellElts).forEach((headerCellElt, i) => {
-      if ((headerCellElt as HTMLElement).style.width === AbstractTable.INITIAL_COLUMN_WIDTH) {
-        const formattedWidth = `${remainingWidth / columnsCount}px`;
+    // Set widths from columns definition
+    this.columns.forEach((column, i) => {
+      if (!!column.width) {
+        const columnWidth = this.convertInPixel(column.width);
+        const formattedColumnWidth = `${columnWidth}px`;
 
-        (headerCellElt as HTMLElement).style.width = formattedWidth;
+        (this.tableHeaderRowElt.children[i] as HTMLElement).style.width = formattedColumnWidth;
+        this.updateTableBodyColumnWidth(i, formattedColumnWidth);
 
-        this.tableNodeElts.forEach((nodeElt) => {
-          (nodeElt.children[i] as HTMLElement).style.width = formattedWidth;
-        });
+        columnsWidth += columnWidth;
       }
     });
-  }
 
-  private setInitialTableWidth(): void {
-    const width = Array.from(this.tableHeaderRowElt.children)
-      .map((nodeElt) => DomUtils.getEltComputedWidth(nodeElt as HTMLElement))
-      .reduce((acc, x) => acc + x, 0);
-    this.updateTableWidth(`${width}px`);
+    // Distribute available width to other columns
+    const rootEltWidth = DomUtils.getEltComputedWidth(this.rootElt);
+    const availableWidth = rootEltWidth - columnsWidth;
+
+    if (availableWidth > 0) {
+      const columnWidth = availableWidth / this.columns.filter((column) => !column.width).length;
+      const formattedColumnWidth = `${columnWidth}px`;
+      const headerRowEltsLength = this.tableHeaderRowElt.children.length;
+
+      for (let i = 0; i < headerRowEltsLength; i++) {
+        const elt = this.tableHeaderRowElt.children[i] as HTMLElement;
+
+        if (!elt.style.width) {
+          elt.style.width = formattedColumnWidth;
+
+          this.tableNodeElts.forEach((nodeElt) => {
+            (nodeElt.children[i] as HTMLElement).style.width = formattedColumnWidth;
+          });
+
+          columnsWidth += columnWidth;
+        }
+      }
+    }
+
+    //
+    this.updateTableWidth(`${columnsWidth}px`);
   }
 
   private setTableBodyHeight(): void {
@@ -576,20 +636,6 @@ export abstract class AbstractTable<T> {
     this.updateVisibleNodes();
   }
 
-  private unfreezeFirstColumn(): void {
-    const firstHeaderCellElt = this.tableHeaderRowElt.children[0] as HTMLElement;
-
-    // Remove 'frozen' class to first column cells
-    firstHeaderCellElt.classList.remove('frozen');
-
-    this.tableNodeElts.forEach((nodeElt) => {
-      (nodeElt.children[0] as HTMLElement).classList.remove('frozen');
-    });
-
-    // Update offset of next column
-    this.updateUnfrozenColumns('');
-  }
-
   private updateFrozenColumnPosition(): void {
     const formattedOffset = `${this.tableHeaderElt.scrollLeft}px`;
     const nodeEltsLength = this.tableNodeElts.length;
@@ -598,6 +644,14 @@ export abstract class AbstractTable<T> {
 
     for (let i = 0; i < nodeEltsLength; i++) {
       (this.tableNodeElts[i].children[0] as HTMLElement).style.left = formattedOffset;
+    }
+  }
+
+  private updateTableBodyColumnWidth(columnIndex: number, width: string): void {
+    const nodeEltsLength = this.tableNodeElts.length;
+
+    for (let i = 0; i < nodeEltsLength; i++) {
+      (this.tableNodeElts[i].children[columnIndex] as HTMLElement).style.width = width;
     }
   }
 
@@ -708,7 +762,7 @@ export abstract class AbstractTable<T> {
   }
 
   private onResizeColumn(startEvent: MouseEvent, columnIndex: number): void {
-    const headerCellElt = this.tableHeaderRowElt.children.item(columnIndex) as HTMLElement;
+    const headerCellElt = this.tableHeaderRowElt.children[columnIndex] as HTMLElement;
     const isFirstColumn = columnIndex === 0;
     const originalColumnWidth = DomUtils.getEltComputedWidth(headerCellElt);
     const originalPageX = startEvent.pageX;
@@ -743,7 +797,6 @@ export abstract class AbstractTable<T> {
       const columnWidth = Math.max(originalColumnWidth + (eventPageX - originalPageX), AbstractTable.COLUMN_MIN_WIDTH);
       const formattedColumnWidth = `${columnWidth}px`;
       const formattedTableWidth = `${originalTableWidth - originalColumnWidth + columnWidth}px`;
-      const nodeEltsLength = this.tableNodeElts.length;
 
       // Table width
       this.updateTableWidth(formattedTableWidth);
@@ -752,9 +805,7 @@ export abstract class AbstractTable<T> {
       headerCellElt.style.width = formattedColumnWidth;
 
       // Body cells width
-      for (let i = 0; i < nodeEltsLength; i++) {
-        (this.tableNodeElts[i].children[columnIndex] as HTMLElement).style.width = formattedColumnWidth;
-      }
+      this.updateTableBodyColumnWidth(columnIndex, formattedColumnWidth);
 
       if (this.options.frozenFirstColumn) {
         this.updateFrozenColumnPosition();
@@ -820,9 +871,11 @@ export abstract class AbstractTable<T> {
   }
 
   private removeListenersOnTableHeaderCells(): void {
-    Array.from(this.tableHeaderRowElt.children).forEach((cellElt, i) => {
-      this.removeListenersOnTableHeaderCell(cellElt as HTMLElement, i);
-    });
+    const headerRowEltsLength = this.tableHeaderRowElt.children.length;
+
+    for (let i = 0; i < headerRowEltsLength; i++) {
+      this.removeListenersOnTableHeaderCell(this.tableHeaderRowElt.children[i] as HTMLElement, i);
+    }
   }
 
   private removeListenersOnTableNodes(): void {

@@ -1,4 +1,4 @@
-import { WidthUnit } from './styles-utils';
+import { ColumnWidthUnit } from './styles-utils';
 
 export interface ColumnOptions<T> {
   align: 'center' | 'left' | 'right';
@@ -6,5 +6,5 @@ export interface ColumnOptions<T> {
   formatter: (field: keyof T, data: T) => DocumentFragment;
   sortFeature: boolean;
   title: string;
-  width?: { value: number; unit: WidthUnit };
+  width?: { value: number; unit: ColumnWidthUnit };
 }

@@ -1,1 +1,1 @@
-export type WidthUnit = 'em' | 'px' | 'rem' | 'vw' | '%';
+export type ColumnWidthUnit = 'px' | '%';
