@@ -9,7 +9,9 @@ export default {
     format: 'es'
   },
   plugins: [
-    multi(),
+    multi({
+      entryFileName: 'table.js'
+    }),
     typescript({
       declaration: true,
       declarationDir: './lib',
