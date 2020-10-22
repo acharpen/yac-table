@@ -510,6 +510,7 @@ export abstract class AbstractTable<T> {
     const columnsLength = this.columns.length;
     const defaultCellColor = { backgroundColor: '', color: '' };
     const visibleNodesLength = this.visibleNodeIndexes.length;
+    let hasSelectedNodes = false;
 
     for (let i = 0; i < visibleNodesLength; i++) {
       const node = this.nodes[this.visibleNodeIndexes[i]];
@@ -531,7 +532,13 @@ export abstract class AbstractTable<T> {
       // Mark selection
       if (node.isSelected) {
         nodeElt.classList.add('selected');
+
+        hasSelectedNodes = true;
       }
+    }
+
+    if (hasSelectedNodes) {
+      this.tableHeaderRowElt.classList.add('selected');
     }
   }
 
@@ -548,10 +555,11 @@ export abstract class AbstractTable<T> {
 
   private resetTableNodeElts(): void {
     const nodeEltsLength = this.tableNodeElts.length;
-
     for (let i = 0; i < nodeEltsLength; i++) {
       this.tableNodeElts[i].classList.remove('hidden', 'selected');
     }
+
+    this.tableHeaderRowElt.classList.remove('selected');
   }
 
   private setColumnSortMode(targetColumn: Column<T>, sortMode: SortMode): void {

@@ -23,6 +23,10 @@ $frozen-column--z-index: calc(#{$z-index-base} + 1);
     left: 0;
     position: absolute;
   }
+
+  &.selected::before {
+    z-index: calc(#{$frozen-column--z-index} + 1);
+  }
 }
 
 .yac-table-cell {
@@ -111,10 +115,6 @@ $frozen-column--z-index: calc(#{$z-index-base} + 1);
   .yac-table-row {
     &.hidden {
       display: none;
-    }
-
-    &.selected::before {
-      z-index: calc(#{$frozen-column--z-index} + 1);
     }
   }
 }

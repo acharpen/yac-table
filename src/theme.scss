@@ -28,6 +28,12 @@ $sort-handle-width: 6px;
   &::before {
     width: 4px;
   }
+
+  &.selected {
+    &::before {
+      background-color: $selection;
+    }
+  }
 }
 
 // NOTE: `yac-table-cell` elements must have a background color
@@ -175,14 +181,6 @@ $sort-handle-width: 6px;
     &.sortable {
       .yac-table-cell-content {
         margin-right: calc(#{$sort-handle-width} * 2);
-      }
-    }
-  }
-
-  .yac-table-row {
-    &.selected {
-      &::before {
-        background-color: $selection;
       }
     }
   }
