@@ -40,8 +40,8 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     return this.nodes.map((node) => this.createNodeView(node));
   }
 
-  public setData(items: TreeNode<T>[]): void {
-    this.setTable(this.createNodes(items));
+  public setData(list: TreeNode<T>[]): void {
+    this.setTable(this.createNodes(list));
   }
 
   protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
@@ -137,19 +137,19 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     return elt;
   }
 
-  private createNodes(items: TreeNode<T>[]): Node<T>[] {
-    const itemsLength = items.length;
+  private createNodes(list: TreeNode<T>[]): Node<T>[] {
+    const listLength = list.length;
     const nodes = [];
     const stack = [];
 
-    for (let i = itemsLength - 1; i >= 0; i--) {
-      stack.push({ item: items[i], level: 0 });
+    for (let i = listLength - 1; i >= 0; i--) {
+      stack.push({ treeNode: list[i], level: 0 });
     }
 
     while (stack.length > 0) {
-      const { item, level } = stack.pop() as { item: TreeNode<T>; level: number };
-      const childItems = item.children;
-      const childItemsLength = childItems.length;
+      const { treeNode, level } = stack.pop() as { treeNode: TreeNode<T>; level: number };
+      const childList = treeNode.children;
+      const childListLength = childList.length;
       const nextLevel = level + 1;
 
       nodes.push({
@@ -157,14 +157,14 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
         id: this.generateId(),
         isExpanded: false,
         isHidden: level > 0,
-        isLeaf: item.children.length === 0,
+        isLeaf: treeNode.children.length === 0,
         isMatching: true,
         isSelected: false,
-        value: item.value
+        value: treeNode.value
       });
 
-      for (let i = childItemsLength - 1; i >= 0; i--) {
-        stack.push({ item: childItems[i], level: nextLevel });
+      for (let i = childListLength - 1; i >= 0; i--) {
+        stack.push({ treeNode: childList[i], level: nextLevel });
       }
     }
 

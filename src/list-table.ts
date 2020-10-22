@@ -16,8 +16,8 @@ export class ListTable<T extends object> extends AbstractTable<T> {
     return this.nodes.map((node) => this.createNodeView(node));
   }
 
-  public setData(items: T[]): void {
-    this.setTable(this.createNodes(items));
+  public setData(list: T[]): void {
+    this.setTable(this.createNodes(list));
   }
 
   protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
@@ -25,8 +25,8 @@ export class ListTable<T extends object> extends AbstractTable<T> {
     this.rootElt.dispatchEvent(event);
   }
 
-  private createNodes(items: T[]): Node<T>[] {
-    return items.map((item) => ({
+  private createNodes(list: T[]): Node<T>[] {
+    return list.map((elt) => ({
       id: this.generateId(),
       isExpanded: false,
       isHidden: false,
@@ -34,7 +34,7 @@ export class ListTable<T extends object> extends AbstractTable<T> {
       isMatching: true,
       isSelected: false,
       level: 0,
-      value: item
+      value: elt
     }));
   }
 
