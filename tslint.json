@@ -74,14 +74,7 @@
     "strict-comparisons": [true, { "allow-object-equal-comparison": true }],
     "strict-type-predicates": false,
     "trailing-comma": false,
-    "typedef": [
-      true,
-      "array-destructuring",
-      "call-signature",
-      "member-variable-declaration",
-      "parameter",
-      "property-declaration"
-    ],
+    "typedef": [true, "call-signature", "member-variable-declaration", "parameter", "property-declaration"],
     "variable-name": [true, "allow-leading-underscore", "ban-keywords", "check-format", "require-const-for-all-caps"]
   }
 }
