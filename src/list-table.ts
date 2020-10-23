@@ -16,8 +16,8 @@ export class ListTable<T extends object> extends AbstractTable<T> {
     return this.nodes.map((node) => this.createNodeView(node));
   }
 
-  public setData(list: T[]): void {
-    this.setTable(this.createNodes(list));
+  public setData(objs: T[]): void {
+    this.setNodes(this.createNodes(objs));
   }
 
   protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {

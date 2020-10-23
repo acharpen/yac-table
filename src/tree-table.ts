@@ -41,7 +41,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
   }
 
   public setData(objs: TreeNode<T>[]): void {
-    this.setTable(this.createNodes(objs));
+    this.setNodes(this.createNodes(objs));
   }
 
   protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {

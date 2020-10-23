@@ -35,6 +35,8 @@ export abstract class AbstractTable<T> {
 
   private activeNodeIndexes: number[];
   private counter: number;
+  private currentFilter: { matchFn: (value: T) => boolean } | undefined;
+  private currentSort: { column: Column<T>; mode: SortMode; compareFn: (a: T, b: T) => number } | undefined;
   private currentScrollX: number;
   private currentScrollY: number;
   private isResizing: boolean;
@@ -46,6 +48,8 @@ export abstract class AbstractTable<T> {
     this.activeNodeIndexes = [];
     this.columns = columnOptions.map((column, i) => ({ ...column, id: i, sortMode: 'default' }));
     this.counter = 0;
+    this.currentFilter = undefined;
+    this.currentSort = undefined;
     this.currentScrollX = 0;
     this.currentScrollY = 0;
     this.isResizing = false;
@@ -79,7 +83,7 @@ export abstract class AbstractTable<T> {
     refColumnField?: keyof T
   ): void {
     const atStart = position === 'start';
-    const refColumnIndex = !!refColumnField ? this.columns.findIndex((column) => column.field === refColumnField) : -1;
+    const refColumnIndex = refColumnField ? this.columns.findIndex((column) => column.field === refColumnField) : -1;
     const newColumnIndex =
       refColumnIndex !== -1 ? (atStart ? refColumnIndex : refColumnIndex + 1) : atStart ? 0 : this.columns.length;
 
@@ -103,26 +107,9 @@ export abstract class AbstractTable<T> {
   }
 
   public filter(matchFn: (value: T) => boolean): void {
-    const nodesLength = this.nodes.length;
+    this.currentFilter = { matchFn };
 
-    for (let i = nodesLength - 1; i >= 0; i--) {
-      const node = this.nodes[i];
-      node.isMatching = matchFn(node.value);
-
-      if (!node.isMatching && !node.isLeaf) {
-        let nextnodeIndex = i + 1;
-
-        while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
-          if (this.nodes[nextnodeIndex].isMatching) {
-            node.isMatching = true;
-            break;
-          }
-          nextnodeIndex++;
-        }
-      }
-    }
-
-    this.setNodes(this.nodes);
+    this.updateNodes({ performFiltering: true });
   }
 
   public selectNodes(nodeIds: number[]): void {
@@ -132,47 +119,10 @@ export abstract class AbstractTable<T> {
   public sort(columnField: keyof T, mode: SortMode, compareFn: (a: T, b: T) => number): void {
     const targetColumn = this.columns.find((column) => column.field === columnField);
 
-    if (targetColumn && targetColumn.sortFeature) {
-      const compareWithOrderFn = (a: T, b: T) => compareFn(a, b) * (mode === 'desc' ? -1 : 1);
-      const nodesLength = this.nodes.length;
-      const rootNodes = [];
-      const sortedChildrenByParentNodeId = new Map<number, Node<T>[]>();
+    if (targetColumn?.sortFeature) {
+      this.currentSort = { column: targetColumn, mode, compareFn };
 
-      for (let i = 0; i < nodesLength; i++) {
-        const node = this.nodes[i];
-        const children = [];
-        let nextnodeIndex = i + 1;
-
-        while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
-          if (this.nodes[nextnodeIndex].level === node.level + 1) {
-            children.push(this.nodes[nextnodeIndex]);
-          }
-          nextnodeIndex++;
-        }
-
-        sortedChildrenByParentNodeId.set(
-          node.id,
-          children.sort((a, b) => compareWithOrderFn(a.value, b.value) * -1)
-        );
-
-        if (node.level === 0) {
-          rootNodes.push(node);
-        }
-      }
-
-      const sortedNodes = [];
-      const stack = rootNodes.sort((a, b) => compareWithOrderFn(a.value, b.value) * -1);
-
-      while (stack.length > 0) {
-        const node = stack.pop() as Node<T>;
-
-        sortedNodes.push(node);
-        Array.prototype.push.apply(stack, sortedChildrenByParentNodeId.get(node.id) as Node<T>[]);
-      }
-
-      this.setTable(sortedNodes);
-
-      this.setColumnSortMode(targetColumn, mode);
+      this.updateNodes({ performSorting: true });
     }
   }
 
@@ -316,13 +266,23 @@ export abstract class AbstractTable<T> {
     this.setVirtualTableHeight();
   }
 
-  protected setTable(nodes: Node<T>[]): void {
-    this.resetSortHandles();
-    this.setNodes(nodes);
+  protected setNodes(nodes: Node<T>[]): void {
+    this.currentFilter = undefined;
+    this.currentSort = undefined;
+    this.nodes = nodes;
+
+    this.resetColumnSortHandles();
+
+    this.updateNodes();
   }
 
-  protected setNodes(nodes: Node<T>[]): void {
-    this.nodes = nodes;
+  protected updateNodes(options?: { performFiltering?: boolean; performSorting?: boolean }): void {
+    if (options?.performFiltering && this.currentFilter) {
+      this.handleFilter(this.currentFilter.matchFn);
+    }
+    if (options?.performSorting && this.currentSort) {
+      this.nodes = this.handleSort(this.currentSort.column, this.currentSort.mode, this.currentSort.compareFn);
+    }
 
     this.setActiveNodeIndexes();
 
@@ -486,6 +446,72 @@ export abstract class AbstractTable<T> {
     return { sortAscElt: sortAscElt as HTMLElement, sortDescElt: sortDescElt as HTMLElement };
   }
 
+  private handleFilter(matchFn: (value: T) => boolean): void {
+    const nodesLength = this.nodes.length;
+
+    for (let i = nodesLength - 1; i >= 0; i--) {
+      const node = this.nodes[i];
+      node.isMatching = matchFn(node.value);
+
+      if (!node.isMatching && !node.isLeaf) {
+        let nextnodeIndex = i + 1;
+
+        while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+          if (this.nodes[nextnodeIndex].isMatching) {
+            node.isMatching = true;
+            break;
+          }
+          nextnodeIndex++;
+        }
+      }
+    }
+  }
+
+  private handleSort(column: Column<T>, mode: SortMode, compareFn: (a: T, b: T) => number): Node<T>[] {
+    const compareWithOrderFn = (a: T, b: T) => compareFn(a, b) * (mode === 'desc' ? -1 : 1);
+    const nodesLength = this.nodes.length;
+    const rootNodes = [];
+    const sortedChildrenByParentNodeId = new Map<number, Node<T>[]>();
+
+    this.resetColumnSortHandles();
+
+    for (let i = 0; i < nodesLength; i++) {
+      const node = this.nodes[i];
+      const children = [];
+      let nextnodeIndex = i + 1;
+
+      while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+        if (this.nodes[nextnodeIndex].level === node.level + 1) {
+          children.push(this.nodes[nextnodeIndex]);
+        }
+        nextnodeIndex++;
+      }
+
+      sortedChildrenByParentNodeId.set(
+        node.id,
+        children.sort((a, b) => compareWithOrderFn(a.value, b.value) * -1)
+      );
+
+      if (node.level === 0) {
+        rootNodes.push(node);
+      }
+    }
+
+    const sortedNodes = [];
+    const stack = rootNodes.sort((a, b) => compareWithOrderFn(a.value, b.value) * -1);
+
+    while (stack.length > 0) {
+      const node = stack.pop() as Node<T>;
+
+      sortedNodes.push(node);
+      Array.prototype.push.apply(stack, sortedChildrenByParentNodeId.get(node.id) as Node<T>[]);
+    }
+
+    this.setColumnSortMode(column, mode);
+
+    return sortedNodes;
+  }
+
   private hideUnusedTableNodeElts(): void {
     const nodeEltsLength = this.tableNodeElts.length;
 
@@ -542,7 +568,7 @@ export abstract class AbstractTable<T> {
     }
   }
 
-  private resetSortHandles(): void {
+  private resetColumnSortHandles(): void {
     this.columns
       .filter((column) => column.sortFeature)
       .forEach((_, i) => {
@@ -581,7 +607,7 @@ export abstract class AbstractTable<T> {
 
     // Set widths from columns definition
     this.columns.forEach((column, i) => {
-      if (!!column.width) {
+      if (column.width !== undefined) {
         const columnWidth = this.convertInPixel(column.width);
         const formattedColumnWidth = `${columnWidth}px`;
 
@@ -635,7 +661,7 @@ export abstract class AbstractTable<T> {
 
   private toggleNodesSelection(nodeIds: number[], isSelected: boolean): void {
     (nodeIds.length > 0
-      ? (nodeIds.map((nodeId) => this.nodes.find((node) => node.id === nodeId)).filter((node) => !!node) as Node<T>[])
+      ? (nodeIds.map((nodeId) => this.nodes.find((node) => node.id === nodeId)).filter((node) => node) as Node<T>[])
       : this.nodes
     ).forEach((node) => {
       node.isSelected = isSelected;
