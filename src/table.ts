@@ -79,13 +79,12 @@ export abstract class AbstractTable<T> {
 
   public addColumn(
     columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
-    position: 'start' | 'end',
-    refColumnField?: keyof T
+    { position, refColumnField }: { position: 'start' | 'end'; refColumnField?: keyof T }
   ): void {
-    const atStart = position === 'start';
+    const isBebore = position === 'start';
     const refColumnIndex = refColumnField ? this.columns.findIndex((column) => column.field === refColumnField) : -1;
     const newColumnIndex =
-      refColumnIndex !== -1 ? (atStart ? refColumnIndex : refColumnIndex + 1) : atStart ? 0 : this.columns.length;
+      refColumnIndex !== -1 ? (isBebore ? refColumnIndex : refColumnIndex + 1) : isBebore ? 0 : this.columns.length;
 
     this.handleAddColumn(columnOption, newColumnIndex);
   }
@@ -96,6 +95,12 @@ export abstract class AbstractTable<T> {
     if (columnIndex !== -1) {
       this.handleDeleteColumn(columnField, columnIndex);
     }
+  }
+
+  public deleteNodes(nodeIds: number[]): void {
+    this.nodes = this.nodes.filter((node) => !nodeIds.includes(node.id));
+
+    this.updateNodes();
   }
 
   public deselectNodes(nodeIds: number[]): void {

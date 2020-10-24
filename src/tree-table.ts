@@ -22,6 +22,47 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
     this.expandTogglerWidth = this.computeExpandTogglerWidth();
   }
 
+  public addData(
+    obj: TreeNode<T>,
+    options: { position: 'top' | 'bottom'; refNodeId?: number } | { position: 'child' | 'parent'; refNodeId: number }
+  ): void {
+    const isAbove = options.position === 'top';
+    const refNodeIndex = options.refNodeId ? this.nodes.findIndex((node) => node.id === options.refNodeId) : -1;
+    const newNodeIndex =
+      refNodeIndex !== -1 ? (isAbove ? refNodeIndex : refNodeIndex + 1) : isAbove ? 0 : this.nodes.length;
+    const refNode = this.nodes[refNodeIndex];
+    const [newNode] = this.createNodes([obj]);
+
+    // Insert new node
+    this.nodes.splice(newNodeIndex, 0, newNode);
+
+    // Set new node's level
+    newNode.level =
+      options.position === 'top' || options.position === 'bottom' || options.position === 'parent'
+        ? refNode.level
+        : refNode.level + 1;
+
+    // Set new node's visibility
+    newNode.isHidden =
+      options.position === 'top' || options.position === 'bottom' || options.position === 'parent'
+        ? refNode.isHidden
+        : !refNode.isExpanded;
+
+    // Update new node's children
+    if (options.position === 'parent') {
+      const nodesLength = this.nodes.length;
+      let nextnodeIndex = refNodeIndex;
+
+      do {
+        this.nodes[nextnodeIndex].level++;
+        nextnodeIndex++;
+      } while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > newNode.level);
+    }
+
+    // Update nodes
+    this.updateNodes();
+  }
+
   public collapseNodes(nodeIds: number[]): void {
     this.toggleNodesVisibility(nodeIds, { isExpanded: false });
   }
