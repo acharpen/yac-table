@@ -5,7 +5,7 @@ import { Node, TreeNode } from './node';
 import { TreeNodeView } from './node-view';
 import { ColumnWidthUnit } from './styles-utils';
 import { AbstractTable } from './table';
-import { TreeTableOptions } from './table-options';
+import { TreeTableOptions } from './tree-table-options';
 
 export class TreeTable<T> extends AbstractTable<T> {
   private static readonly EXPAND_TOGGLER_CLASS: string = `${AbstractTable.VENDOR_PREFIX}-expand-toggler`;
