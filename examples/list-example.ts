@@ -1,8 +1,7 @@
+import { ExampleObject, columnOptions, tableOptions } from './setup';
 import { ListTable } from '../src/list-table';
 import { Node } from '../src/node';
-
 import { listData } from './data';
-import { ExampleObject, columnOptions, tableOptions } from './setup';
 
 const tableContainerElt = document.getElementById('table') as HTMLElement;
 

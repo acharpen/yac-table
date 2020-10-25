@@ -1,8 +1,8 @@
+import { ColumnSortMode, ColumnWidthUnit } from './column-utils';
+import { DomUtils, EventListenerManageMode } from './dom-utils';
 import { Column } from './column';
 import { ColumnOptions } from './column-options';
-import { ColumnSortMode, ColumnWidthUnit } from './column-utils';
 import { ColumnView } from './column';
-import { DomUtils, EventListenerManageMode } from './dom-utils';
 import { Node } from './node';
 import { TableOptions } from './table-options';
 

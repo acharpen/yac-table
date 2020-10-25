@@ -1,6 +1,5 @@
-import { ListTable } from '../list-table';
-
 import { TestObject, defaultFormatter } from './setup';
+import { ListTable } from '../list-table';
 
 const columnOptions = [
   { align: 'left' as const, field: 'col1' as const, formatter: defaultFormatter, sortFeature: true, title: 'col1' },

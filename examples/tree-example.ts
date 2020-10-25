@@ -1,8 +1,7 @@
+import { ExampleObject, columnOptions, tableOptions } from './setup';
 import { Node } from '../src/node';
 import { TreeTable } from '../src/tree-table';
-
 import { treeData } from './data';
-import { ExampleObject, columnOptions, tableOptions } from './setup';
 
 const tableContainerElt = document.getElementById('table') as HTMLElement;
 

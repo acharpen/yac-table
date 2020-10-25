@@ -1,8 +1,8 @@
+import { ListNodeView, Node } from './node';
+import { AbstractTable } from './table';
 import { ColumnOptions } from './column-options';
 import { DomUtils } from './dom-utils';
-import { ListNodeView, Node } from './node';
 import { ListTableOptions } from './table-options';
-import { AbstractTable } from './table';
 
 export class ListTable<T> extends AbstractTable<T> {
   public constructor(
