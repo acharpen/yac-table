@@ -1,5 +1,6 @@
-import { Column, ColumnView } from './column';
+import { Column } from './column';
 import { ColumnOptions } from './column-options';
+import { ColumnView } from './column-view';
 import { DomUtils, EventListenerManageMode } from './dom-utils';
 import { Node } from './node';
 import { SortMode } from './sort-utils';

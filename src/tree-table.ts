@@ -1,7 +1,8 @@
 import { Column } from './column';
 import { ColumnOptions } from './column-options';
 import { DomUtils, EventListenerManageMode } from './dom-utils';
-import { Node, TreeNode, TreeNodeView } from './node';
+import { Node, TreeNode } from './node';
+import { TreeNodeView } from './node-view';
 import { ColumnWidthUnit } from './styles-utils';
 import { AbstractTable } from './table';
 import { TreeTableOptions } from './table-options';

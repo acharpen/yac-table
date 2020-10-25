@@ -1,6 +1,7 @@
 import { ColumnOptions } from './column-options';
 import { DomUtils } from './dom-utils';
-import { ListNodeView, Node } from './node';
+import { Node } from './node';
+import { ListNodeView } from './node-view';
 import { AbstractTable } from './table';
 import { ListTableOptions } from './table-options';
 
