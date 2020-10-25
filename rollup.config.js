@@ -10,7 +10,7 @@ export default {
   },
   plugins: [
     multi({
-      entryFileName: 'table.js'
+      entryFileName: 'index.js'
     }),
     typescript({
       declaration: true,
