@@ -1,4 +1,4 @@
-export const enum EventListenerManageMode {
+export enum EventListenerManageMode {
   ADD,
   REMOVE
 }
