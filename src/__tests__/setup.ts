@@ -25,7 +25,6 @@ export const linkFormatter = (field: keyof TestObject, obj: TestObject): Documen
   if (value) {
     const elt = document.createElement('a');
     elt.textContent = value;
-
     fragment.appendChild(elt);
   }
 
