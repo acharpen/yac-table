@@ -1,8 +1,7 @@
 import { ColumnOptions } from './column-options';
 import { DomUtils } from './dom-utils';
-import { ListTableOptions } from './list-table-options';
-import { Node } from './node';
-import { ListNodeView } from './node-view';
+import { ListNodeView, Node } from './node';
+import { ListTableOptions } from './table-options';
 import { AbstractTable } from './table';
 
 export class ListTable<T> extends AbstractTable<T> {

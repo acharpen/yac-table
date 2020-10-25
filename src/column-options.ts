@@ -1,4 +1,4 @@
-import { ColumnWidthUnit } from './styles-utils';
+import { ColumnWidthUnit } from './column-utils';
 
 export interface ColumnOptions<T> {
   align: 'center' | 'left' | 'right';

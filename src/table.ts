@@ -1,10 +1,9 @@
 import { Column } from './column';
 import { ColumnOptions } from './column-options';
-import { ColumnView } from './column-view';
+import { ColumnSortMode, ColumnWidthUnit } from './column-utils';
+import { ColumnView } from './column';
 import { DomUtils, EventListenerManageMode } from './dom-utils';
 import { Node } from './node';
-import { SortMode } from './sort-utils';
-import { ColumnWidthUnit } from './styles-utils';
 import { TableOptions } from './table-options';
 
 export abstract class AbstractTable<T> {
@@ -37,7 +36,7 @@ export abstract class AbstractTable<T> {
   private activeNodeIndexes: number[];
   private counter: number;
   private currentFilter: { matchFn: (value: T) => boolean } | undefined;
-  private currentSort: { column: Column<T>; mode: SortMode; compareFn: (a: T, b: T) => number } | undefined;
+  private currentSort: { column: Column<T>; mode: ColumnSortMode; compareFn: (a: T, b: T) => number } | undefined;
   private currentScrollX: number;
   private currentScrollY: number;
   private isResizing: boolean;
@@ -122,7 +121,7 @@ export abstract class AbstractTable<T> {
     this.toggleNodesSelection(nodeIds, true);
   }
 
-  public sort(columnField: keyof T, mode: SortMode, compareFn: (a: T, b: T) => number): void {
+  public sort(columnField: keyof T, mode: ColumnSortMode, compareFn: (a: T, b: T) => number): void {
     const targetColumn = this.columns.find((column) => column.field === columnField);
 
     if (targetColumn?.sortFeature) {
@@ -473,7 +472,7 @@ export abstract class AbstractTable<T> {
     }
   }
 
-  private handleSort(column: Column<T>, mode: SortMode, compareFn: (a: T, b: T) => number): Node<T>[] {
+  private handleSort(column: Column<T>, mode: ColumnSortMode, compareFn: (a: T, b: T) => number): Node<T>[] {
     const compareWithOrderFn = (a: T, b: T) => compareFn(a, b) * (mode === 'desc' ? -1 : 1);
     const nodesLength = this.nodes.length;
     const rootNodes = [];
@@ -594,7 +593,7 @@ export abstract class AbstractTable<T> {
     this.tableHeaderRowElt.classList.remove('selected');
   }
 
-  private setColumnSortMode(targetColumn: Column<T>, sortMode: SortMode): void {
+  private setColumnSortMode(targetColumn: Column<T>, sortMode: ColumnSortMode): void {
     const targetColumnIndex = this.columns.findIndex((column) => column.id === targetColumn.id);
     const headerCellElt = this.tableHeaderRowElt.children[targetColumnIndex] as HTMLElement;
     const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
@@ -885,7 +884,7 @@ export abstract class AbstractTable<T> {
     }
   }
 
-  private onSortColumn(event: Event, columnIndex: number, newSortMode: SortMode): void {
+  private onSortColumn(event: Event, columnIndex: number, newSortMode: ColumnSortMode): void {
     this.dispatchEventSortColumn(event, this.columns[columnIndex], newSortMode);
   }
 
@@ -932,7 +931,7 @@ export abstract class AbstractTable<T> {
     this.rootElt.dispatchEvent(event);
   }
 
-  private dispatchEventSortColumn(originalEvent: Event, column: Column<T>, newSortMode: SortMode): void {
+  private dispatchEventSortColumn(originalEvent: Event, column: Column<T>, newSortMode: ColumnSortMode): void {
     const columnView = this.createColumnView(column);
     const event = DomUtils.createEvent('onSortColumn', { event: originalEvent, column: columnView, newSortMode });
     this.rootElt.dispatchEvent(event);

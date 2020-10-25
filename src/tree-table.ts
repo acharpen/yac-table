@@ -1,11 +1,10 @@
 import { Column } from './column';
 import { ColumnOptions } from './column-options';
+import { ColumnWidthUnit } from './column-utils';
 import { DomUtils, EventListenerManageMode } from './dom-utils';
-import { Node, TreeNode } from './node';
-import { TreeNodeView } from './node-view';
-import { ColumnWidthUnit } from './styles-utils';
+import { Node, TreeNode, TreeNodeView } from './node';
+import { TreeTableOptions } from './table-options';
 import { AbstractTable } from './table';
-import { TreeTableOptions } from './tree-table-options';
 
 export class TreeTable<T> extends AbstractTable<T> {
   private static readonly EXPAND_TOGGLER_CLASS: string = `${AbstractTable.VENDOR_PREFIX}-expand-toggler`;

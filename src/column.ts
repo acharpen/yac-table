@@ -1,7 +1,9 @@
 import { ColumnOptions } from './column-options';
-import { SortMode } from './sort-utils';
+import { ColumnSortMode } from './column-utils';
 
 export interface Column<T> extends ColumnOptions<T> {
   id: number;
-  sortMode: SortMode;
+  sortMode: ColumnSortMode;
 }
+
+export type ColumnView<T> = Pick<Column<T>, 'field' | 'sortMode'>;
