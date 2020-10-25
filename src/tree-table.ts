@@ -27,7 +27,7 @@ export class TreeTable<T> extends AbstractTable<T> {
     options: { position: 'top' | 'bottom'; refNodeId?: number } | { position: 'child' | 'parent'; refNodeId: number }
   ): void {
     const isAbove = options.position === 'top';
-    const refNodeIndex = options.refNodeId ? this.nodes.findIndex((node) => node.id === options.refNodeId) : -1;
+    const refNodeIndex = options.refNodeId != null ? this.nodes.findIndex((node) => node.id === options.refNodeId) : -1;
     const newNodeIndex =
       refNodeIndex !== -1 ? (isAbove ? refNodeIndex : refNodeIndex + 1) : isAbove ? 0 : this.nodes.length;
     const refNode = this.nodes[refNodeIndex];
@@ -249,7 +249,7 @@ export class TreeTable<T> extends AbstractTable<T> {
     const nodeIndexes: number[] = [];
     const nodesLength = this.nodes.length;
 
-    const aux = (node: Node<T>, nodeIndex: number) => {
+    const aux = (node: Node<T>, nodeIndex: number): void => {
       let nextnodeIndex = nodeIndex + 1;
 
       while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {

@@ -22,7 +22,7 @@ export class DomUtils {
     return new CustomEvent(eventName, { detail: arg });
   }
 
-  public static getEltByClassName(elts: HTMLCollection, className: string): HTMLElement | undefined {
+  public static getEltByClassName(elts: HTMLCollection, className: string): HTMLElement | null {
     const eltsLength = elts.length;
 
     for (let i = 0; i < eltsLength; i++) {
@@ -33,11 +33,11 @@ export class DomUtils {
       }
     }
 
-    return undefined;
+    return null;
   }
 
   public static getEltComputedWidth(elt: HTMLElement): number {
-    return parseFloat(getComputedStyle(elt, undefined).getPropertyValue('width').replace('px', ''));
+    return parseFloat(getComputedStyle(elt).getPropertyValue('width').replace('px', ''));
   }
 
   public static getEltWidth(elt: HTMLElement): number {

@@ -14,7 +14,7 @@ export class ListTable<T> extends AbstractTable<T> {
 
   public addData(obj: T, { position, refNodeId }: { position: 'top' | 'bottom'; refNodeId?: number }): void {
     const isAbove = position === 'top';
-    const refNodeIndex = refNodeId ? this.nodes.findIndex((node) => node.id === refNodeId) : -1;
+    const refNodeIndex = refNodeId != null ? this.nodes.findIndex((node) => node.id === refNodeId) : -1;
     const newNodeIndex =
       refNodeIndex !== -1 ? (isAbove ? refNodeIndex : refNodeIndex + 1) : isAbove ? 0 : this.nodes.length;
     const [newNode] = this.createNodes([obj]);

@@ -4,6 +4,7 @@ import { Node } from '../src/node';
 import { listData } from './data';
 
 const tableContainerElt = document.getElementById('table') as HTMLElement;
+const table = new ListTable<ExampleObject>(tableContainerElt, { columnOptions, tableOptions });
 
 tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
   const node = event.detail.node;
@@ -13,7 +14,5 @@ tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: E
     table.selectNodes([node.id]);
   }
 });
-
-const table = new ListTable<ExampleObject>(tableContainerElt, { columnOptions, tableOptions });
 
 table.setData(listData);

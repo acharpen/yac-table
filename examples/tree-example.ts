@@ -4,6 +4,10 @@ import { TreeTable } from '../src/tree-table';
 import { treeData } from './data';
 
 const tableContainerElt = document.getElementById('table') as HTMLElement;
+const table = new TreeTable<ExampleObject>(tableContainerElt, {
+  columnOptions,
+  tableOptions: { ...tableOptions, childNodeOffset: 8 }
+});
 
 tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
   const node = event.detail.node;
@@ -21,11 +25,6 @@ tableContainerElt.addEventListener('onToggleNode', (event: CustomEvent<{ event: 
   } else {
     table.expandNodes([node.id]);
   }
-});
-
-const table = new TreeTable<ExampleObject>(tableContainerElt, {
-  columnOptions,
-  tableOptions: { ...tableOptions, childNodeOffset: 8 }
 });
 
 table.setData(treeData);

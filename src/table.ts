@@ -1,8 +1,7 @@
+import { Column, ColumnView } from './column';
 import { ColumnSortMode, ColumnWidthUnit } from './column-utils';
 import { DomUtils, EventListenerManageMode } from './dom-utils';
-import { Column } from './column';
 import { ColumnOptions } from './column-options';
-import { ColumnView } from './column';
 import { Node } from './node';
 import { TableOptions } from './table-options';
 
@@ -35,8 +34,8 @@ export abstract class AbstractTable<T> {
 
   private activeNodeIndexes: number[];
   private counter: number;
-  private currentFilter: { matchFn: (value: T) => boolean } | undefined;
-  private currentSort: { column: Column<T>; mode: ColumnSortMode; compareFn: (a: T, b: T) => number } | undefined;
+  private currentFilter: { matchFn: (value: T) => boolean } | null;
+  private currentSort: { column: Column<T>; mode: ColumnSortMode; compareFn: (a: T, b: T) => number } | null;
   private currentScrollX: number;
   private currentScrollY: number;
   private isResizing: boolean;
@@ -48,8 +47,8 @@ export abstract class AbstractTable<T> {
     this.activeNodeIndexes = [];
     this.columns = columnOptions.map((column, i) => ({ ...column, id: i, sortMode: 'default' }));
     this.counter = 0;
-    this.currentFilter = undefined;
-    this.currentSort = undefined;
+    this.currentFilter = null;
+    this.currentSort = null;
     this.currentScrollX = 0;
     this.currentScrollY = 0;
     this.isResizing = false;
@@ -82,7 +81,8 @@ export abstract class AbstractTable<T> {
     { position, refColumnField }: { position: 'start' | 'end'; refColumnField?: keyof T }
   ): void {
     const isBebore = position === 'start';
-    const refColumnIndex = refColumnField ? this.columns.findIndex((column) => column.field === refColumnField) : -1;
+    const refColumnIndex =
+      refColumnField != null ? this.columns.findIndex((column) => column.field === refColumnField) : -1;
     const newColumnIndex =
       refColumnIndex !== -1 ? (isBebore ? refColumnIndex : refColumnIndex + 1) : isBebore ? 0 : this.columns.length;
 
@@ -124,7 +124,7 @@ export abstract class AbstractTable<T> {
   public sort(columnField: keyof T, mode: ColumnSortMode, compareFn: (a: T, b: T) => number): void {
     const targetColumn = this.columns.find((column) => column.field === columnField);
 
-    if (targetColumn?.sortFeature) {
+    if (targetColumn?.sortFeature != null && targetColumn.sortFeature) {
       this.currentSort = { column: targetColumn, mode, compareFn };
 
       this.updateNodes({ performSorting: true });
@@ -172,7 +172,7 @@ export abstract class AbstractTable<T> {
     const newColumn: Column<T> = { ...columnOption, id: newColumnId, sortMode: 'default' };
     const newColumnWidth = this.convertInPixel(columnOption.width);
 
-    const insertNewElt = (elt: HTMLElement, parentElt: HTMLElement) => {
+    const insertNewElt = (elt: HTMLElement, parentElt: HTMLElement): void => {
       if (isNewLastColumn) {
         parentElt.appendChild(elt);
       } else {
@@ -272,8 +272,8 @@ export abstract class AbstractTable<T> {
   }
 
   protected setNodes(nodes: Node<T>[]): void {
-    this.currentFilter = undefined;
-    this.currentSort = undefined;
+    this.currentFilter = null;
+    this.currentSort = null;
     this.nodes = nodes;
 
     this.resetColumnSortHandles();
@@ -282,10 +282,10 @@ export abstract class AbstractTable<T> {
   }
 
   protected updateNodes(options?: { performFiltering?: boolean; performSorting?: boolean }): void {
-    if (options?.performFiltering && this.currentFilter) {
+    if (options?.performFiltering != null && options.performFiltering && this.currentFilter) {
       this.handleFilter(this.currentFilter.matchFn);
     }
-    if (options?.performSorting && this.currentSort) {
+    if (options?.performSorting != null && options.performSorting && this.currentSort) {
       this.nodes = this.handleSort(this.currentSort.column, this.currentSort.mode, this.currentSort.compareFn);
     }
 
@@ -473,7 +473,7 @@ export abstract class AbstractTable<T> {
   }
 
   private handleSort(column: Column<T>, mode: ColumnSortMode, compareFn: (a: T, b: T) => number): Node<T>[] {
-    const compareWithOrderFn = (a: T, b: T) => compareFn(a, b) * (mode === 'desc' ? -1 : 1);
+    const compareWithOrderFn = (a: T, b: T): number => compareFn(a, b) * (mode === 'desc' ? -1 : 1);
     const nodesLength = this.nodes.length;
     const rootNodes = [];
     const sortedChildrenByParentNodeId = new Map<number, Node<T>[]>();
@@ -612,7 +612,7 @@ export abstract class AbstractTable<T> {
 
     // Set widths from columns definition
     this.columns.forEach((column, i) => {
-      if (column.width !== undefined) {
+      if (column.width != null) {
         const columnWidth = this.convertInPixel(column.width);
         const formattedColumnWidth = `${columnWidth}px`;
 
@@ -808,30 +808,10 @@ export abstract class AbstractTable<T> {
     const originalTableWidth = DomUtils.getEltComputedWidth(this.tableBodyElt.firstElementChild as HTMLElement);
 
     let eventPageX: number;
-    let ticking = false;
+    let isTicking = false;
 
-    const requestTick = () => {
-      if (!ticking) {
-        requestAnimationFrame(updateColumnSize);
-      }
-
-      ticking = true;
-    };
-    const resize = (event: MouseEvent) => {
-      eventPageX = event.pageX;
-
-      requestTick();
-    };
-    const stopResize = (stopEvent: Event) => {
-      stopEvent.stopPropagation();
-
-      this.isResizing = false;
-
-      window.removeEventListener('mouseup', stopResize, { capture: true });
-      window.removeEventListener('mousemove', resize);
-    };
-    const updateColumnSize = () => {
-      ticking = false;
+    const updateColumnSize = (): void => {
+      isTicking = false;
 
       const columnWidth = Math.max(originalColumnWidth + (eventPageX - originalPageX), AbstractTable.COLUMN_MIN_WIDTH);
       const formattedColumnWidth = `${columnWidth}px`;
@@ -854,6 +834,26 @@ export abstract class AbstractTable<T> {
           this.updateUnfrozenColumns(formattedColumnWidth);
         }
       }
+    };
+    const requestTick = (): void => {
+      if (!isTicking) {
+        requestAnimationFrame(updateColumnSize);
+      }
+
+      isTicking = true;
+    };
+    const resize = (event: MouseEvent): void => {
+      eventPageX = event.pageX;
+
+      requestTick();
+    };
+    const stopResize = (stopEvent: Event): void => {
+      stopEvent.stopPropagation();
+
+      this.isResizing = false;
+
+      window.removeEventListener('mouseup', stopResize, { capture: true });
+      window.removeEventListener('mousemove', resize);
     };
 
     this.isResizing = true;

@@ -11,7 +11,7 @@ export const defaultFormatter = (field: keyof TestObject, obj: TestObject): Docu
   const fragment = document.createDocumentFragment();
 
   const value = obj[field];
-  if (value) {
+  if (value != null) {
     fragment.textContent = value;
   }
 
@@ -22,7 +22,7 @@ export const linkFormatter = (field: keyof TestObject, obj: TestObject): Documen
   const fragment = document.createDocumentFragment();
 
   const value = obj[field];
-  if (value) {
+  if (value != null) {
     const elt = document.createElement('a');
     elt.textContent = value;
     fragment.appendChild(elt);

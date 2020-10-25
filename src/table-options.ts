@@ -5,8 +5,8 @@ export interface TableOptions<T> {
   nodeHeight: number;
   resizeFeature: boolean;
   visibleNodesCount: number;
-  cellColor?: (obj: T, column: Column<T>) => { backgroundColor?: string; color?: string } | undefined;
-  rowColor?: (obj: T) => { backgroundColor?: string; color?: string } | undefined;
+  cellColor?: (obj: T, column: Column<T>) => { backgroundColor?: string; color?: string } | null;
+  rowColor?: (obj: T) => { backgroundColor?: string; color?: string } | null;
 }
 
 export type ListTableOptions<T> = TableOptions<T>;
