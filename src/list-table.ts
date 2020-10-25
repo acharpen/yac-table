@@ -4,7 +4,7 @@ import { ListNodeView, Node } from './node';
 import { AbstractTable } from './table';
 import { ListTableOptions } from './table-options';
 
-export class ListTable<T extends object> extends AbstractTable<T> {
+export class ListTable<T> extends AbstractTable<T> {
   public constructor(
     rootElt: HTMLElement,
     options: { columnOptions: ColumnOptions<T>[]; tableOptions: ListTableOptions<T> }

@@ -6,7 +6,7 @@ import { ColumnWidthUnit } from './styles-utils';
 import { AbstractTable } from './table';
 import { TreeTableOptions } from './table-options';
 
-export class TreeTable<T extends object> extends AbstractTable<T> {
+export class TreeTable<T> extends AbstractTable<T> {
   private static readonly EXPAND_TOGGLER_CLASS: string = `${AbstractTable.VENDOR_PREFIX}-expand-toggler`;
 
   private readonly childNodeOffset: number;
@@ -106,7 +106,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
   ): void {
     if (newColumnIndex === 0) {
       this.tableNodeElts.forEach((nodeElt, i) => {
-        const toggleElt = nodeElt.firstElementChild!.firstElementChild as HTMLElement;
+        const toggleElt = (nodeElt.firstElementChild as HTMLElement).firstElementChild as HTMLElement;
 
         this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE, toggleElt, i);
         toggleElt.remove();
@@ -236,7 +236,7 @@ export class TreeTable<T extends object> extends AbstractTable<T> {
 
   private removeListenersOnNodeToggles(): void {
     this.tableNodeElts.forEach((nodeElt, i) => {
-      const toggleElt = nodeElt.firstElementChild!.firstElementChild as HTMLElement;
+      const toggleElt = (nodeElt.firstElementChild as HTMLElement).firstElementChild as HTMLElement;
       this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE, toggleElt, i);
     });
   }

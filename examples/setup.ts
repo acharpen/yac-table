@@ -7,14 +7,14 @@ export interface ExampleObject {
 
 // ////////////////////////////////////////////////////////////////////////////
 
-export const defaultFormatter = (field: keyof ExampleObject, obj: ExampleObject) => {
+export const defaultFormatter = (field: keyof ExampleObject, obj: ExampleObject): DocumentFragment => {
   const fragment = document.createDocumentFragment();
   fragment.textContent = obj[field];
 
   return fragment;
 };
 
-export const linkFormatter = (field: keyof ExampleObject, obj: ExampleObject) => {
+export const linkFormatter = (field: keyof ExampleObject, obj: ExampleObject): DocumentFragment => {
   const fragment = document.createDocumentFragment();
   const elt = document.createElement('a');
   elt.textContent = obj[field];

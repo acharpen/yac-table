@@ -9,7 +9,7 @@ export interface TableOptions<T> {
   rowColor?: (obj: T) => { backgroundColor?: string; color?: string } | undefined;
 }
 
-export interface ListTableOptions<T> extends TableOptions<T> {}
+export type ListTableOptions<T> = TableOptions<T>;
 
 export interface TreeTableOptions<T> extends TableOptions<T> {
   childNodeOffset: number;

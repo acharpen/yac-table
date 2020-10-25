@@ -313,7 +313,7 @@ export abstract class AbstractTable<T> {
     this.rootElt.appendChild(this.tableBodyElt);
     this.tableHeaderElt.appendChild(this.tableHeaderRowElt);
     this.tableNodeElts.forEach((nodeElt) => {
-      this.tableBodyElt.firstElementChild!.firstElementChild!.appendChild(nodeElt);
+      ((this.tableBodyElt.firstElementChild as HTMLElement).firstElementChild as HTMLElement).appendChild(nodeElt);
     });
 
     this.setTableBodyHeight();
@@ -425,7 +425,7 @@ export abstract class AbstractTable<T> {
 
   private displayVisibleNodes(startIndex: number): void {
     const offsetY = startIndex * this.options.nodeHeight;
-    (this.tableBodyElt.firstElementChild!
+    ((this.tableBodyElt.firstElementChild as HTMLElement)
       .firstElementChild as HTMLElement).style.transform = `translateY(${offsetY}px)`;
   }
 

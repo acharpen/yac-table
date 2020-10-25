@@ -7,7 +7,7 @@ export interface TestObject {
 
 // ////////////////////////////////////////////////////////////////////////////
 
-export const defaultFormatter = (field: keyof TestObject, obj: TestObject) => {
+export const defaultFormatter = (field: keyof TestObject, obj: TestObject): DocumentFragment => {
   const fragment = document.createDocumentFragment();
 
   const value = obj[field];
@@ -18,7 +18,7 @@ export const defaultFormatter = (field: keyof TestObject, obj: TestObject) => {
   return fragment;
 };
 
-export const linkFormatter = (field: keyof TestObject, obj: TestObject) => {
+export const linkFormatter = (field: keyof TestObject, obj: TestObject): DocumentFragment => {
   const fragment = document.createDocumentFragment();
 
   const value = obj[field];
