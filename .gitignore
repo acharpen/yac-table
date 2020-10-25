@@ -1,13 +1,7 @@
+.parcel-cache/
 coverage/
 dist/
 lib/
-lint-rules/*.js
 node_modules/
-.cache/
 
-.settings/
-.vscode/launch.json
-.vscode/tasks.json
-
-npm-debug.log
 yarn-error.log
