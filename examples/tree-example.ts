@@ -10,7 +10,7 @@ const table = new TreeTable<ExampleObject>(tableContainerElt, {
 });
 
 tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
-  const node = event.detail.node;
+  const { node } = event.detail;
   if (node.isSelected) {
     table.deselectNodes([node.id]);
   } else {
@@ -19,7 +19,7 @@ tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: E
 });
 
 tableContainerElt.addEventListener('onToggleNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
-  const node = event.detail.node;
+  const { node } = event.detail;
   if (node.isExpanded) {
     table.collapseNodes([node.id]);
   } else {

@@ -7,7 +7,7 @@ const tableContainerElt = document.getElementById('table') as HTMLElement;
 const table = new ListTable<ExampleObject>(tableContainerElt, { columnOptions, tableOptions });
 
 tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
-  const node = event.detail.node;
+  const { node } = event.detail;
   if (node.isSelected) {
     table.deselectNodes([node.id]);
   } else {
