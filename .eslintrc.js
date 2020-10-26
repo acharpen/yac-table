@@ -20,6 +20,7 @@ module.exports = {
     camelcase: 'off',
     'default-param-last': 'off',
     'dot-notation': 'off',
+    'no-console': ['error'],
     'no-dupe-class-members': 'off',
     'no-duplicate-imports': 'off',
     'no-invalid-this': 'off',
