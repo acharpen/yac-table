@@ -26,11 +26,11 @@ export class TreeTable<T> extends AbstractTable<T> {
     obj: TreeNode<T>,
     options: { position: 'top' | 'bottom'; refNodeId?: number } | { position: 'child' | 'parent'; refNodeId: number }
   ): void {
-    const isAbove = options.position === 'top';
+    const isAbove = options.position === 'top' || options.position === 'parent';
     const refNodeIndex = options.refNodeId != null ? this.nodes.findIndex((node) => node.id === options.refNodeId) : -1;
     const newNodeIndex =
       refNodeIndex !== -1 ? (isAbove ? refNodeIndex : refNodeIndex + 1) : isAbove ? 0 : this.nodes.length;
-    const refNode = this.nodes[refNodeIndex];
+    const refNode = isAbove ? this.nodes[newNodeIndex] : this.nodes[newNodeIndex - 1];
     const [newNode] = this.createNodes([obj]);
 
     // Insert new node
