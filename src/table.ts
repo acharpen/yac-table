@@ -34,8 +34,8 @@ export abstract class AbstractTable<T> {
 
   private activeNodeIndexes: number[];
   private counter: number;
-  private currentFilter: { matchFn: (value: T) => boolean } | null;
-  private currentSort: { column: Column<T>; mode: ColumnSortMode; compareFn: (a: T, b: T) => number } | null;
+  private currentFilter: { matchFunc: (value: T) => boolean } | null;
+  private currentSort: { column: Column<T>; mode: ColumnSortMode; compareFunc: (a: T, b: T) => number } | null;
   private currentScrollX: number;
   private currentScrollY: number;
   private isResizing: boolean;
@@ -111,8 +111,8 @@ export abstract class AbstractTable<T> {
     this.removeListeners();
   }
 
-  public filter(matchFn: (value: T) => boolean): void {
-    this.currentFilter = { matchFn };
+  public filter(matchFunc: (value: T) => boolean): void {
+    this.currentFilter = { matchFunc };
 
     this.updateNodes({ performFiltering: true });
   }
@@ -121,11 +121,11 @@ export abstract class AbstractTable<T> {
     this.toggleNodesSelection(nodeIds, true);
   }
 
-  public sort(columnField: keyof T, mode: ColumnSortMode, compareFn: (a: T, b: T) => number): void {
+  public sort(columnField: keyof T, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): void {
     const targetColumn = this.columns.find((column) => column.field === columnField);
 
     if (targetColumn?.sortFeature != null && targetColumn.sortFeature) {
-      this.currentSort = { column: targetColumn, mode, compareFn };
+      this.currentSort = { column: targetColumn, mode, compareFunc };
 
       this.updateNodes({ performSorting: true });
     }
@@ -283,10 +283,10 @@ export abstract class AbstractTable<T> {
 
   protected updateNodes(options?: { performFiltering?: boolean; performSorting?: boolean }): void {
     if (options?.performFiltering != null && options.performFiltering && this.currentFilter) {
-      this.handleFilter(this.currentFilter.matchFn);
+      this.handleFilter(this.currentFilter.matchFunc);
     }
     if (options?.performSorting != null && options.performSorting && this.currentSort) {
-      this.nodes = this.handleSort(this.currentSort.column, this.currentSort.mode, this.currentSort.compareFn);
+      this.nodes = this.handleSort(this.currentSort.column, this.currentSort.mode, this.currentSort.compareFunc);
     }
 
     this.setActiveNodeIndexes();
@@ -451,12 +451,12 @@ export abstract class AbstractTable<T> {
     return { sortAscElt: sortAscElt as HTMLElement, sortDescElt: sortDescElt as HTMLElement };
   }
 
-  private handleFilter(matchFn: (value: T) => boolean): void {
+  private handleFilter(matchFunc: (value: T) => boolean): void {
     const nodesLength = this.nodes.length;
 
     for (let i = nodesLength - 1; i >= 0; i--) {
       const node = this.nodes[i];
-      node.isMatching = matchFn(node.value);
+      node.isMatching = matchFunc(node.value);
 
       if (!node.isMatching && !node.isLeaf) {
         let nextnodeIndex = i + 1;
@@ -472,8 +472,8 @@ export abstract class AbstractTable<T> {
     }
   }
 
-  private handleSort(column: Column<T>, mode: ColumnSortMode, compareFn: (a: T, b: T) => number): Node<T>[] {
-    const compareWithOrderFn = (a: T, b: T): number => compareFn(a, b) * (mode === 'desc' ? -1 : 1);
+  private handleSort(column: Column<T>, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): Node<T>[] {
+    const compareWithOrderFunc = (a: T, b: T): number => compareFunc(a, b) * (mode === 'desc' ? -1 : 1);
     const nodesLength = this.nodes.length;
     const rootNodes = [];
     const sortedChildrenByParentNodeId = new Map<number, Node<T>[]>();
@@ -494,7 +494,7 @@ export abstract class AbstractTable<T> {
 
       sortedChildrenByParentNodeId.set(
         node.id,
-        children.sort((a, b) => compareWithOrderFn(a.value, b.value) * -1)
+        children.sort((a, b) => compareWithOrderFunc(a.value, b.value) * -1)
       );
 
       if (node.level === 0) {
@@ -503,7 +503,7 @@ export abstract class AbstractTable<T> {
     }
 
     const sortedNodes = [];
-    const stack = rootNodes.sort((a, b) => compareWithOrderFn(a.value, b.value) * -1);
+    const stack = rootNodes.sort((a, b) => compareWithOrderFunc(a.value, b.value) * -1);
 
     while (stack.length > 0) {
       const node = stack.pop() as Node<T>;
