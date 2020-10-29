@@ -256,11 +256,9 @@ export abstract class AbstractTable<T> {
   }
 
   protected setActiveNodeIndexes(): void {
-    const nodesLength = this.nodes.length;
-
     this.activeNodeIndexes = [];
 
-    for (let i = 0; i < nodesLength; i++) {
+    for (let i = 0, len = this.nodes.length; i < len; i++) {
       const node = this.nodes[i];
 
       if (node.isMatching && !node.isHidden) {
@@ -518,9 +516,7 @@ export abstract class AbstractTable<T> {
   }
 
   private hideUnusedTableNodeElts(): void {
-    const nodeEltsLength = this.tableNodeElts.length;
-
-    for (let i = this.visibleNodeIndexes.length; i < nodeEltsLength; i++) {
+    for (let i = this.visibleNodeIndexes.length, len = this.tableNodeElts.length; i < len; i++) {
       this.tableNodeElts[i].classList.add('hidden');
     }
   }
@@ -540,10 +536,9 @@ export abstract class AbstractTable<T> {
   private populateVisibleNodes(): void {
     const columnsLength = this.columns.length;
     const defaultCellColor = { backgroundColor: '', color: '' };
-    const visibleNodesLength = this.visibleNodeIndexes.length;
     let hasSelectedNodes = false;
 
-    for (let i = 0; i < visibleNodesLength; i++) {
+    for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
       const node = this.nodes[this.visibleNodeIndexes[i]];
       const nodeElt = this.tableNodeElts[i];
       const rowColor = this.options.rowColor?.(node.value);
@@ -585,8 +580,7 @@ export abstract class AbstractTable<T> {
   }
 
   private resetTableNodeElts(): void {
-    const nodeEltsLength = this.tableNodeElts.length;
-    for (let i = 0; i < nodeEltsLength; i++) {
+    for (let i = 0, len = this.tableNodeElts.length; i < len; i++) {
       this.tableNodeElts[i].classList.remove('hidden', 'selected');
     }
 
@@ -630,9 +624,8 @@ export abstract class AbstractTable<T> {
     if (availableWidth > 0) {
       const columnWidth = availableWidth / this.columns.filter((column) => !column.width).length;
       const formattedColumnWidth = `${columnWidth}px`;
-      const headerRowEltsLength = this.tableHeaderRowElt.children.length;
 
-      for (let i = 0; i < headerRowEltsLength; i++) {
+      for (let i = 0, len = this.tableHeaderRowElt.children.length; i < len; i++) {
         const elt = this.tableHeaderRowElt.children[i] as HTMLElement;
 
         if (!elt.style.width) {
@@ -677,19 +670,16 @@ export abstract class AbstractTable<T> {
 
   private updateFrozenColumnPosition(): void {
     const formattedOffset = `${this.tableHeaderElt.scrollLeft}px`;
-    const nodeEltsLength = this.tableNodeElts.length;
 
     (this.tableHeaderRowElt.children[0] as HTMLElement).style.left = formattedOffset;
 
-    for (let i = 0; i < nodeEltsLength; i++) {
+    for (let i = 0, len = this.tableNodeElts.length; i < len; i++) {
       (this.tableNodeElts[i].children[0] as HTMLElement).style.left = formattedOffset;
     }
   }
 
   private updateTableBodyColumnWidth(columnIndex: number, width: string): void {
-    const nodeEltsLength = this.tableNodeElts.length;
-
-    for (let i = 0; i < nodeEltsLength; i++) {
+    for (let i = 0, len = this.tableNodeElts.length; i < len; i++) {
       (this.tableNodeElts[i].children[columnIndex] as HTMLElement).style.width = width;
     }
   }
@@ -701,11 +691,9 @@ export abstract class AbstractTable<T> {
   }
 
   private updateUnfrozenColumns(formattedWidth: string): void {
-    const nodeEltsLength = this.tableNodeElts.length;
-
     (this.tableHeaderRowElt.children[1] as HTMLElement).style.paddingLeft = formattedWidth;
 
-    for (let i = 0; i < nodeEltsLength; i++) {
+    for (let i = 0, len = this.tableNodeElts.length; i < len; i++) {
       (this.tableNodeElts[i].children[1] as HTMLElement).style.paddingLeft = formattedWidth;
     }
   }
@@ -910,9 +898,7 @@ export abstract class AbstractTable<T> {
   }
 
   private removeListenersOnTableHeaderCells(): void {
-    const headerRowEltsLength = this.tableHeaderRowElt.children.length;
-
-    for (let i = 0; i < headerRowEltsLength; i++) {
+    for (let i = 0, len = this.tableHeaderRowElt.children.length; i < len; i++) {
       this.removeListenersOnTableHeaderCell(this.tableHeaderRowElt.children[i] as HTMLElement, i);
     }
   }

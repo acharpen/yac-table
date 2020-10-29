@@ -133,9 +133,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   protected updateVisibleNodes(): void {
     super.updateVisibleNodes();
 
-    const visibleNodesLength = this.visibleNodeIndexes.length;
-
-    for (let i = 0; i < visibleNodesLength; i++) {
+    for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
       const node = this.nodes[this.visibleNodeIndexes[i]];
       const firstCellElt = this.tableNodeElts[i].children[0];
       const cellContentElt = firstCellElt.lastElementChild as HTMLElement;
@@ -179,11 +177,10 @@ export class TreeTable<T> extends AbstractTable<T> {
   }
 
   private createNodes(objs: TreeNode<T>[]): Node<T>[] {
-    const objsLength = objs.length;
     const nodes = [];
     const stack = [];
 
-    for (let i = objsLength - 1; i >= 0; i--) {
+    for (let i = objs.length - 1; i >= 0; i--) {
       stack.push({ treeNode: objs[i], level: 0 });
     }
 
@@ -198,7 +195,7 @@ export class TreeTable<T> extends AbstractTable<T> {
         id: this.generateId(),
         isExpanded: false,
         isHidden: level > 0,
-        isLeaf: treeNode.children.length === 0,
+        isLeaf: childObjsLength === 0,
         isMatching: true,
         isSelected: false,
         value: treeNode.value

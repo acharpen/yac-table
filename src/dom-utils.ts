@@ -23,9 +23,7 @@ export class DomUtils {
   }
 
   public static getEltByClassName(elts: HTMLCollection, className: string): HTMLElement | null {
-    const eltsLength = elts.length;
-
-    for (let i = 0; i < eltsLength; i++) {
+    for (let i = 0, len = elts.length; i < len; i++) {
       const elt = elts[i];
 
       if (elt.classList.contains(className)) {
