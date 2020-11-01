@@ -168,8 +168,7 @@ export abstract class AbstractTable<T> {
     newColumnIndex: number
   ): void {
     const isNewLastColumn = newColumnIndex === this.columns.length;
-    const newColumnId = this.columns.map((column) => column.id).reduce((acc, x) => (x > acc ? x : acc), 0) + 1;
-    const newColumn: Column<T> = { ...columnOption, id: newColumnId, sortMode: 'default' };
+    const newColumn: Column<T> = { ...columnOption, sortMode: 'default' };
     const newColumnWidth = this.convertInPixel(columnOption.width);
 
     const insertNewElt = (elt: HTMLElement, parentElt: HTMLElement): void => {
@@ -588,7 +587,7 @@ export abstract class AbstractTable<T> {
   }
 
   private setColumnSortMode(targetColumn: Column<T>, sortMode: ColumnSortMode): void {
-    const targetColumnIndex = this.columns.findIndex((column) => column.id === targetColumn.id);
+    const targetColumnIndex = this.columns.findIndex((column) => column.field === targetColumn.field);
     const headerCellElt = this.tableHeaderRowElt.children[targetColumnIndex] as HTMLElement;
     const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
 

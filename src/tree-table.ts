@@ -88,7 +88,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
     const elt = super.createTableCell(column, ctx);
 
-    if (column.id === this.columns[0].id) {
+    if (column.field === this.columns[0].field) {
       this.addExpandTogglerElt(elt, ctx.nodeIndex);
     }
 
