@@ -3,7 +3,7 @@ import { ColumnWidthUnit } from './column-utils';
 export interface ColumnOptions<T> {
   align: 'center' | 'left' | 'right';
   field: keyof T;
-  formatter: (field: keyof T, obj: T) => DocumentFragment;
+  formatter: (field: keyof T, item: T) => DocumentFragment;
   sortFeature: boolean;
   title: string;
   width?: { value: number; unit: ColumnWidthUnit };

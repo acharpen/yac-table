@@ -23,7 +23,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   }
 
   public addData(
-    obj: TreeNode<T>,
+    item: TreeNode<T>,
     options: { position: 'top' | 'bottom'; refNodeId?: number } | { position: 'child' | 'parent'; refNodeId: number }
   ): void {
     const isAbove = options.position === 'top' || options.position === 'parent';
@@ -31,7 +31,7 @@ export class TreeTable<T> extends AbstractTable<T> {
     const newNodeIndex =
       refNodeIndex !== -1 ? (isAbove ? refNodeIndex : refNodeIndex + 1) : isAbove ? 0 : this.nodes.length;
     const refNode = isAbove ? this.nodes[newNodeIndex] : this.nodes[newNodeIndex - 1];
-    const [newNode] = this.createNodes([obj]);
+    const [newNode] = this.createNodes([item]);
 
     // Insert new node
     this.nodes.splice(newNodeIndex, 0, newNode);
@@ -81,8 +81,8 @@ export class TreeTable<T> extends AbstractTable<T> {
     return this.nodes.map((node) => this.createNodeView(node));
   }
 
-  public setData(objs: TreeNode<T>[]): void {
-    this.setNodes(this.createNodes(objs));
+  public setData(items: TreeNode<T>[]): void {
+    this.setNodes(this.createNodes(items));
   }
 
   protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
@@ -176,18 +176,18 @@ export class TreeTable<T> extends AbstractTable<T> {
     return elt;
   }
 
-  private createNodes(objs: TreeNode<T>[]): Node<T>[] {
+  private createNodes(items: TreeNode<T>[]): Node<T>[] {
     const nodes = [];
     const stack = [];
 
-    for (let i = objs.length - 1; i >= 0; i--) {
-      stack.push({ treeNode: objs[i], level: 0 });
+    for (let i = items.length - 1; i >= 0; i--) {
+      stack.push({ treeNode: items[i], level: 0 });
     }
 
     while (stack.length > 0) {
       const { treeNode, level } = stack.pop() as { treeNode: TreeNode<T>; level: number };
-      const childObjs = treeNode.children;
-      const childObjsLength = childObjs.length;
+      const childItems = treeNode.children;
+      const childItemsLength = childItems.length;
       const nextLevel = level + 1;
 
       nodes.push({
@@ -195,14 +195,14 @@ export class TreeTable<T> extends AbstractTable<T> {
         id: this.generateId(),
         isExpanded: false,
         isHidden: level > 0,
-        isLeaf: childObjsLength === 0,
+        isLeaf: childItemsLength === 0,
         isMatching: true,
         isSelected: false,
         value: treeNode.value
       });
 
-      for (let i = childObjsLength - 1; i >= 0; i--) {
-        stack.push({ treeNode: childObjs[i], level: nextLevel });
+      for (let i = childItemsLength - 1; i >= 0; i--) {
+        stack.push({ treeNode: childItems[i], level: nextLevel });
       }
     }
 

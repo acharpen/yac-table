@@ -12,12 +12,12 @@ export class ListTable<T> extends AbstractTable<T> {
     super(rootElt, options);
   }
 
-  public addData(obj: T, { position, refNodeId }: { position: 'top' | 'bottom'; refNodeId?: number }): void {
+  public addData(item: T, { position, refNodeId }: { position: 'top' | 'bottom'; refNodeId?: number }): void {
     const isAbove = position === 'top';
     const refNodeIndex = refNodeId != null ? this.nodes.findIndex((node) => node.id === refNodeId) : -1;
     const newNodeIndex =
       refNodeIndex !== -1 ? (isAbove ? refNodeIndex : refNodeIndex + 1) : isAbove ? 0 : this.nodes.length;
-    const [newNode] = this.createNodes([obj]);
+    const [newNode] = this.createNodes([item]);
 
     this.nodes.splice(newNodeIndex, 0, newNode);
 
@@ -28,8 +28,8 @@ export class ListTable<T> extends AbstractTable<T> {
     return this.nodes.map((node) => this.createNodeView(node));
   }
 
-  public setData(objs: T[]): void {
-    this.setNodes(this.createNodes(objs));
+  public setData(items: T[]): void {
+    this.setNodes(this.createNodes(items));
   }
 
   protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
@@ -37,8 +37,8 @@ export class ListTable<T> extends AbstractTable<T> {
     this.rootElt.dispatchEvent(event);
   }
 
-  private createNodes(objs: T[]): Node<T>[] {
-    return objs.map((obj) => ({
+  private createNodes(items: T[]): Node<T>[] {
+    return items.map((item) => ({
       id: this.generateId(),
       isExpanded: false,
       isHidden: false,
@@ -46,7 +46,7 @@ export class ListTable<T> extends AbstractTable<T> {
       isMatching: true,
       isSelected: false,
       level: 0,
-      value: obj
+      value: item
     }));
   }
 

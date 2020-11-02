@@ -3,8 +3,8 @@ export interface TableOptions<T> {
   nodeHeight: number;
   resizeFeature: boolean;
   visibleNodesCount: number;
-  cellColor?: (obj: T, columnField: keyof T) => { backgroundColor?: string; color?: string } | null;
-  rowColor?: (obj: T) => { backgroundColor?: string; color?: string } | null;
+  cellColor?: (item: T, columnField: keyof T) => { backgroundColor?: string; color?: string } | null;
+  rowColor?: (item: T) => { backgroundColor?: string; color?: string } | null;
 }
 
 export type ListTableOptions<T> = TableOptions<T>;
