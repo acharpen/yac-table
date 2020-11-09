@@ -1,6 +1,5 @@
 #!/bin/sh
 
-BUNDLE_DECLARATION_FILE=index.d.ts
 BUNDLE_DIR=lib
 BUNDLE_FILE=index.js
 
