@@ -12,9 +12,9 @@ const table = new TreeTable<ExampleObject>(tableContainerElt, {
 tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {
   const { node } = event.detail;
   if (node.isSelected) {
-    table.deselectNodes([node.id]);
+    table.deselectNodes([node.id], { withChildren: true, withParents: false });
   } else {
-    table.selectNodes([node.id]);
+    table.selectNodes([node.id], { withChildren: true, withParents: false });
   }
 });
 

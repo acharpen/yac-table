@@ -67,6 +67,20 @@ export class TreeTable<T> extends AbstractTable<T> {
     this.toggleNodesVisibility(nodeIds, { isExpanded: false });
   }
 
+  public deselectNodes(
+    nodeIds: number[],
+    { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number } = {
+      withChildren: false,
+      withParents: false
+    }
+  ): void {
+    super.deselectNodes(
+      withChildren === false && withParents === false
+        ? nodeIds
+        : this.handleToggleNodes(nodeIds, { withChildren, withParents })
+    );
+  }
+
   public destroy(): void {
     super.destroy();
 
@@ -79,6 +93,20 @@ export class TreeTable<T> extends AbstractTable<T> {
 
   public getNodes(): TreeNodeView<T>[] {
     return this.nodes.map((node) => this.createNodeView(node));
+  }
+
+  public selectNodes(
+    nodeIds: number[],
+    { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number } = {
+      withChildren: false,
+      withParents: false
+    }
+  ): void {
+    super.selectNodes(
+      withChildren === false && withParents === false
+        ? nodeIds
+        : this.handleToggleNodes(nodeIds, { withChildren, withParents })
+    );
   }
 
   public setData(items: TreeNode<T>[]): void {
@@ -216,6 +244,75 @@ export class TreeTable<T> extends AbstractTable<T> {
   private dispatchEventToggleNode(originalEvent: Event, node: Node<T>): void {
     const event = DomUtils.createEvent('onToggleNode', { event: originalEvent, node: this.createNodeView(node) });
     this.rootElt.dispatchEvent(event);
+  }
+
+  private handleToggleNodes(
+    nodeIds: number[],
+    { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number } = {
+      withChildren: false,
+      withParents: false
+    }
+  ): number[] {
+    const allNodeIds = new Set<number>(nodeIds);
+    const nodesLength = this.nodes.length;
+    const targetNodes = nodeIds.map((nodeId) => {
+      const nodeIndex = this.nodes.findIndex((node) => node.id === nodeId);
+
+      return {
+        nodeIndex,
+        node: this.nodes[nodeIndex]
+      };
+    });
+
+    const addChildren = ({ node, nodeIndex }: { node: Node<T>; nodeIndex: number }, maxChildren?: number): void => {
+      let count = maxChildren ?? -1;
+      let nextnodeIndex = nodeIndex + 1;
+
+      while (count !== 0 && nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+        allNodeIds.add(nextnodeIndex);
+        count--;
+        nextnodeIndex++;
+      }
+    };
+
+    const addParent = ({ node, nodeIndex }: { node: Node<T>; nodeIndex: number }, maxParent?: number): void => {
+      let count = maxParent ?? -1;
+      let nextnodeIndex = nodeIndex - 1;
+
+      while (count !== 0 && nextnodeIndex >= 0) {
+        if (this.nodes[nextnodeIndex].level < node.level) {
+          allNodeIds.add(nextnodeIndex);
+
+          // A node has only one parent at level 0
+          count = this.nodes[nextnodeIndex].level === 0 ? 0 : count - 1;
+        }
+        nextnodeIndex--;
+      }
+    };
+
+    if (withChildren !== false) {
+      switch (withChildren) {
+        case true:
+          targetNodes.forEach((targetNode) => addChildren(targetNode));
+          break;
+
+        default:
+          targetNodes.forEach((targetNode) => addChildren(targetNode, withChildren));
+      }
+    }
+
+    if (withParents !== false) {
+      switch (withParents) {
+        case true:
+          targetNodes.forEach((targetNode) => addParent(targetNode));
+          break;
+
+        default:
+          targetNodes.forEach((targetNode) => addParent(targetNode, withParents));
+      }
+    }
+
+    return [...allNodeIds];
   }
 
   private manageListenersOnNodeToggles(mode: EventListenerManageMode, elt: HTMLElement, nodeIndex: number): void {
