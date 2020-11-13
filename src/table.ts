@@ -644,7 +644,7 @@ export abstract class AbstractTable<T> {
   }
 
   private setTableBodyHeight(): void {
-    this.tableBodyElt.style.height = `${this.options.visibleNodesCount * this.options.nodeHeight}px`;
+    this.tableBodyElt.style.maxHeight = `${this.options.visibleNodesCount * this.options.nodeHeight}px`;
   }
 
   private setVirtualTableHeight(): void {
