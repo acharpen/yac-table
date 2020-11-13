@@ -586,14 +586,14 @@ export abstract class AbstractTable<T> {
   }
 
   private resetColumnSortHandles(): void {
-    this.columns
-      .filter((column) => column.sortFeature)
-      .forEach((_, i) => {
+    for (let i = 0, len = this.columns.length; i < len; i++) {
+      if (this.columns[i].sortFeature) {
         const headerCellElt = this.tableHeaderRowElt.children[i] as HTMLElement;
         const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
         sortAscElt.classList.remove('active');
         sortDescElt.classList.remove('active');
-      });
+      }
+    }
   }
 
   private resetTableNodeElts(): void {
