@@ -4,16 +4,13 @@ export enum EventListenerManageMode {
 }
 
 export class DomUtils {
-  public static createDiv(classes?: string[]): HTMLElement {
-    return DomUtils.createElt('div', classes);
+  public static createDiv(...classes: string[]): HTMLElement {
+    return DomUtils.createElt('div', ...classes);
   }
 
-  public static createElt(tagName: string, classes?: string[]): HTMLElement {
+  public static createElt(tagName: string, ...classes: string[]): HTMLElement {
     const elt = document.createElement(tagName);
-
-    if (classes) {
-      elt.classList.add(...classes);
-    }
+    elt.classList.add(...classes);
 
     return elt;
   }

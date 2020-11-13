@@ -149,8 +149,8 @@ export abstract class AbstractTable<T> {
   // ////////////////////////////////////////////////////////////////////////////
 
   protected createTableCell(column: Column<T>, _ctx: { nodeIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv([AbstractTable.CELL_CLASS]);
-    elt.appendChild(DomUtils.createDiv([AbstractTable.CELL_CONTENT_CLASS, column.align]));
+    const elt = DomUtils.createDiv(AbstractTable.CELL_CLASS);
+    elt.appendChild(DomUtils.createDiv(AbstractTable.CELL_CONTENT_CLASS, column.align));
 
     if (column.sortFeature) {
       elt.classList.add('sortable');
@@ -338,7 +338,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableBody(): HTMLElement {
-    const elt = DomUtils.createDiv([AbstractTable.BODY_CLASS]);
+    const elt = DomUtils.createDiv(AbstractTable.BODY_CLASS);
     elt.appendChild(DomUtils.createDiv()).appendChild(DomUtils.createDiv());
 
     if (this.options.resizeFeature) {
@@ -351,7 +351,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeader(): HTMLElement {
-    const elt = DomUtils.createDiv([AbstractTable.HEADER_CLASS]);
+    const elt = DomUtils.createDiv(AbstractTable.HEADER_CLASS);
 
     if (this.options.resizeFeature) {
       elt.classList.add('resizable');
@@ -361,14 +361,14 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeaderCell(column: Column<T>, ctx: { columnIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv([AbstractTable.CELL_CLASS]);
+    const elt = DomUtils.createDiv(AbstractTable.CELL_CLASS);
     elt.appendChild(this.createTableHeaderCellContent(column));
 
     this.manageListenersOnTableHeaderCell(EventListenerManageMode.ADD, elt, ctx.columnIndex);
 
     if (column.sortFeature) {
-      const sortAscElt = DomUtils.createDiv([AbstractTable.SORT_ASC_HANDLE_CLASS]);
-      const sortDescElt = DomUtils.createDiv([AbstractTable.SORT_DESC_HANDLE_CLASS]);
+      const sortAscElt = DomUtils.createDiv(AbstractTable.SORT_ASC_HANDLE_CLASS);
+      const sortDescElt = DomUtils.createDiv(AbstractTable.SORT_DESC_HANDLE_CLASS);
       elt.classList.add('sortable');
       elt.appendChild(sortAscElt);
       elt.appendChild(sortDescElt);
@@ -377,7 +377,7 @@ export abstract class AbstractTable<T> {
     }
 
     if (this.options.resizeFeature) {
-      const resizeHandleElt = DomUtils.createDiv([AbstractTable.RESIZE_HANDLE_CLASS]);
+      const resizeHandleElt = DomUtils.createDiv(AbstractTable.RESIZE_HANDLE_CLASS);
       elt.appendChild(resizeHandleElt);
 
       this.manageListenersOnResizeHandle(EventListenerManageMode.ADD, resizeHandleElt, ctx.columnIndex);
@@ -387,14 +387,14 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeaderCellContent(column: Column<T>): HTMLElement {
-    const elt = DomUtils.createDiv([AbstractTable.CELL_CONTENT_CLASS, column.align]);
+    const elt = DomUtils.createDiv(AbstractTable.CELL_CONTENT_CLASS, column.align);
     elt.textContent = column.title;
 
     return elt;
   }
 
   private createTableHeaderRow(): HTMLElement {
-    const elt = DomUtils.createDiv([AbstractTable.ROW_CLASS]);
+    const elt = DomUtils.createDiv(AbstractTable.ROW_CLASS);
 
     this.columns.forEach((column, i) => {
       elt.appendChild(this.createTableHeaderCell(column, { columnIndex: i }));
@@ -404,7 +404,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableNode(ctx: { nodeIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv([AbstractTable.ROW_CLASS]);
+    const elt = DomUtils.createDiv(AbstractTable.ROW_CLASS);
     elt.style.height = `${this.options.nodeHeight}px`;
 
     this.manageListenersOnTableNode(EventListenerManageMode.ADD, elt, ctx.nodeIndex);
@@ -624,7 +624,7 @@ export abstract class AbstractTable<T> {
       const columnWidth = availableWidth / this.columns.filter((column) => !column.width).length;
       const formattedColumnWidth = `${columnWidth}px`;
 
-      for (let i = 0, len = this.tableHeaderRowElt.children.length; i < len; i++) {
+      for (let i = 0, len = this.columns.length; i < len; i++) {
         const elt = this.tableHeaderRowElt.children[i] as HTMLElement;
 
         if (!elt.style.width) {
@@ -897,7 +897,7 @@ export abstract class AbstractTable<T> {
   }
 
   private removeListenersOnTableHeaderCells(): void {
-    for (let i = 0, len = this.tableHeaderRowElt.children.length; i < len; i++) {
+    for (let i = 0, len = this.columns.length; i < len; i++) {
       this.removeListenersOnTableHeaderCell(this.tableHeaderRowElt.children[i] as HTMLElement, i);
     }
   }

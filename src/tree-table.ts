@@ -196,7 +196,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   }
 
   private createExpandToggler(nodeIndex: number): HTMLElement {
-    const elt = DomUtils.createDiv([TreeTable.EXPAND_TOGGLER_CLASS]);
+    const elt = DomUtils.createDiv(TreeTable.EXPAND_TOGGLER_CLASS);
     elt.appendChild(DomUtils.createElt('i'));
 
     this.manageListenersOnNodeToggles(EventListenerManageMode.ADD, elt, nodeIndex);
