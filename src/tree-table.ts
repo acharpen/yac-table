@@ -116,7 +116,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
     const elt = super.createTableCell(column, ctx);
 
-    if (column.field === this.columns[0].field) {
+    if (column.id === this.columns[0].id) {
       this.addExpandTogglerElt(elt, ctx.nodeIndex);
     }
 
@@ -144,7 +144,7 @@ export class TreeTable<T> extends AbstractTable<T> {
     super.handleAddColumn(columnToAddOption, newColumnIndex);
   }
 
-  protected handleDeleteColumn(columnField: keyof T, columnIndex: number): void {
+  protected handleDeleteColumn(columnIndex: number): void {
     if (columnIndex === 0) {
       this.removeListenersOnNodeToggles();
 
@@ -155,7 +155,7 @@ export class TreeTable<T> extends AbstractTable<T> {
       }
     }
 
-    super.handleDeleteColumn(columnField, columnIndex);
+    super.handleDeleteColumn(columnIndex);
   }
 
   protected updateVisibleNodes(): void {
