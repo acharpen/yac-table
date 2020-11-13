@@ -1,5 +1,5 @@
 export interface TableOptions<T> {
-  frozenFirstColumn: boolean;
+  frozenColumns: number;
   nodeHeight: number;
   resizeFeature: boolean;
   visibleNodesCount: number;

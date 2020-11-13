@@ -38,7 +38,6 @@ $frozen-column--z-index: calc(#{$z-index-base} + 1);
 
   &.frozen {
     height: 100%;
-    left: 0;
     position: absolute;
     z-index: $frozen-column--z-index;
   }

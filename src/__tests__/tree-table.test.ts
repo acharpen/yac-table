@@ -8,7 +8,7 @@ const columnOptions = [
   { align: 'left' as const, field: 'col1' as const, formatter: defaultFormatter, sortFeature: true, title: 'col1' },
   { align: 'left' as const, field: 'col2' as const, formatter: defaultFormatter, sortFeature: true, title: 'col2' }
 ];
-const tableOptions = { frozenFirstColumn: true, nodeHeight: 40, resizeFeature: true, visibleNodesCount: 10 };
+const tableOptions = { frozenColumns: 1, nodeHeight: 40, resizeFeature: true, visibleNodesCount: 10 };
 
 const table = new TreeTable<TestObject>(document.body, {
   columnOptions,

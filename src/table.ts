@@ -53,7 +53,7 @@ export abstract class AbstractTable<T> {
     this.currentScrollY = 0;
     this.isResizing = false;
     this.nodes = [];
-    this.options = { ...tableOptions, frozenFirstColumn: tableOptions.frozenFirstColumn && this.columns.length > 1 };
+    this.options = { ...tableOptions, frozenColumns: this.adjustFrozenColumns(tableOptions.frozenColumns) };
     this.virtualNodesCount = this.options.visibleNodesCount + AbstractTable.VIRTUAL_SCROLL_PADDING * 2;
     this.visibleNodeIndexes = [];
 
@@ -69,8 +69,8 @@ export abstract class AbstractTable<T> {
 
     this.setInitialWidths();
 
-    if (this.options.frozenFirstColumn) {
-      this.freezeFirstColumn();
+    if (this.options.frozenColumns) {
+      this.freezeColumns();
     }
   }
 
@@ -181,22 +181,27 @@ export abstract class AbstractTable<T> {
       elt.style.width = `${newColumnWidth}px`;
     };
 
+    const unfreeze = (elt: HTMLElement): void => {
+      for (let i = 0; i < this.options.frozenColumns; i++) {
+        elt.children[i].classList.remove('frozen');
+        (elt.children[i] as HTMLElement).style.left = '';
+      }
+    };
+
     //
     this.columns.splice(newColumnIndex, 0, newColumn);
 
     // Clear frozen context
-    if (this.options.frozenFirstColumn && (newColumnIndex === 0 || newColumnIndex === 1)) {
-      this.updateUnfrozenColumns('');
+    if (this.options.frozenColumns && newColumnIndex <= this.options.frozenColumns) {
+      this.updateFirstUnfrozenColumnOffset('');
 
-      if (newColumnIndex === 0) {
-        (this.tableHeaderRowElt.children[0] as HTMLElement).classList.remove('frozen');
+      if (newColumnIndex < this.options.frozenColumns) {
+        unfreeze(this.tableHeaderRowElt);
         this.tableNodeElts.forEach((nodeElt) => {
-          (nodeElt.children[0] as HTMLElement).classList.remove('frozen');
+          unfreeze(nodeElt);
         });
       }
     }
-
-    this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
 
     // Add new elements
     insertNewElt(this.createTableHeaderCell(newColumn, { columnIndex: newColumnIndex }), this.tableHeaderRowElt);
@@ -205,11 +210,11 @@ export abstract class AbstractTable<T> {
     });
 
     // Update frozen context
-    if (this.options.frozenFirstColumn && (newColumnIndex === 0 || newColumnIndex === 1)) {
-      if (newColumnIndex === 0) {
-        this.freezeFirstColumn();
+    if (this.options.frozenColumns && newColumnIndex <= this.options.frozenColumns) {
+      if (newColumnIndex < this.options.frozenColumns) {
+        this.freezeColumns();
       } else {
-        this.updateUnfrozenColumns((this.tableHeaderRowElt.children[0] as HTMLElement).style.width);
+        this.updateFirstUnfrozenColumnOffset();
       }
     }
 
@@ -225,11 +230,12 @@ export abstract class AbstractTable<T> {
     this.columns = this.columns.filter((column) => column.field !== columnField);
 
     // Clear frozen context
-    if (this.options.frozenFirstColumn && columnIndex === 0) {
-      this.updateUnfrozenColumns('');
+    if (this.options.frozenColumns && columnIndex < this.options.frozenColumns) {
+      this.updateFirstUnfrozenColumnOffset('');
     }
 
-    this.options.frozenFirstColumn = this.options.frozenFirstColumn && this.columns.length > 1;
+    // Adjust 'frozenColumns' option if there are no longer enough columns
+    this.options.frozenColumns = this.adjustFrozenColumns(this.options.frozenColumns);
 
     // Remove elements
     const cellElt = this.tableHeaderRowElt.childNodes[columnIndex];
@@ -241,11 +247,11 @@ export abstract class AbstractTable<T> {
     });
 
     // Update frozen context
-    if (this.options.frozenFirstColumn && (columnIndex === 0 || columnIndex === 1)) {
-      if (columnIndex === 0) {
-        this.freezeFirstColumn();
+    if (this.options.frozenColumns && columnIndex <= this.options.frozenColumns) {
+      if (columnIndex < this.options.frozenColumns) {
+        this.freezeColumns();
       } else {
-        this.updateUnfrozenColumns((this.tableHeaderRowElt.children[0] as HTMLElement).style.width);
+        this.updateFirstUnfrozenColumnOffset();
       }
     }
 
@@ -304,6 +310,10 @@ export abstract class AbstractTable<T> {
   }
 
   // ////////////////////////////////////////////////////////////////////////////
+
+  private adjustFrozenColumns(frozenColumns: number): number {
+    return frozenColumns < this.columns.length ? frozenColumns : 0;
+  }
 
   private buildTable(): void {
     this.rootElt.appendChild(this.tableHeaderElt);
@@ -426,18 +436,26 @@ export abstract class AbstractTable<T> {
       .firstElementChild as HTMLElement).style.transform = `translateY(${offsetY}px)`;
   }
 
-  private freezeFirstColumn(): void {
-    const firstHeaderCellElt = this.tableHeaderRowElt.children[0] as HTMLElement;
+  private freezeColumns(): void {
+    const freezeCell = (elt: HTMLElement, offset: number): void => {
+      elt.classList.add('frozen');
+      elt.style.left = `${offset}px`;
+    };
 
-    // Add 'frozen' class to first column cells
-    firstHeaderCellElt.classList.add('frozen');
+    for (let i = 0; i < this.options.frozenColumns; i++) {
+      let offset = 0;
+      for (let j = 0; j < i; j++) {
+        offset += DomUtils.getEltWidth(this.tableHeaderRowElt.children[j] as HTMLElement);
+      }
 
-    this.tableNodeElts.forEach((nodeElt) => {
-      (nodeElt.children[0] as HTMLElement).classList.add('frozen');
-    });
+      freezeCell(this.tableHeaderRowElt.children[i] as HTMLElement, offset);
 
-    // Update offset of next column
-    this.updateUnfrozenColumns(firstHeaderCellElt.style.width);
+      this.tableNodeElts.forEach((nodeElt) => {
+        freezeCell(nodeElt.children[i] as HTMLElement, offset);
+      });
+    }
+
+    this.updateFirstUnfrozenColumnOffset();
   }
 
   private getColumnSortHandles(headerCellElt: HTMLElement): { sortAscElt: HTMLElement; sortDescElt: HTMLElement } {
@@ -667,13 +685,39 @@ export abstract class AbstractTable<T> {
     this.updateVisibleNodes();
   }
 
-  private updateFrozenColumnPosition(): void {
-    const formattedOffset = `${this.tableHeaderElt.scrollLeft}px`;
+  private updateFirstUnfrozenColumnOffset(offset?: string): void {
+    let formattedWidth;
+    if (offset != null) {
+      formattedWidth = offset;
+    } else {
+      let frozenColumnsWidth = 0;
+      for (let i = 0; i < this.options.frozenColumns; i++) {
+        frozenColumnsWidth += DomUtils.getEltWidth(this.tableHeaderRowElt.children[i] as HTMLElement);
+      }
+      formattedWidth = `${frozenColumnsWidth}px`;
+    }
 
-    (this.tableHeaderRowElt.children[0] as HTMLElement).style.left = formattedOffset;
+    (this.tableHeaderRowElt.children[this.options.frozenColumns] as HTMLElement).style.paddingLeft = formattedWidth;
 
     for (let i = 0, len = this.tableNodeElts.length; i < len; i++) {
-      (this.tableNodeElts[i].children[0] as HTMLElement).style.left = formattedOffset;
+      (this.tableNodeElts[i].children[this.options.frozenColumns] as HTMLElement).style.paddingLeft = formattedWidth;
+    }
+  }
+
+  private updateFrozenColumnPosition(): void {
+    for (let i = 0; i < this.options.frozenColumns; i++) {
+      let offset = 0;
+      for (let j = 0; j < i; j++) {
+        offset += DomUtils.getEltWidth(this.tableHeaderRowElt.children[j] as HTMLElement);
+      }
+
+      const formattedOffset = `${this.tableHeaderElt.scrollLeft + offset}px`;
+
+      (this.tableHeaderRowElt.children[i] as HTMLElement).style.left = formattedOffset;
+
+      for (let j = 0, len = this.tableNodeElts.length; j < len; j++) {
+        (this.tableNodeElts[j].children[i] as HTMLElement).style.left = formattedOffset;
+      }
     }
   }
 
@@ -687,14 +731,6 @@ export abstract class AbstractTable<T> {
     (this.tableHeaderElt.firstElementChild as HTMLElement).style.width = formattedWidth;
     this.tableBodyElt.style.width = formattedWidth;
     (this.tableBodyElt.firstElementChild as HTMLElement).style.width = formattedWidth;
-  }
-
-  private updateUnfrozenColumns(formattedWidth: string): void {
-    (this.tableHeaderRowElt.children[1] as HTMLElement).style.paddingLeft = formattedWidth;
-
-    for (let i = 0, len = this.tableNodeElts.length; i < len; i++) {
-      (this.tableNodeElts[i].children[1] as HTMLElement).style.paddingLeft = formattedWidth;
-    }
   }
 
   // ////////////////////////////////////////////////////////////////////////////
@@ -789,7 +825,7 @@ export abstract class AbstractTable<T> {
 
   private onResizeColumn(startEvent: MouseEvent, columnIndex: number): void {
     const headerCellElt = this.tableHeaderRowElt.children[columnIndex] as HTMLElement;
-    const isFirstColumn = columnIndex === 0;
+    const isFrozenColumn = columnIndex < this.options.frozenColumns;
     const originalColumnWidth = DomUtils.getEltComputedWidth(headerCellElt);
     const originalPageX = startEvent.pageX;
     const originalTableWidth = DomUtils.getEltComputedWidth(this.tableBodyElt.firstElementChild as HTMLElement);
@@ -813,12 +849,11 @@ export abstract class AbstractTable<T> {
       // Body cells width
       this.updateTableBodyColumnWidth(columnIndex, formattedColumnWidth);
 
-      if (this.options.frozenFirstColumn) {
+      if (this.options.frozenColumns) {
         this.updateFrozenColumnPosition();
 
-        // If resizing the frozen column, update offset of next column
-        if (isFirstColumn) {
-          this.updateUnfrozenColumns(formattedColumnWidth);
+        if (isFrozenColumn) {
+          this.updateFirstUnfrozenColumnOffset();
         }
       }
     };
@@ -858,7 +893,7 @@ export abstract class AbstractTable<T> {
 
       this.tableHeaderElt.scrollLeft = this.tableBodyElt.scrollLeft;
 
-      if (this.options.frozenFirstColumn) {
+      if (this.options.frozenColumns) {
         this.updateFrozenColumnPosition();
       }
     }

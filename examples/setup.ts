@@ -58,4 +58,4 @@ export const columnOptions = [
   }
 ];
 
-export const tableOptions = { frozenFirstColumn: true, nodeHeight: 40, resizeFeature: true, visibleNodesCount: 10 };
+export const tableOptions = { frozenColumns: 1, nodeHeight: 40, resizeFeature: true, visibleNodesCount: 10 };
