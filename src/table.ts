@@ -558,13 +558,17 @@ export abstract class AbstractTable<T> {
 
   private populateCellContent(cellElt: HTMLElement, column: Column<T>, node: Node<T>): void {
     const cellContentElt = cellElt.lastElementChild as HTMLElement;
-    const documentFragment = column.formatter(column.field, node.value);
+    const [fragment, ...cleanupFuncs] = column.formatter(column.field, node.value);
 
-    if (documentFragment.childElementCount > 0) {
+    for (let i = 0, len = cleanupFuncs.length; i < len; i++) {
+      cleanupFuncs[i]();
+    }
+
+    if (fragment.childElementCount > 0) {
       cellContentElt.innerHTML = '';
-      cellContentElt.appendChild(documentFragment);
+      cellContentElt.appendChild(fragment);
     } else {
-      cellContentElt.textContent = documentFragment.textContent;
+      cellContentElt.textContent = fragment.textContent;
     }
   }
 

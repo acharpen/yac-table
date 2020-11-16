@@ -7,7 +7,7 @@ export interface TestObject {
 
 // ////////////////////////////////////////////////////////////////////////////
 
-export const defaultFormatter = (field: keyof TestObject, obj: TestObject): DocumentFragment => {
+export const defaultFormatter = (field: keyof TestObject, obj: TestObject): [DocumentFragment] => {
   const fragment = document.createDocumentFragment();
 
   const value = obj[field];
@@ -15,10 +15,10 @@ export const defaultFormatter = (field: keyof TestObject, obj: TestObject): Docu
     fragment.textContent = value;
   }
 
-  return fragment;
+  return [fragment];
 };
 
-export const linkFormatter = (field: keyof TestObject, obj: TestObject): DocumentFragment => {
+export const linkFormatter = (field: keyof TestObject, obj: TestObject): [DocumentFragment] => {
   const fragment = document.createDocumentFragment();
 
   const value = obj[field];
@@ -28,5 +28,5 @@ export const linkFormatter = (field: keyof TestObject, obj: TestObject): Documen
     fragment.appendChild(elt);
   }
 
-  return fragment;
+  return [fragment];
 };
