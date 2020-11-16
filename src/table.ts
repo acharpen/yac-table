@@ -587,7 +587,7 @@ export abstract class AbstractTable<T> {
         this.populateCellContent(cellElt, column, node);
 
         // Update cell color
-        const cellColor = this.options.cellColor?.(node.value, column.id) ?? rowColor ?? defaultCellColor;
+        const cellColor = column.cellColor?.(node.value) ?? rowColor ?? defaultCellColor;
         cellElt.style.backgroundColor = cellColor.backgroundColor ?? cellElt.style.backgroundColor;
         cellElt.style.color = cellColor.color ?? cellElt.style.color;
       }

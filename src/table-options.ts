@@ -2,7 +2,6 @@ export interface TableOptions<T> {
   frozenColumns: number;
   nodeHeight: number;
   visibleNodesCount: number;
-  cellColor?: (item: T, columnId: number) => { backgroundColor?: string; color?: string } | null;
   rowColor?: (item: T) => { backgroundColor?: string; color?: string } | null;
 }
 
