@@ -10,6 +10,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   private static readonly EXPAND_TOGGLER_CLASS: string = `${AbstractTable.VENDOR_PREFIX}-expand-toggler`;
 
   private readonly childNodeOffset: number;
+  private readonly expandTogglerColumnIndex: number;
   private readonly expandTogglerWidth: number;
 
   public constructor(
@@ -19,6 +20,13 @@ export class TreeTable<T> extends AbstractTable<T> {
     super(rootElt, options);
 
     this.childNodeOffset = options.tableOptions.childNodeOffset;
+    this.expandTogglerColumnIndex =
+      options.tableOptions.expandTogglerColumnIndex < options.columnOptions.length
+        ? options.tableOptions.expandTogglerColumnIndex
+        : 0;
+
+    this.init();
+
     this.expandTogglerWidth = this.computeExpandTogglerWidth();
   }
 
@@ -116,7 +124,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
     const elt = super.createTableCell(column, ctx);
 
-    if (column.id === this.columns[0].id) {
+    if (column.id === this.columns[this.expandTogglerColumnIndex].id) {
       this.addExpandTogglerElt(elt, ctx.nodeIndex);
     }
 
@@ -163,7 +171,7 @@ export class TreeTable<T> extends AbstractTable<T> {
 
     for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
       const node = this.nodes[this.visibleNodeIndexes[i]];
-      const firstCellElt = this.tableNodeElts[i].children[0];
+      const firstCellElt = this.tableNodeElts[i].children[this.expandTogglerColumnIndex];
       const cellContentElt = firstCellElt.lastElementChild as HTMLElement;
       const expandTogglerElt = firstCellElt.firstElementChild as HTMLElement;
       const nodeOffset = this.childNodeOffset * node.level + (node.isLeaf ? this.expandTogglerWidth : 0);
@@ -192,7 +200,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   private computeExpandTogglerWidth(): number {
     const elts = this.tableBodyElt.getElementsByClassName(TreeTable.EXPAND_TOGGLER_CLASS);
 
-    return elts.length > 0 ? DomUtils.getEltComputedWidth(elts[0] as HTMLElement) : 0;
+    return elts.length > 0 ? DomUtils.getEltComputedWidth(elts[this.expandTogglerColumnIndex] as HTMLElement) : 0;
   }
 
   private createExpandToggler(nodeIndex: number): HTMLElement {

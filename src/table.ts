@@ -21,10 +21,10 @@ export abstract class AbstractTable<T> {
   private static readonly VIRTUAL_SCROLL_PADDING: number = 2;
 
   protected readonly rootElt: HTMLElement;
-  protected readonly tableBodyElt: HTMLElement;
-  protected readonly tableHeaderElt: HTMLElement;
-  protected readonly tableHeaderRowElt: HTMLElement;
-  protected readonly tableNodeElts: HTMLElement[];
+  protected tableBodyElt!: HTMLElement;
+  protected tableHeaderElt!: HTMLElement;
+  protected tableHeaderRowElt!: HTMLElement;
+  protected tableNodeElts!: HTMLElement[];
 
   protected readonly options: TableOptions<T>;
   protected readonly virtualNodesCount: number;
@@ -58,20 +58,6 @@ export abstract class AbstractTable<T> {
     this.visibleNodeIndexes = [];
 
     this.rootElt = rootElt;
-    this.tableBodyElt = this.createTableBody();
-    this.tableHeaderElt = this.createTableHeader();
-    this.tableHeaderRowElt = this.createTableHeaderRow();
-    this.tableNodeElts = this.createTableNodes();
-
-    this.buildTable();
-
-    this.hideUnusedTableNodeElts();
-
-    this.setInitialWidths();
-
-    if (this.options.frozenColumns) {
-      this.freezeColumns();
-    }
   }
 
   // ////////////////////////////////////////////////////////////////////////////
@@ -258,6 +244,23 @@ export abstract class AbstractTable<T> {
     //
     this.updateTableWidth(`${DomUtils.getEltWidth(this.tableBodyElt) - columnWidth}px`);
     this.updateVisibleNodes();
+  }
+
+  protected init(): void {
+    this.tableBodyElt = this.createTableBody();
+    this.tableHeaderElt = this.createTableHeader();
+    this.tableHeaderRowElt = this.createTableHeaderRow();
+    this.tableNodeElts = this.createTableNodes();
+
+    this.buildTable();
+
+    this.hideUnusedTableNodeElts();
+
+    this.setInitialWidths();
+
+    if (this.options.frozenColumns) {
+      this.freezeColumns();
+    }
   }
 
   protected setActiveNodeIndexes(): void {

@@ -6,7 +6,7 @@ import { treeData } from './data';
 const tableContainerElt = document.getElementById('table') as HTMLElement;
 const table = new TreeTable<ExampleObject>(tableContainerElt, {
   columnOptions,
-  tableOptions: { ...tableOptions, childNodeOffset: 8 }
+  tableOptions: { ...tableOptions, childNodeOffset: 8, expandTogglerColumnIndex: 0 }
 });
 
 tableContainerElt.addEventListener('onClickNode', (event: CustomEvent<{ event: Event; node: Node<unknown> }>) => {

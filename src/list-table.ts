@@ -10,6 +10,8 @@ export class ListTable<T> extends AbstractTable<T> {
     options: { columnOptions: ColumnOptions<T>[]; tableOptions: ListTableOptions<T> }
   ) {
     super(rootElt, options);
+
+    this.init();
   }
 
   public addData(item: T, { position, refNodeId }: { position: 'top' | 'bottom'; refNodeId?: number }): void {
