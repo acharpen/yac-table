@@ -7,26 +7,15 @@ export interface TestObject {
 
 // ////////////////////////////////////////////////////////////////////////////
 
-export const defaultFormatter = (field: keyof TestObject, obj: TestObject): [DocumentFragment] => {
-  const fragment = document.createDocumentFragment();
+export const defaultFormatter = (field: keyof TestObject): ((obj: TestObject) => [DocumentFragment]) => {
+  return (obj: TestObject): [DocumentFragment] => {
+    const fragment = document.createDocumentFragment();
 
-  const value = obj[field];
-  if (value != null) {
-    fragment.textContent = value;
-  }
+    const value = obj[field];
+    if (value != null) {
+      fragment.textContent = value;
+    }
 
-  return [fragment];
-};
-
-export const linkFormatter = (field: keyof TestObject, obj: TestObject): [DocumentFragment] => {
-  const fragment = document.createDocumentFragment();
-
-  const value = obj[field];
-  if (value != null) {
-    const elt = document.createElement('a');
-    elt.textContent = value;
-    fragment.appendChild(elt);
-  }
-
-  return [fragment];
+    return [fragment];
+  };
 };

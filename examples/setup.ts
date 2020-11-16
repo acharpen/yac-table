@@ -7,21 +7,25 @@ export interface ExampleObject {
 
 // ////////////////////////////////////////////////////////////////////////////
 
-export const defaultFormatter = (field: keyof ExampleObject, obj: ExampleObject): [DocumentFragment] => {
-  const fragment = document.createDocumentFragment();
-  fragment.textContent = obj[field];
+export const defaultFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => [DocumentFragment]) => {
+  return (obj: ExampleObject): [DocumentFragment] => {
+    const fragment = document.createDocumentFragment();
+    fragment.textContent = obj[field];
 
-  return [fragment];
+    return [fragment];
+  };
 };
 
-export const linkFormatter = (field: keyof ExampleObject, obj: ExampleObject): [DocumentFragment] => {
-  const fragment = document.createDocumentFragment();
+export const linkFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => [DocumentFragment]) => {
+  return (obj: ExampleObject): [DocumentFragment] => {
+    const fragment = document.createDocumentFragment();
 
-  const elt = document.createElement('a');
-  elt.textContent = obj[field];
-  fragment.appendChild(elt);
+    const elt = document.createElement('a');
+    elt.textContent = obj[field];
+    fragment.appendChild(elt);
 
-  return [fragment];
+    return [fragment];
+  };
 };
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -29,16 +33,16 @@ export const linkFormatter = (field: keyof ExampleObject, obj: ExampleObject): [
 export const columnOptions = [
   {
     align: 'left' as const,
-    field: 'col1' as const,
-    formatter: linkFormatter,
+    formatter: linkFormatter('col1'),
+    id: 1,
     resizeFeature: true,
     sortFeature: true,
     title: 'col1'
   },
   {
     align: 'left' as const,
-    field: 'col2' as const,
-    formatter: defaultFormatter,
+    formatter: defaultFormatter('col2'),
+    id: 2,
     resizeFeature: true,
     sortFeature: true,
     title: 'col2',
@@ -46,16 +50,16 @@ export const columnOptions = [
   },
   {
     align: 'right' as const,
-    field: 'col3' as const,
-    formatter: defaultFormatter,
+    formatter: defaultFormatter('col3'),
+    id: 3,
     resizeFeature: true,
     sortFeature: true,
     title: 'col3'
   },
   {
     align: 'left' as const,
-    field: 'col4' as const,
-    formatter: defaultFormatter,
+    formatter: defaultFormatter('col4'),
+    id: 4,
     resizeFeature: true,
     sortFeature: true,
     title: 'col4'

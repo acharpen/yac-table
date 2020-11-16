@@ -64,19 +64,18 @@ export abstract class AbstractTable<T> {
 
   public addColumn(
     columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
-    { position, refColumnField }: { position: 'start' | 'end'; refColumnField?: keyof T }
+    { position, refColumnId }: { position: 'start' | 'end'; refColumnId?: number }
   ): void {
     const isBebore = position === 'start';
-    const refColumnIndex =
-      refColumnField != null ? this.columns.findIndex((column) => column.field === refColumnField) : -1;
+    const refColumnIndex = refColumnId != null ? this.columns.findIndex((column) => column.id === refColumnId) : -1;
     const newColumnIndex =
       refColumnIndex !== -1 ? (isBebore ? refColumnIndex : refColumnIndex + 1) : isBebore ? 0 : this.columns.length;
 
     this.handleAddColumn(columnOption, newColumnIndex);
   }
 
-  public deleteColumn(columnField: keyof T): void {
-    const columnIndex = this.columns.findIndex((column) => column.field === columnField);
+  public deleteColumn(columnId: number): void {
+    const columnIndex = this.columns.findIndex((column) => column.id === columnId);
 
     if (columnIndex !== -1) {
       this.handleDeleteColumn(columnIndex);
@@ -121,8 +120,8 @@ export abstract class AbstractTable<T> {
     this.updateVisibleNodes();
   }
 
-  public sort(columnField: keyof T, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): void {
-    const targetColumn = this.columns.find((column) => column.field === columnField);
+  public sort(columnId: number, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): void {
+    const targetColumn = this.columns.find((column) => column.id === columnId);
 
     if (targetColumn?.sortFeature != null && targetColumn.sortFeature) {
       this.currentSort = { column: targetColumn, mode, compareFunc };
@@ -362,7 +361,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createColumnView(column: Column<T>): ColumnView<T> {
-    return { field: column.field, sortMode: column.sortMode };
+    return { id: column.id, sortMode: column.sortMode };
   }
 
   private createTableBody(): HTMLElement {
@@ -558,7 +557,7 @@ export abstract class AbstractTable<T> {
 
   private populateCellContent(cellElt: HTMLElement, column: Column<T>, node: Node<T>): void {
     const cellContentElt = cellElt.lastElementChild as HTMLElement;
-    const [fragment, ...cleanupFuncs] = column.formatter(column.field, node.value);
+    const [fragment, ...cleanupFuncs] = column.formatter(node.value);
 
     for (let i = 0, len = cleanupFuncs.length; i < len; i++) {
       cleanupFuncs[i]();
@@ -588,7 +587,7 @@ export abstract class AbstractTable<T> {
         this.populateCellContent(cellElt, column, node);
 
         // Update cell color
-        const cellColor = this.options.cellColor?.(node.value, column.field) ?? rowColor ?? defaultCellColor;
+        const cellColor = this.options.cellColor?.(node.value, column.id) ?? rowColor ?? defaultCellColor;
         cellElt.style.backgroundColor = cellColor.backgroundColor ?? cellElt.style.backgroundColor;
         cellElt.style.color = cellColor.color ?? cellElt.style.color;
       }

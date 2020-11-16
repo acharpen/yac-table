@@ -7,16 +7,16 @@ import { getByText } from '@testing-library/dom';
 const columnOptions = [
   {
     align: 'left' as const,
-    field: 'col1' as const,
-    formatter: defaultFormatter,
+    formatter: defaultFormatter('col1'),
+    id: 1,
     resizeFeature: true,
     sortFeature: true,
     title: 'col1'
   },
   {
     align: 'left' as const,
-    field: 'col2' as const,
-    formatter: defaultFormatter,
+    formatter: defaultFormatter('col2'),
+    id: 2,
     resizeFeature: true,
     sortFeature: true,
     title: 'col2'
