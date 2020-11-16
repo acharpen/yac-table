@@ -351,7 +351,7 @@ export abstract class AbstractTable<T> {
     const elt = DomUtils.createDiv(AbstractTable.BODY_CLASS);
     elt.appendChild(DomUtils.createDiv()).appendChild(DomUtils.createDiv());
 
-    if (this.options.resizeFeature) {
+    if (this.columns.some((column) => column.resizeFeature)) {
       elt.classList.add('resizable');
     }
 
@@ -363,7 +363,7 @@ export abstract class AbstractTable<T> {
   private createTableHeader(): HTMLElement {
     const elt = DomUtils.createDiv(AbstractTable.HEADER_CLASS);
 
-    if (this.options.resizeFeature) {
+    if (this.columns.some((column) => column.resizeFeature)) {
       elt.classList.add('resizable');
     }
 
@@ -386,7 +386,7 @@ export abstract class AbstractTable<T> {
       this.manageListenersOnSortHandles(EventListenerManageMode.ADD, sortAscElt, sortDescElt, ctx.columnIndex);
     }
 
-    if (this.options.resizeFeature) {
+    if (column.resizeFeature) {
       const resizeHandleElt = DomUtils.createDiv(AbstractTable.RESIZE_HANDLE_CLASS);
       elt.appendChild(resizeHandleElt);
 
@@ -736,7 +736,7 @@ export abstract class AbstractTable<T> {
   // ////////////////////////////////////////////////////////////////////////////
 
   private manageListenersOnResizeHandle(mode: EventListenerManageMode, elt: HTMLElement, columnIndex: number): void {
-    if (this.options.resizeFeature) {
+    if (this.columns[columnIndex].resizeFeature) {
       DomUtils.manageEventListener(
         elt,
         'mousedown',
@@ -922,7 +922,7 @@ export abstract class AbstractTable<T> {
     this.manageListenersOnSortHandles(EventListenerManageMode.REMOVE, sortAscElt, sortDescElt, columnIndex);
 
     // Resize handle
-    if (this.options.resizeFeature) {
+    if (this.columns[columnIndex].resizeFeature) {
       const resizeHandleElt = DomUtils.getEltByClassName(elt.children, AbstractTable.RESIZE_HANDLE_CLASS);
       this.manageListenersOnResizeHandle(EventListenerManageMode.REMOVE, resizeHandleElt as HTMLElement, columnIndex);
     }

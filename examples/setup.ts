@@ -31,6 +31,7 @@ export const columnOptions = [
     align: 'left' as const,
     field: 'col1' as const,
     formatter: linkFormatter,
+    resizeFeature: true,
     sortFeature: true,
     title: 'col1'
   },
@@ -38,6 +39,7 @@ export const columnOptions = [
     align: 'left' as const,
     field: 'col2' as const,
     formatter: defaultFormatter,
+    resizeFeature: true,
     sortFeature: true,
     title: 'col2',
     width: { value: 10, unit: '%' as const }
@@ -46,6 +48,7 @@ export const columnOptions = [
     align: 'right' as const,
     field: 'col3' as const,
     formatter: defaultFormatter,
+    resizeFeature: true,
     sortFeature: true,
     title: 'col3'
   },
@@ -53,9 +56,10 @@ export const columnOptions = [
     align: 'left' as const,
     field: 'col4' as const,
     formatter: defaultFormatter,
+    resizeFeature: true,
     sortFeature: true,
     title: 'col4'
   }
 ];
 
-export const tableOptions = { frozenColumns: 1, nodeHeight: 40, resizeFeature: true, visibleNodesCount: 10 };
+export const tableOptions = { frozenColumns: 1, nodeHeight: 40, visibleNodesCount: 10 };
