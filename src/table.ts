@@ -163,12 +163,11 @@ export abstract class AbstractTable<T> {
   }
 
   protected handleAddColumn(
-    columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
+    columnOption: ColumnOptions<T> & Required<Pick<ColumnOptions<T>, 'width'>>,
     newColumnIndex: number
   ): void {
     const isNewLastColumn = newColumnIndex === this.columns.length;
-    const newColumnId = Math.max(...this.columns.map((column) => column.id)) + 1;
-    const newColumn: Column<T> = { ...columnOption, id: newColumnId, sortMode: 'default' };
+    const newColumn: Column<T> = { ...columnOption, sortMode: 'default' };
     const newColumnWidth = this.convertInPixel(columnOption.width);
 
     const insertNewElt = (elt: HTMLElement, parentElt: HTMLElement): void => {
