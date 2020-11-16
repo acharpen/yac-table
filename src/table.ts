@@ -64,7 +64,7 @@ export abstract class AbstractTable<T> {
 
   public addColumn(
     columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
-    { position, refColumnField }: { position: 'start' | 'end'; refColumnField?: number }
+    { position, refColumnField }: { position: 'start' | 'end'; refColumnField?: keyof T }
   ): void {
     const isBebore = position === 'start';
     const refColumnIndex =
@@ -75,7 +75,7 @@ export abstract class AbstractTable<T> {
     this.handleAddColumn(columnOption, newColumnIndex);
   }
 
-  public deleteColumn(columnField: number): void {
+  public deleteColumn(columnField: keyof T): void {
     const columnIndex = this.columns.findIndex((column) => column.field === columnField);
 
     if (columnIndex !== -1) {
@@ -121,7 +121,7 @@ export abstract class AbstractTable<T> {
     this.updateVisibleNodes();
   }
 
-  public sort(columnField: number, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): void {
+  public sort(columnField: keyof T, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): void {
     const targetColumn = this.columns.find((column) => column.field === columnField);
 
     if (targetColumn?.sortFeature != null && targetColumn.sortFeature) {
