@@ -90,6 +90,13 @@ export abstract class AbstractTable<T> {
 
   public deselectNodes(nodeIds: number[]): void {
     this.toggleNodesSelection(nodeIds, false);
+
+    // Update nodes selection indicator in table header
+    if (this.nodes.every((node) => !node.isSelected)) {
+      this.tableHeaderRowElt.classList.remove('selected');
+    }
+
+    this.updateVisibleNodes();
   }
 
   public destroy(): void {
@@ -104,6 +111,13 @@ export abstract class AbstractTable<T> {
 
   public selectNodes(nodeIds: number[]): void {
     this.toggleNodesSelection(nodeIds, true);
+
+    // Update nodes selection indicator in table header
+    if (this.nodes.some((node) => node.isSelected)) {
+      this.tableHeaderRowElt.classList.add('selected');
+    }
+
+    this.updateVisibleNodes();
   }
 
   public sort(columnId: number, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): void {
@@ -556,7 +570,6 @@ export abstract class AbstractTable<T> {
   private populateVisibleNodes(): void {
     const columnsLength = this.columns.length;
     const defaultCellColor = { backgroundColor: '', color: '' };
-    let hasSelectedNodes = false;
 
     for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
       const node = this.nodes[this.visibleNodeIndexes[i]];
@@ -578,13 +591,7 @@ export abstract class AbstractTable<T> {
       // Mark selection
       if (node.isSelected) {
         nodeElt.classList.add('selected');
-
-        hasSelectedNodes = true;
       }
-    }
-
-    if (hasSelectedNodes) {
-      this.tableHeaderRowElt.classList.add('selected');
     }
   }
 
@@ -603,8 +610,6 @@ export abstract class AbstractTable<T> {
     for (let i = 0, len = this.tableNodeElts.length; i < len; i++) {
       this.tableNodeElts[i].classList.remove('hidden', 'selected');
     }
-
-    this.tableHeaderRowElt.classList.remove('selected');
   }
 
   private setColumnSortMode(targetColumn: Column<T>, sortMode: ColumnSortMode): void {
@@ -684,8 +689,6 @@ export abstract class AbstractTable<T> {
     ).forEach((node) => {
       node.isSelected = isSelected;
     });
-
-    this.updateVisibleNodes();
   }
 
   private updateFirstUnfrozenColumnOffset(offset?: string): void {
