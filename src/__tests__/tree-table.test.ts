@@ -22,7 +22,7 @@ const columnOptions = [
     title: 'col2'
   }
 ];
-const tableOptions = { frozenColumns: 1, nodeHeight: 40, visibleNodesCount: 10 };
+const tableOptions = { frozenColumns: 1, nodeHeight: 40, visibleNodes: 10 };
 
 const table = new TreeTable<TestObject>(document.body, {
   columnOptions,

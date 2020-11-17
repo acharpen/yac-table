@@ -54,7 +54,7 @@ export abstract class AbstractTable<T> {
     this.isResizing = false;
     this.nodes = [];
     this.options = { ...tableOptions, frozenColumns: this.adjustFrozenColumns(tableOptions.frozenColumns) };
-    this.virtualNodesCount = this.options.visibleNodesCount + AbstractTable.VIRTUAL_SCROLL_PADDING * 2;
+    this.virtualNodesCount = this.options.visibleNodes + AbstractTable.VIRTUAL_SCROLL_PADDING * 2;
     this.visibleNodeIndexes = [];
 
     this.rootElt = rootElt;
@@ -673,7 +673,7 @@ export abstract class AbstractTable<T> {
   }
 
   private setTableBodyHeight(): void {
-    this.tableBodyElt.style.maxHeight = `${this.options.visibleNodesCount * this.options.nodeHeight}px`;
+    this.tableBodyElt.style.maxHeight = `${this.options.visibleNodes * this.options.nodeHeight}px`;
   }
 
   private setVirtualTableHeight(): void {
