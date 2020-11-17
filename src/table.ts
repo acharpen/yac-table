@@ -39,6 +39,7 @@ export abstract class AbstractTable<T> {
   private currentScrollX: number;
   private currentScrollY: number;
   private isResizing: boolean;
+  private visibleNodeCleanupFuncs: (() => void)[];
 
   protected constructor(
     rootElt: HTMLElement,
@@ -54,6 +55,7 @@ export abstract class AbstractTable<T> {
     this.isResizing = false;
     this.nodes = [];
     this.options = { ...tableOptions, frozenColumns: this.adjustFrozenColumns(tableOptions.frozenColumns) };
+    this.visibleNodeCleanupFuncs = [];
     this.virtualNodesCount = this.options.visibleNodes + AbstractTable.VIRTUAL_SCROLL_PADDING * 2;
     this.visibleNodeIndexes = [];
 
@@ -318,6 +320,7 @@ export abstract class AbstractTable<T> {
     this.displayVisibleNodes(startIndex);
     this.setVisibleNodeIndexes(startIndex);
 
+    this.cleanupVisibleNodes();
     this.resetTableNodeElts();
 
     this.populateVisibleNodes();
@@ -340,6 +343,14 @@ export abstract class AbstractTable<T> {
     });
 
     this.setTableBodyHeight();
+  }
+
+  private cleanupVisibleNodes(): void {
+    for (let i = 0, len = this.visibleNodeCleanupFuncs.length; i < len; i++) {
+      this.visibleNodeCleanupFuncs[i]();
+    }
+
+    this.visibleNodeCleanupFuncs = [];
   }
 
   private computeFirstVisibleNodeIndex(): number {
@@ -401,7 +412,6 @@ export abstract class AbstractTable<T> {
 
       this.manageListenersOnSortHandles(EventListenerManageMode.ADD, sortAscElt, sortDescElt, ctx.columnIndex);
     }
-
     if (column.resizeFeature) {
       const resizeHandleElt = DomUtils.createDiv(AbstractTable.RESIZE_HANDLE_CLASS);
       elt.appendChild(resizeHandleElt);
@@ -554,13 +564,8 @@ export abstract class AbstractTable<T> {
     }
   }
 
-  private populateCellContent(cellElt: HTMLElement, column: Column<T>, node: Node<T>): void {
+  private populateCellContent(cellElt: HTMLElement, fragment: DocumentFragment): void {
     const cellContentElt = cellElt.lastElementChild as HTMLElement;
-    const [fragment, ...cleanupFuncs] = column.formatter(node.value);
-
-    for (let i = 0, len = cleanupFuncs.length; i < len; i++) {
-      cleanupFuncs[i]();
-    }
 
     if (fragment.childElementCount > 0) {
       cellContentElt.innerHTML = '';
@@ -582,8 +587,10 @@ export abstract class AbstractTable<T> {
       for (let j = 0; j < columnsLength; j++) {
         const cellElt = nodeElt.children[j] as HTMLElement;
         const column = this.columns[j];
+        const [fragment, ...cleanupFuncs] = column.formatter(node.value);
 
-        this.populateCellContent(cellElt, column, node);
+        this.populateCellContent(cellElt, fragment);
+        Array.prototype.push.apply(this.visibleNodeCleanupFuncs, cleanupFuncs);
 
         // Update cell color
         const cellColor = column.cellColor?.(node.value) ?? rowColor ?? defaultCellColor;
