@@ -10,7 +10,6 @@
     "COPYING.LESSER"
   ],
   "devDependencies": {
-    "@rollup/plugin-multi-entry": "4.0.0",
     "@rollup/plugin-typescript": "6.1.0",
     "@testing-library/dom": "7.27.0",
     "@testing-library/jest-dom": "5.11.6",
