@@ -1,5 +1,4 @@
 .parcel-cache/
-coverage/
 dist/
 lib/
 node_modules/

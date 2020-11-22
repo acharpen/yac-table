@@ -9,10 +9,10 @@ module.exports = {
     'plugin:prettier/recommended',
     'prettier/@typescript-eslint'
   ],
-  ignorePatterns: ['coverage/**', 'dist/**', 'lib/**', 'node_modules/**', 'jest.*'],
+  ignorePatterns: ['dist/**', 'lib/**', 'node_modules/**', 'jest.*'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: ['./tsconfig.eslint.json'],
+    project: ['tsconfig.eslint.json'],
     tsconfigRootDir: __dirname
   },
   plugins: ['@typescript-eslint', 'prettier'],

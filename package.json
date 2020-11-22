@@ -2,8 +2,8 @@
   "name": "yac-table",
   "version": "0.50.0",
   "license": "LGPL-3.0-or-later",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "files": [
     "lib",
     "COPYING",
@@ -35,11 +35,10 @@
     "typescript": "4.0.5"
   },
   "scripts": {
-    "bundle": "sh ./scripts/bundle.sh",
-    "coverage": "jest --collect-coverage",
-    "lint": "sh ./scripts/lint.sh",
-    "start": "sh ./scripts/start.sh",
-    "test": "jest"
+    "bundle": "sh scripts/bundle.sh",
+    "lint": "sh scripts/lint.sh",
+    "start": "sh scripts/start.sh",
+    "test": "sh scripts/test.sh"
   },
   "repository": {
     "type": "git",
@@ -47,7 +46,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "sh ./scripts/format.sh"
+      "pre-commit": "sh scripts/format.sh"
     }
   }
 }

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./node_modules/.bin/eslint . --ext .ts
+node_modules/.bin/eslint . --ext .ts
