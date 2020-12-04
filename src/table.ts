@@ -933,12 +933,16 @@ export abstract class AbstractTable<T> {
   }
 
   private removeListenersOnTableHeaderCell(elt: HTMLElement, columnIndex: number): void {
+    const column = this.columns[columnIndex];
+
     // Sort handles
-    const { sortAscElt, sortDescElt } = this.getColumnSortHandles(elt);
-    this.manageListenersOnSortHandles(EventListenerManageMode.REMOVE, sortAscElt, sortDescElt, columnIndex);
+    if (column.sortFeature) {
+      const { sortAscElt, sortDescElt } = this.getColumnSortHandles(elt);
+      this.manageListenersOnSortHandles(EventListenerManageMode.REMOVE, sortAscElt, sortDescElt, columnIndex);
+    }
 
     // Resize handle
-    if (this.columns[columnIndex].resizeFeature) {
+    if (column.resizeFeature) {
       const resizeHandleElt = DomUtils.getEltByClassName(elt.children, AbstractTable.RESIZE_HANDLE_CLASS);
       this.manageListenersOnResizeHandle(EventListenerManageMode.REMOVE, resizeHandleElt as HTMLElement, columnIndex);
     }
