@@ -46,7 +46,7 @@ export abstract class AbstractTable<T> {
     { columnOptions, tableOptions }: { columnOptions: ColumnOptions<T>[]; tableOptions: TableOptions<T> }
   ) {
     this.activeNodeIndexes = [];
-    this.columns = columnOptions.map((column, i) => ({ ...column, id: i, sortMode: 'default' }));
+    this.columns = columnOptions.map((column) => ({ ...column, sortMode: 'default' }));
     this.counter = 0;
     this.currentFilter = null;
     this.currentSort = null;
