@@ -1,9 +1,9 @@
-import { DomUtils, EventListenerManageMode } from './dom-utils';
 import { Node, TreeNode, TreeNodeView } from './node';
 import { AbstractTable } from './table';
 import { Column } from './column';
 import { ColumnOptions } from './column-options';
 import { ColumnWidthUnit } from './column-utils';
+import { DomUtils } from './dom-utils';
 import { TreeTableOptions } from './table-options';
 
 export class TreeTable<T> extends AbstractTable<T> {
@@ -89,12 +89,6 @@ export class TreeTable<T> extends AbstractTable<T> {
     );
   }
 
-  public destroy(): void {
-    super.destroy();
-
-    this.removeListenersOnNodeToggles();
-  }
-
   public expandNodes(nodeIds: number[]): void {
     this.toggleNodesVisibility(nodeIds, { isExpanded: true });
   }
@@ -141,11 +135,8 @@ export class TreeTable<T> extends AbstractTable<T> {
     newColumnIndex: number
   ): void {
     if (newColumnIndex === 0) {
-      this.tableNodeElts.forEach((nodeElt, i) => {
-        const toggleElt = (nodeElt.firstElementChild as HTMLElement).firstElementChild as HTMLElement;
-
-        this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE, toggleElt, i);
-        toggleElt.remove();
+      this.tableNodeElts.forEach((nodeElt) => {
+        (nodeElt.firstElementChild as HTMLElement).firstElementChild?.remove();
       });
     }
 
@@ -153,14 +144,10 @@ export class TreeTable<T> extends AbstractTable<T> {
   }
 
   protected handleDeleteColumn(columnIndex: number): void {
-    if (columnIndex === 0) {
-      this.removeListenersOnNodeToggles();
-
-      if (this.columns.length > 1) {
-        this.tableNodeElts.forEach((nodeElt, i) => {
-          this.addExpandTogglerElt(nodeElt.children[1] as HTMLElement, i);
-        });
-      }
+    if (columnIndex === 0 && this.columns.length > 1) {
+      this.tableNodeElts.forEach((nodeElt, i) => {
+        this.addExpandTogglerElt(nodeElt.children[1] as HTMLElement, i);
+      });
     }
 
     super.handleDeleteColumn(columnIndex);
@@ -206,8 +193,11 @@ export class TreeTable<T> extends AbstractTable<T> {
   private createExpandToggler(nodeIndex: number): HTMLElement {
     const elt = DomUtils.createDiv(TreeTable.EXPAND_TOGGLER_CLASS);
     elt.appendChild(DomUtils.createElt('i'));
+    elt.addEventListener('mouseup', (event) => {
+      event.stopPropagation();
 
-    this.manageListenersOnNodeToggles(EventListenerManageMode.ADD, elt, nodeIndex);
+      this.onToggleNode(event, nodeIndex);
+    });
 
     return elt;
   }
@@ -321,26 +311,6 @@ export class TreeTable<T> extends AbstractTable<T> {
     }
 
     return [...allNodeIds];
-  }
-
-  private manageListenersOnNodeToggles(mode: EventListenerManageMode, elt: HTMLElement, nodeIndex: number): void {
-    DomUtils.manageEventListener(
-      elt,
-      'mouseup',
-      (event) => {
-        event.stopPropagation();
-
-        this.onToggleNode(event, nodeIndex);
-      },
-      mode
-    );
-  }
-
-  private removeListenersOnNodeToggles(): void {
-    this.tableNodeElts.forEach((nodeElt, i) => {
-      const toggleElt = (nodeElt.firstElementChild as HTMLElement).firstElementChild as HTMLElement;
-      this.manageListenersOnNodeToggles(EventListenerManageMode.REMOVE, toggleElt, i);
-    });
   }
 
   private onToggleNode(event: Event, nodeIndex: number): void {

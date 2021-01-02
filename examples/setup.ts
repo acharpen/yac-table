@@ -7,24 +7,24 @@ export interface ExampleObject {
 
 // ////////////////////////////////////////////////////////////////////////////
 
-export const defaultFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => [DocumentFragment]) => {
-  return (obj: ExampleObject): [DocumentFragment] => {
+export const defaultFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => DocumentFragment) => {
+  return (obj: ExampleObject): DocumentFragment => {
     const fragment = document.createDocumentFragment();
     fragment.textContent = obj[field];
 
-    return [fragment];
+    return fragment;
   };
 };
 
-export const linkFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => [DocumentFragment]) => {
-  return (obj: ExampleObject): [DocumentFragment] => {
+export const linkFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => DocumentFragment) => {
+  return (obj: ExampleObject): DocumentFragment => {
     const fragment = document.createDocumentFragment();
 
     const elt = document.createElement('a');
     elt.textContent = obj[field];
     fragment.appendChild(elt);
 
-    return [fragment];
+    return fragment;
   };
 };
 

@@ -1,8 +1,3 @@
-export enum EventListenerManageMode {
-  ADD,
-  REMOVE
-}
-
 export class DomUtils {
   public static createDiv(...classes: string[]): HTMLElement {
     return DomUtils.createElt('div', ...classes);
@@ -37,18 +32,5 @@ export class DomUtils {
 
   public static getEltWidth(elt: HTMLElement): number {
     return parseFloat(elt.style.width.replace('px', ''));
-  }
-
-  public static manageEventListener<K extends keyof HTMLElementEventMap>(
-    elt: HTMLElement,
-    type: K,
-    listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => unknown,
-    mode: EventListenerManageMode
-  ): void {
-    if (mode === EventListenerManageMode.ADD) {
-      elt.addEventListener(type, listener);
-    } else {
-      elt.removeEventListener(type, listener);
-    }
   }
 }

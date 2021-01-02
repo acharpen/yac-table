@@ -2,7 +2,7 @@ import { ColumnWidthUnit } from './column-utils';
 
 export interface ColumnOptions<T> {
   align: 'center' | 'left' | 'right';
-  formatter: (item: T) => [fragment: DocumentFragment, ...cleanupFuncs: (() => void)[]];
+  formatter: (item: T) => DocumentFragment;
   id: number;
   resizeFeature: boolean;
   sortFeature: boolean;
