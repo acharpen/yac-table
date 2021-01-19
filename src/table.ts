@@ -147,6 +147,9 @@ export abstract class AbstractTable<T> {
     const elt = DomUtils.createDiv(AbstractTable.CELL_CLASS);
     elt.appendChild(DomUtils.createDiv(AbstractTable.CELL_CONTENT_CLASS, column.align));
 
+    if (column.classList) {
+      elt.classList.add(...column.classList);
+    }
     if (column.sortFeature) {
       elt.classList.add('sortable');
     }
@@ -392,6 +395,9 @@ export abstract class AbstractTable<T> {
       this.onClickTableHeaderCell(event, ctx.columnIndex);
     });
 
+    if (column.classList) {
+      elt.classList.add(...column.classList);
+    }
     if (column.sortFeature) {
       const sortAscElt = DomUtils.createDiv(AbstractTable.SORT_ASC_HANDLE_CLASS);
       sortAscElt.addEventListener('mouseup', (event) => {
