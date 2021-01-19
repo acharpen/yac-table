@@ -77,15 +77,15 @@ export class TreeTable<T> extends AbstractTable<T> {
 
   public deselectNodes(
     nodeIds: number[],
-    { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number } = {
+    options: { withChildren: false | true | number; withParents: false | true | number } = {
       withChildren: false,
       withParents: false
     }
   ): void {
     super.deselectNodes(
-      withChildren === false && withParents === false
+      options.withChildren === false && options.withParents === false
         ? nodeIds
-        : this.handleToggleNodes(nodeIds, { withChildren, withParents })
+        : this.handleToggleNodes(nodeIds, options)
     );
   }
 
@@ -99,15 +99,15 @@ export class TreeTable<T> extends AbstractTable<T> {
 
   public selectNodes(
     nodeIds: number[],
-    { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number } = {
+    options: { withChildren: false | true | number; withParents: false | true | number } = {
       withChildren: false,
       withParents: false
     }
   ): void {
     super.selectNodes(
-      withChildren === false && withParents === false
+      options.withChildren === false && options.withParents === false
         ? nodeIds
-        : this.handleToggleNodes(nodeIds, { withChildren, withParents })
+        : this.handleToggleNodes(nodeIds, options)
     );
   }
 
@@ -246,10 +246,7 @@ export class TreeTable<T> extends AbstractTable<T> {
 
   private handleToggleNodes(
     nodeIds: number[],
-    { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number } = {
-      withChildren: false,
-      withParents: false
-    }
+    { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number }
   ): number[] {
     const allNodeIds = new Set<number>(nodeIds);
     const nodesLength = this.nodes.length;
