@@ -10,8 +10,9 @@ export class TreeTable<T> extends AbstractTable<T> {
   private static readonly EXPAND_TOGGLER_CLASS: string = `${AbstractTable.VENDOR_PREFIX}-expand-toggler`;
 
   private readonly childNodeOffset: number;
-  private readonly expandTogglerColumnIndex: number;
   private readonly expandTogglerWidth: number;
+
+  private expandTogglerColumnIndex: number | null;
 
   public constructor(
     rootElt: HTMLElement,
@@ -118,7 +119,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
     const elt = super.createTableCell(column, ctx);
 
-    if (column.id === this.columns[this.expandTogglerColumnIndex].id) {
+    if (this.expandTogglerColumnIndex !== null && column.id === this.columns[this.expandTogglerColumnIndex].id) {
       this.addExpandTogglerElt(elt, ctx.nodeIndex);
     }
 
@@ -134,20 +135,16 @@ export class TreeTable<T> extends AbstractTable<T> {
     columnToAddOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
     newColumnIndex: number
   ): void {
-    if (newColumnIndex === 0) {
-      this.tableNodeElts.forEach((nodeElt) => {
-        (nodeElt.firstElementChild as HTMLElement).firstElementChild?.remove();
-      });
+    if (this.expandTogglerColumnIndex !== null && newColumnIndex <= this.expandTogglerColumnIndex) {
+      this.expandTogglerColumnIndex = this.expandTogglerColumnIndex + 1;
     }
 
     super.handleAddColumn(columnToAddOption, newColumnIndex);
   }
 
   protected handleDeleteColumn(columnIndex: number): void {
-    if (columnIndex === 0 && this.columns.length > 1) {
-      this.tableNodeElts.forEach((nodeElt, i) => {
-        this.addExpandTogglerElt(nodeElt.children[1] as HTMLElement, i);
-      });
+    if (this.expandTogglerColumnIndex !== null && columnIndex === this.expandTogglerColumnIndex) {
+      this.expandTogglerColumnIndex = null;
     }
 
     super.handleDeleteColumn(columnIndex);
@@ -156,25 +153,27 @@ export class TreeTable<T> extends AbstractTable<T> {
   protected updateVisibleNodes(): void {
     super.updateVisibleNodes();
 
-    for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
-      const node = this.nodes[this.visibleNodeIndexes[i]];
-      const firstCellElt = this.tableNodeElts[i].children[this.expandTogglerColumnIndex];
-      const cellContentElt = firstCellElt.lastElementChild as HTMLElement;
-      const expandTogglerElt = firstCellElt.firstElementChild as HTMLElement;
-      const nodeOffset = this.childNodeOffset * node.level + (node.isLeaf ? this.expandTogglerWidth : 0);
+    if (this.expandTogglerColumnIndex !== null) {
+      for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
+        const node = this.nodes[this.visibleNodeIndexes[i]];
+        const firstCellElt = this.tableNodeElts[i].children[this.expandTogglerColumnIndex];
+        const cellContentElt = firstCellElt.lastElementChild as HTMLElement;
+        const expandTogglerElt = firstCellElt.firstElementChild as HTMLElement;
+        const nodeOffset = this.childNodeOffset * node.level + (node.isLeaf ? this.expandTogglerWidth : 0);
 
-      if (node.isLeaf) {
-        cellContentElt.style.marginLeft = `${nodeOffset}px`;
-        expandTogglerElt.classList.add('hidden');
-      } else {
-        cellContentElt.style.marginLeft = '0px';
-        expandTogglerElt.classList.remove('hidden');
-        expandTogglerElt.style.marginLeft = `${nodeOffset}px`;
-
-        if (node.isExpanded) {
-          (expandTogglerElt.firstElementChild as HTMLElement).classList.add('active');
+        if (node.isLeaf) {
+          cellContentElt.style.marginLeft = `${nodeOffset}px`;
+          expandTogglerElt.classList.add('hidden');
         } else {
-          (expandTogglerElt.firstElementChild as HTMLElement).classList.remove('active');
+          cellContentElt.style.marginLeft = '0px';
+          expandTogglerElt.classList.remove('hidden');
+          expandTogglerElt.style.marginLeft = `${nodeOffset}px`;
+
+          if (node.isExpanded) {
+            (expandTogglerElt.firstElementChild as HTMLElement).classList.add('active');
+          } else {
+            (expandTogglerElt.firstElementChild as HTMLElement).classList.remove('active');
+          }
         }
       }
     }
@@ -187,7 +186,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   private computeExpandTogglerWidth(): number {
     const elts = this.tableBodyElt.getElementsByClassName(TreeTable.EXPAND_TOGGLER_CLASS);
 
-    return elts.length > 0 ? DomUtils.getEltComputedWidth(elts[this.expandTogglerColumnIndex] as HTMLElement) : 0;
+    return elts.length > 0 ? DomUtils.getEltComputedWidth(elts[0] as HTMLElement) : 0;
   }
 
   private createExpandToggler(nodeIndex: number): HTMLElement {
