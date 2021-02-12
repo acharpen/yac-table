@@ -117,7 +117,7 @@ export abstract class AbstractTable<T> {
   public sort(columnId: number, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): void {
     const targetColumn = this.columns.find((column) => column.id === columnId);
 
-    if (targetColumn?.sortFeature != null && targetColumn.sortFeature) {
+    if (targetColumn?.isSortable != null && targetColumn.isSortable) {
       this.currentSort = { column: targetColumn, mode, compareFunc };
 
       this.updateNodes({ performSorting: true });
@@ -148,7 +148,7 @@ export abstract class AbstractTable<T> {
     if (column.classList) {
       elt.classList.add(...column.classList);
     }
-    if (column.sortFeature) {
+    if (column.isSortable) {
       elt.classList.add('sortable');
     }
 
@@ -367,7 +367,7 @@ export abstract class AbstractTable<T> {
     const elt = DomUtils.createDiv(AbstractTable.BODY_CLASS);
     elt.appendChild(DomUtils.createDiv()).appendChild(DomUtils.createDiv());
 
-    if (this.columns.some((column) => column.resizeFeature)) {
+    if (this.columns.some((column) => column.isResizable)) {
       elt.classList.add('resizable');
     }
 
@@ -381,7 +381,7 @@ export abstract class AbstractTable<T> {
   private createTableHeader(): HTMLElement {
     const elt = DomUtils.createDiv(AbstractTable.HEADER_CLASS);
 
-    if (this.columns.some((column) => column.resizeFeature)) {
+    if (this.columns.some((column) => column.isResizable)) {
       elt.classList.add('resizable');
     }
 
@@ -398,7 +398,7 @@ export abstract class AbstractTable<T> {
     if (column.classList) {
       elt.classList.add(...column.classList);
     }
-    if (column.sortFeature) {
+    if (column.isSortable) {
       const sortAscElt = DomUtils.createDiv(AbstractTable.SORT_ASC_HANDLE_CLASS);
       sortAscElt.addEventListener('mouseup', (event) => {
         this.onSortColumn(event, ctx.columnIndex, 'asc');
@@ -413,7 +413,7 @@ export abstract class AbstractTable<T> {
       elt.appendChild(sortAscElt);
       elt.appendChild(sortDescElt);
     }
-    if (column.resizeFeature) {
+    if (column.isResizable) {
       const resizeHandleElt = DomUtils.createDiv(AbstractTable.RESIZE_HANDLE_CLASS);
       resizeHandleElt.addEventListener('mousedown', (event) => {
         this.onResizeColumn(event, ctx.columnIndex);
@@ -610,7 +610,7 @@ export abstract class AbstractTable<T> {
 
   private resetColumnSortHandles(): void {
     for (let i = 0, len = this.columns.length; i < len; i++) {
-      if (this.columns[i].sortFeature) {
+      if (this.columns[i].isSortable) {
         const headerCellElt = this.tableHeaderRowElt.children[i] as HTMLElement;
         const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
         sortAscElt.classList.remove('active');

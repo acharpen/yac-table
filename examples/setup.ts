@@ -35,16 +35,16 @@ export const columnOptions = [
     align: 'left' as const,
     formatter: linkFormatter('col1'),
     id: 1,
-    resizeFeature: true,
-    sortFeature: true,
+    isResizable: true,
+    isSortable: true,
     title: 'col1'
   },
   {
     align: 'left' as const,
     formatter: defaultFormatter('col2'),
     id: 2,
-    resizeFeature: true,
-    sortFeature: true,
+    isResizable: true,
+    isSortable: true,
     title: 'col2',
     width: { value: 10, unit: '%' as const }
   },
@@ -52,16 +52,16 @@ export const columnOptions = [
     align: 'right' as const,
     formatter: defaultFormatter('col3'),
     id: 3,
-    resizeFeature: true,
-    sortFeature: true,
+    isResizable: true,
+    isSortable: true,
     title: 'col3'
   },
   {
     align: 'left' as const,
     formatter: defaultFormatter('col4'),
     id: 4,
-    resizeFeature: true,
-    sortFeature: true,
+    isResizable: true,
+    isSortable: true,
     title: 'col4'
   }
 ];

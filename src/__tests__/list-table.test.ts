@@ -9,16 +9,16 @@ const columnOptions = [
     align: 'left' as const,
     formatter: defaultFormatter('col1'),
     id: 1,
-    resizeFeature: true,
-    sortFeature: true,
+    isResizable: true,
+    isSortable: true,
     title: 'col1'
   },
   {
     align: 'left' as const,
     formatter: defaultFormatter('col2'),
     id: 2,
-    resizeFeature: true,
-    sortFeature: true,
+    isResizable: true,
+    isSortable: true,
     title: 'col2'
   }
 ];
