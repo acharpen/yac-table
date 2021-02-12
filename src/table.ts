@@ -330,14 +330,18 @@ export abstract class AbstractTable<T> {
   }
 
   private buildTable(): void {
-    this.rootElt.appendChild(this.tableHeaderElt);
-    this.rootElt.appendChild(this.tableBodyElt);
+    const rootFragment = document.createDocumentFragment();
+
+    rootFragment.appendChild(this.tableHeaderElt);
+    rootFragment.appendChild(this.tableBodyElt);
     this.tableHeaderElt.appendChild(this.tableHeaderRowElt);
     this.tableNodeElts.forEach((nodeElt) => {
       ((this.tableBodyElt.firstElementChild as HTMLElement).firstElementChild as HTMLElement).appendChild(nodeElt);
     });
 
     this.setTableBodyHeight();
+
+    this.rootElt.appendChild(rootFragment);
   }
 
   private computeFirstVisibleNodeIndex(): number {
