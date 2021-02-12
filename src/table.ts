@@ -38,7 +38,6 @@ export abstract class AbstractTable<T> {
   private currentSort: { column: Column<T>; mode: ColumnSortMode; compareFunc: (a: T, b: T) => number } | null;
   private currentScrollX: number;
   private currentScrollY: number;
-  private isResizing: boolean;
 
   protected constructor(
     rootElt: HTMLElement,
@@ -51,7 +50,6 @@ export abstract class AbstractTable<T> {
     this.currentSort = null;
     this.currentScrollX = 0;
     this.currentScrollY = 0;
-    this.isResizing = false;
     this.nodes = [];
     this.options = { ...tableOptions, frozenColumns: this.adjustFrozenColumns(tableOptions.frozenColumns) };
     this.virtualNodesCount = this.options.visibleNodes + AbstractTable.VIRTUAL_SCROLL_PADDING * 2;
@@ -374,9 +372,7 @@ export abstract class AbstractTable<T> {
     }
 
     elt.addEventListener('scroll', () => {
-      if (!this.isResizing) {
-        this.onScrollTableBody();
-      }
+      requestAnimationFrame(() => this.onScrollTableBody());
     });
 
     return elt;
@@ -823,13 +819,9 @@ export abstract class AbstractTable<T> {
     const stopResize = (stopEvent: Event): void => {
       stopEvent.stopPropagation();
 
-      this.isResizing = false;
-
       window.removeEventListener('mouseup', stopResize, { capture: true });
       window.removeEventListener('mousemove', resize);
     };
-
-    this.isResizing = true;
 
     startEvent.preventDefault();
 
