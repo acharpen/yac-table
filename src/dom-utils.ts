@@ -5,7 +5,10 @@ export class DomUtils {
 
   public static createElt(tagName: string, ...classes: string[]): HTMLElement {
     const elt = document.createElement(tagName);
-    elt.classList.add(...classes);
+
+    if (classes.length > 0) {
+      elt.classList.add(...classes);
+    }
 
     return elt;
   }
