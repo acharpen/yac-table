@@ -4,8 +4,8 @@ export interface ColumnOptions<T> {
   align: 'center' | 'left' | 'right';
   formatter: (item: T) => DocumentFragment;
   id: number;
-  resizeFeature: boolean;
-  sortFeature: boolean;
+  isResizable: boolean;
+  isSortable: boolean;
   title: string;
   cellColor?: (item: T) => { backgroundColor?: string; color?: string } | null;
   classList?: string[];

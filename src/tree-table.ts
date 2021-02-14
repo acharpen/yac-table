@@ -156,7 +156,7 @@ export class TreeTable<T> extends AbstractTable<T> {
     if (this.expandTogglerColumnIndex !== null) {
       for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
         const node = this.nodes[this.visibleNodeIndexes[i]];
-        const firstCellElt = this.tableNodeElts[i].children[this.expandTogglerColumnIndex];
+        const firstCellElt = this.getTableRowCells(this.tableNodeElts[i])[this.expandTogglerColumnIndex];
         const cellContentElt = firstCellElt.lastElementChild as HTMLElement;
         const expandTogglerElt = firstCellElt.firstElementChild as HTMLElement;
         const nodeOffset = this.childNodeOffset * node.level + (node.isLeaf ? this.expandTogglerWidth : 0);
