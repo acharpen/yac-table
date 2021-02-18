@@ -8,10 +8,258 @@
 
     <link rel="stylesheet" href="../../src/core.scss" />
     <link rel="stylesheet" href="../../src/theme.scss" />
+
+    <style>
+      .celda {
+        height: 18px;
+        border: 1px solid #000;
+      }
+
+      .sticky {
+        position: sticky;
+        top: 0;
+      }
+
+      .example-viewport {
+        height: 200px;
+      }
+
+      .cdk-virtual-scroll-viewport {
+        display: block;
+        position: relative;
+        overflow: auto;
+        contain: strict;
+        transform: translateZ(0);
+        will-change: scroll-position;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .cdk-virtual-scroll-content-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        contain: content;
+        min-width: 100%;
+      }
+
+      .cdk-virtual-scroll-spacer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 1px;
+        width: 1px;
+        transform-origin: 0 0;
+      }
+
+      .example-item {
+        height: 50px;
+      }
+    </style>
   </head>
 
   <body>
-    <div id="table" style="width: 1200px"></div>
+    <div id="table-container" style="height: 400px"></div>
+
+    <br /><br /><br />
+
+    <div class="cdk-virtual-scroll-viewport example-viewport cdk-virtual-scroll-orientation-vertical">
+      <div class="yac-table-header">
+        <div class="yac-table-row">
+          <div class="yac-table-cell yac-table-sticky" style="left: 0">
+            <div class="yac-table-cell-content">H11</div>
+          </div>
+          <div class="yac-table-cell"><div class="yac-table-cell-content">H12</div></div>
+          <div class="yac-table-cell"><div class="yac-table-cell-content">H13</div></div>
+          <div class="yac-table-cell"><div class="yac-table-cell-content">H14</div></div>
+          <div class="yac-table-cell"><div class="yac-table-cell-content">H15</div></div>
+        </div>
+      </div>
+
+      <div class="cdk-virtual-scroll-content-wrapper" style="transform: translateY(0px)">
+        <div class="example-item ng-star-inserted">Item #0</div>
+        <div class="example-item ng-star-inserted">Item #1</div>
+        <div class="example-item ng-star-inserted">Item #2</div>
+        <div class="example-item ng-star-inserted">Item #3</div>
+        <div class="example-item ng-star-inserted">Item #4</div>
+        <div class="example-item ng-star-inserted">Item #5</div>
+        <!---->
+      </div>
+      <div class="cdk-virtual-scroll-spacer" style="height: 800px"></div>
+    </div>
+
+    <div id="table-container-test" style="width: 1200px">
+      <div class="yac-table">
+        <div class="yac-table-header">
+          <div class="yac-table-row">
+            <div class="yac-table-cell"><div class="yac-table-cell-content">H11</div></div>
+            <div class="yac-table-cell"><div class="yac-table-cell-content">H12</div></div>
+            <div class="yac-table-cell"><div class="yac-table-cell-content">H13</div></div>
+            <div class="yac-table-cell"><div class="yac-table-cell-content">H14</div></div>
+            <div class="yac-table-cell"><div class="yac-table-cell-content">H15</div></div>
+          </div>
+        </div>
+
+        <div class="yac-table-virtual-scroll-content-wrapper">
+          <div class="yac-table-body">
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C11</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C12</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C13</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C14</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C15</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+            <div class="yac-table-row">
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C21</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C22</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C23</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C24</div></div>
+              <div class="yac-table-cell"><div class="yac-table-cell-content">C25</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- <br />
+    <br />
+    <br />
+
+    <div style="width: 1200px">
+      <div class="yac-table" style="height: 400px">
+        <div class="celda sticky" style="width: 1640px">
+          <div style="display: flex">
+            <div style="width: 40px; color: #fff; position: sticky; left: 0; background-color: red">
+              <div style="display: flex; flex-direction: column">c</div>
+            </div>
+            <div style="width: 350px; color: #fff; position: sticky; left: 40px; background-color: blue">
+              <div style="display: flex; flex-direction: column">
+                <div>cell content 1</div>
+                <div>cell content 2</div>
+              </div>
+            </div>
+            <div style="width: 350px; color: #fff; background-color: black">3</div>
+            <div style="width: 850px; color: #fff; background-color: pink">4</div>
+            <div style="width: 50px; background-color: green; color: #fff; position: sticky; right: 0">5</div>
+          </div>
+        </div>
+
+        <div class="yac-table-body" style="width: 1640px; min-height: 2.4e7px">
+          <div style="transform: translateY(0px)">
+            <div class="celda yac-table-row" style="top: 24px; display: flex; width: 1640px">
+
+              <div
+                class="yac-table-cell"
+                style="width: 40px; color: #fff; position: sticky; left: 0; background-color: red"
+              >
+                <div class="yac-table-cell-content" style="display: flex; flex-direction: column">c</div>
+              </div>
+              <div style="width: 350px; color: #fff; position: sticky; left: 40px; background-color: blue">
+                <div style="display: flex; flex-direction: column">ITEM 01</div>
+              </div>
+              <div style="width: 350px; color: #fff; background-color: black">3</div>
+              <div style="width: 850px; color: #fff; background-color: pink">4</div>
+              <div style="width: 50px; background-color: green; color: #fff; position: sticky; right: 0">5</div>
+
+            </div>
+
+            <div class="celda" style="top: 48px">ITEM 2</div>
+            <div class="celda" style="top: 72px">ITEM 3</div>
+            <div class="celda" style="top: 96px">ITEM 4</div>
+            <div class="celda" style="top: 120px">ITEM 5</div>
+            <div class="celda" style="top: 144px">ITEM 6</div>
+            <div class="celda" style="top: 168px">ITEM 7</div>
+            <div class="celda" style="top: 192px">ITEM 8</div>
+            <div class="celda" style="top: 216px">ITEM 9</div>
+            <div class="celda" style="top: 240px">ITEM 10</div>
+            <div class="celda" style="top: 264px">ITEM 11</div>
+            <div class="celda" style="top: 288px">ITEM 12</div>
+            <div class="celda" style="top: 312px">ITEM 13</div>
+            <div class="celda" style="top: 336px">ITEM 14</div>
+            <div class="celda" style="top: 360px">ITEM 15</div>
+            <div class="celda" style="top: 384px">ITEM 16</div>
+            <div class="celda" style="top: 408px">ITEM 17</div>
+            <div class="celda" style="top: 432px">ITEM 18</div>
+            <div class="celda" style="top: 456px">ITEM 19</div>
+            <div class="celda" style="top: 480px">ITEM 20</div>
+            <div class="celda" style="top: 504px">ITEM 21</div>
+            <div class="celda" style="top: 528px">ITEM 22</div>
+            <div class="celda" style="top: 552px">ITEM 23</div>
+            <div class="celda" style="top: 576px">ITEM 24</div>
+            <div class="celda" style="top: 600px">ITEM 25</div>
+            <div class="celda" style="top: 624px">ITEM 26</div>
+            <div class="celda" style="top: 648px">ITEM 27</div>
+            <div class="celda" style="top: 672px">ITEM 28</div>
+            <div class="celda" style="top: 696px">ITEM 29</div>
+            <div class="celda" style="top: 720px">ITEM 30</div>
+            <div class="celda" style="top: 744px">ITEM 31</div>
+            <div class="celda" style="top: 768px">ITEM 32</div>
+            <div class="celda" style="top: 792px">ITEM 33</div>
+            <div class="celda" style="top: 816px">ITEM 34</div>
+            <div class="celda" style="top: 840px">ITEM 35</div>
+            <div class="celda" style="top: 864px">ITEM 36</div>
+            <div class="celda" style="top: 888px">ITEM 37</div>
+            <div class="celda" style="top: 912px">ITEM 38</div>
+
+          </div>
+        </div>
+      </div>
+    </div> -->
 
     <script src="list-example.ts"></script>
   </body>

@@ -5,16 +5,25 @@ export class DomUtils {
 
   public static createElt(tagName: string, ...classes: string[]): HTMLElement {
     const elt = document.createElement(tagName);
-
-    if (classes.length > 0) {
-      elt.classList.add(...classes);
-    }
+    if (classes.length > 0) elt.classList.add(...classes);
 
     return elt;
   }
 
   public static createEvent<T>(eventName: string, arg?: T): CustomEvent<T> {
     return new CustomEvent(eventName, { detail: arg });
+  }
+
+  public static formatInPx(width: number): string {
+    return `${width}px`;
+  }
+
+  public static getComputedHeight(elt: Element): number {
+    return parseFloat(getComputedStyle(elt).getPropertyValue('height').replace('px', ''));
+  }
+
+  public static getComputedWidth(elt: Element): number {
+    return parseFloat(getComputedStyle(elt).getPropertyValue('width').replace('px', ''));
   }
 
   public static getEltByClassName(elts: HTMLCollection, className: string): HTMLElement | null {
@@ -27,10 +36,6 @@ export class DomUtils {
     }
 
     return null;
-  }
-
-  public static getEltComputedWidth(elt: HTMLElement): number {
-    return parseFloat(getComputedStyle(elt).getPropertyValue('width').replace('px', ''));
   }
 
   public static getEltWidth(elt: HTMLElement): number {

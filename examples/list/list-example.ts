@@ -9,16 +9,16 @@ const listData = [...Array(1e5).keys()].map((i) => ({
   col4: `value${i}4`
 }));
 
-const tableContainerElt = document.getElementById('table') as HTMLElement;
+const tableContainerElt = document.getElementById('table-container') as HTMLElement;
 const table = new ListTable<ExampleObject>(tableContainerElt, { columnOptions, tableOptions });
 
-tableContainerElt.addEventListener('onClickNode', (event) => {
-  const { node } = (event as CustomEvent<{ node: ListNodeView<ExampleObject> }>).detail;
-  if (node.isSelected) {
-    table.deselectNodes([node.id]);
-  } else {
-    table.selectNodes([node.id]);
-  }
-});
+// tableContainerElt.addEventListener('onClickNode', (event) => {
+//   const { node } = (event as CustomEvent<{ node: ListNodeView<ExampleObject> }>).detail;
+//   if (node.isSelected) {
+//     table.deselectNodes([node.id]);
+//   } else {
+//     table.selectNodes([node.id]);
+//   }
+// });
 
 table.setData(listData);

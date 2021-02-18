@@ -41,28 +41,28 @@ const treeData = [...Array(1e5).keys()].map((i) => ({
   }
 }));
 
-const tableContainerElt = document.getElementById('table') as HTMLElement;
+const tableContainerElt = document.getElementById('table-container') as HTMLElement;
 const table = new TreeTable<ExampleObject>(tableContainerElt, {
   columnOptions,
   tableOptions: { ...tableOptions, childNodeOffset: 8, expandTogglerColumnIndex: 0 }
 });
 
-tableContainerElt.addEventListener('onClickNode', (event) => {
-  const { node } = (event as CustomEvent<{ node: TreeNodeView<ExampleObject> }>).detail;
-  if (node.isSelected) {
-    table.deselectNodes([node.id], { withChildren: true, withParents: false });
-  } else {
-    table.selectNodes([node.id], { withChildren: true, withParents: false });
-  }
-});
+// tableContainerElt.addEventListener('onClickNode', (event) => {
+//   const { node } = (event as CustomEvent<{ node: TreeNodeView<ExampleObject> }>).detail;
+//   if (node.isSelected) {
+//     table.deselectNodes([node.id], { withChildren: true, withParents: false });
+//   } else {
+//     table.selectNodes([node.id], { withChildren: true, withParents: false });
+//   }
+// });
 
-tableContainerElt.addEventListener('onToggleNode', (event) => {
-  const { node } = (event as CustomEvent<{ node: TreeNodeView<ExampleObject> }>).detail;
-  if (node.isExpanded) {
-    table.collapseNodes([node.id]);
-  } else {
-    table.expandNodes([node.id]);
-  }
-});
+// tableContainerElt.addEventListener('onToggleNode', (event) => {
+//   const { node } = (event as CustomEvent<{ node: TreeNodeView<ExampleObject> }>).detail;
+//   if (node.isExpanded) {
+//     table.collapseNodes([node.id]);
+//   } else {
+//     table.expandNodes([node.id]);
+//   }
+// });
 
-table.setData(treeData);
+// table.setData(treeData);
