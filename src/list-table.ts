@@ -40,8 +40,9 @@ export class ListTable<T> extends AbstractTable<T> {
   }
 
   private createNodes(items: T[]): Node<T>[] {
-    return items.map((item) => ({
+    return items.map((item, i) => ({
       id: this.generateId(),
+      initialPos: i,
       isExpanded: false,
       isHidden: false,
       isLeaf: true,

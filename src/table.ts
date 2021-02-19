@@ -1,10 +1,9 @@
 import { Column, ColumnView } from './column';
-import { ColumnSortMode, ColumnWidthUnit } from './column-utils';
+import { ColumnWidthUnit, SortOrder, TableUtils } from './table-utils';
 import { ColumnOptions } from './column-options';
 import { DomUtils } from './dom-utils';
 import { Node } from './node';
 import { TableOptions } from './table-options';
-import { TableUtils } from './table-utils';
 
 export abstract class AbstractTable<T> {
   private static readonly VIRTUAL_SCROLL_PADDING: number = 2;
@@ -19,7 +18,7 @@ export abstract class AbstractTable<T> {
 
   protected readonly options: TableOptions<T>;
   protected readonly virtualNodesCount: number;
-  protected columns: Column<T>[];
+  protected dataColumns: Column<T>[];
   protected nodes: Node<T>[];
   protected visibleNodeIndexes: number[];
 
@@ -28,7 +27,7 @@ export abstract class AbstractTable<T> {
   private counter: number;
   private currentFilter: { filter: (value: T) => boolean } | null;
   private currentRangeStart: number | null;
-  private currentSort: { column: Column<T>; mode: ColumnSortMode; sort: (a: T, b: T) => number } | null;
+  private currentSort: { column: Column<T>; sortOrder: SortOrder; sort: (a: T, b: T) => number } | null;
   // private currentScrollX: number;
   // private currentScrollY: number;
 
@@ -37,12 +36,12 @@ export abstract class AbstractTable<T> {
     { columnOptions, tableOptions }: { columnOptions: ColumnOptions<T>[]; tableOptions: TableOptions<T> }
   ) {
     this.activeNodeIndexes = [];
-    this.columns = columnOptions.map((column) => ({ ...column, sortMode: 'default' }));
     this.containerElt = containerElt;
     this.counter = 0;
     this.currentFilter = null;
     this.currentRangeStart = null;
     this.currentSort = null;
+    this.dataColumns = columnOptions.map((column) => ({ ...column, sortOrder: 'default' }));
     this.nodes = [];
     this.options = tableOptions;
     this.virtualNodesCount = this.options.visibleNodes + AbstractTable.VIRTUAL_SCROLL_PADDING * 2;
@@ -65,7 +64,7 @@ export abstract class AbstractTable<T> {
   protected createTableBodyCellElt(column: Column<T>, _ctx: { nodeIndex: number }): HTMLElement {
     const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
     if (column.classList) elt.classList.add(...column.classList);
-    if (column.stick != null) elt.classList.add(TableUtils.STICKY_CLS);
+    if (column.sticky != null) elt.classList.add(TableUtils.STICKY_CLS);
 
     elt.appendChild(this.createTableBodyCellContentElt(column));
 
@@ -76,11 +75,13 @@ export abstract class AbstractTable<T> {
     return this.counter++;
   }
 
-  protected getTableRowCellElts(tableRowElt: HTMLElement): HTMLElement[] {
+  protected getDataCellElts(tableRowElt: HTMLElement): HTMLElement[] {
     const elts = [];
     const tableRowChildElts = tableRowElt.children;
+    const startIndex = this.options.selectable != null ? 1 : 0;
+    const endIndex = tableRowChildElts.length;
 
-    for (let i = 0, len = tableRowChildElts.length; i < len; i++) {
+    for (let i = startIndex, len = endIndex; i < len; i++) {
       elts.push(tableRowChildElts.item(i) as HTMLElement);
     }
 
@@ -91,10 +92,9 @@ export abstract class AbstractTable<T> {
     this.hideUnusedTableBodyRowElts();
     this.setTableColumnsWidth();
 
-    this.setStickyTableColumnsPosition();
-    this.setTableRowsWidth();
-
     this.containerElt.appendChild(this.tableElt);
+
+    this.setStickyTableColumnsPosition();
   }
 
   protected setActiveNodeIndexes(): void {
@@ -108,23 +108,22 @@ export abstract class AbstractTable<T> {
   }
 
   protected setNodes(nodes: Node<T>[]): void {
-    // TODO
     this.currentFilter = null;
     this.currentSort = null;
     this.nodes = nodes;
-    //
-    // this.resetColumnSortHandles();
-    //
+
+    this.resetColumnSortHandles();
+
     this.updateNodes();
   }
 
   protected updateNodes(options?: { performFiltering?: boolean; performSorting?: boolean }): void {
     // TODO
     if (options?.performFiltering != null && options.performFiltering && this.currentFilter) {
-      // this.handleFilter(this.currentFilter.matchFunc);
+      this.handleFilter(this.currentFilter.filter);
     }
     if (options?.performSorting != null && options.performSorting && this.currentSort) {
-      // this.nodes = this.handleSort(this.currentSort.column, this.currentSort.mode, this.currentSort.compareFunc);
+      this.nodes = this.handleSort(this.currentSort.column, this.currentSort.sortOrder, this.currentSort.sort);
     }
 
     this.setActiveNodeIndexes();
@@ -132,19 +131,18 @@ export abstract class AbstractTable<T> {
     this.updateVisibleNodes();
   }
 
-  protected updateVisibleNodes(): void {
+  protected updateVisibleNodes(force = false): void {
     const newRangeStart = Math.floor(this.tableElt.scrollTop / this.options.nodeHeight);
 
-    if (newRangeStart !== this.currentRangeStart) {
+    if (force || newRangeStart !== this.currentRangeStart) {
       this.currentRangeStart = newRangeStart;
       this.tableBodyElt.style.transform = `translateY(${newRangeStart * this.options.nodeHeight}px)`;
       this.visibleNodeIndexes = this.activeNodeIndexes.slice(newRangeStart, newRangeStart + this.virtualNodesCount);
 
-      this.resetTableBodyRowElts();
-
-      this.populateVisibleNodes();
+      // this.resetTableBodyRowElts();
 
       this.hideUnusedTableBodyRowElts();
+      this.populateVisibleNodes();
     }
   }
 
@@ -167,9 +165,11 @@ export abstract class AbstractTable<T> {
     return elt;
   }
 
-  private createSortHandleElt(mode: 'asc' | 'desc', ctx: { columnIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv(mode === 'asc' ? TableUtils.SORT_ASC_HANDLE_CLS : TableUtils.SORT_DESC_HANDLE_CLS);
-    elt.addEventListener('mouseup', (event) => this.onSortColumn(event, ctx.columnIndex, mode));
+  private createSortHandleElt(sortOrder: 'asc' | 'desc', ctx: { columnIndex: number }): HTMLElement {
+    const elt = DomUtils.createDiv(
+      sortOrder === 'asc' ? TableUtils.SORT_ASC_HANDLE_CLS : TableUtils.SORT_DESC_HANDLE_CLS
+    );
+    elt.addEventListener('mouseup', (event) => this.onSortColumn(event, ctx.columnIndex, sortOrder));
 
     return elt;
   }
@@ -190,16 +190,28 @@ export abstract class AbstractTable<T> {
 
   private createTableBodyRowElt(ctx: { nodeIndex: number }): HTMLElement {
     const elt = DomUtils.createDiv(TableUtils.TABLE_ROW_CLS);
-    elt.style.height = DomUtils.formatInPx(this.options.nodeHeight);
-    elt.addEventListener('mouseup', (event) => this.onClickNode(event, ctx.nodeIndex));
+    elt.style.height = DomUtils.withPx(this.options.nodeHeight);
+    elt.addEventListener('mouseup', (event) => this.onClickTableRow(event, ctx.nodeIndex));
 
-    this.columns.forEach((column) => elt.appendChild(this.createTableBodyCellElt(column, ctx)));
+    if (this.options.selectable != null) {
+      elt.classList.add(TableUtils.SELECTABLE_CLS);
+      elt.appendChild(this.createTableBodyTickElt());
+    }
+
+    this.dataColumns.forEach((column) => elt.appendChild(this.createTableBodyCellElt(column, ctx)));
 
     return elt;
   }
 
   private createTableBodyRowElts(): HTMLElement[] {
     return [...Array(this.virtualNodesCount).keys()].map((_, i) => this.createTableBodyRowElt({ nodeIndex: i }));
+  }
+
+  private createTableBodyTickElt(): HTMLElement {
+    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
+    elt.innerHTML = TableUtils.getTickIcon();
+
+    return elt;
   }
 
   private createTableElt(): HTMLElement {
@@ -214,20 +226,18 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeaderCellElt(column: Column<T>, ctx: { columnIndex: number }): HTMLElement {
-    // TODO
     const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
     elt.addEventListener('mouseup', (event) => this.onClickTableHeaderCell(event, ctx.columnIndex));
     if (column.classList) elt.classList.add(...column.classList);
-    if (column.stick != null) elt.classList.add(TableUtils.STICKY_CLS);
+    if (column.sticky != null) elt.classList.add(TableUtils.STICKY_CLS);
 
     elt.appendChild(this.createTableHeaderCellContentElt(column));
 
-    if (column.resize != null) {
+    if (column.resizable != null) {
       elt.appendChild(this.createResizeHandleElt(ctx));
     }
-    if (column.sort != null) {
-      // elt.classList.add(`${TableUtils.TABLE_CELL_CLS}-sortable`);
-
+    if (column.sortable != null) {
+      elt.classList.add(TableUtils.SORTABLE_CLS);
       elt.appendChild(this.createSortHandleElt('asc', ctx));
       elt.appendChild(this.createSortHandleElt('desc', ctx));
     }
@@ -264,7 +274,21 @@ export abstract class AbstractTable<T> {
 
   private createTableHeaderRowElt(): HTMLElement {
     const elt = DomUtils.createDiv(TableUtils.TABLE_ROW_CLS);
-    this.columns.forEach((column, i) => elt.appendChild(this.createTableHeaderCellElt(column, { columnIndex: i })));
+
+    if (this.options.selectable != null) {
+      elt.classList.add(TableUtils.SELECTABLE_CLS);
+      elt.appendChild(this.createTableHeaderTickElt());
+    }
+
+    this.dataColumns.forEach((column, i) => elt.appendChild(this.createTableHeaderCellElt(column, { columnIndex: i })));
+
+    return elt;
+  }
+
+  private createTableHeaderTickElt(): HTMLElement {
+    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
+    elt.innerHTML = TableUtils.getTickIcon();
+    elt.addEventListener('mouseup', () => this.onClickTableHeaderTick());
 
     return elt;
   }
@@ -274,6 +298,17 @@ export abstract class AbstractTable<T> {
 
     return elt;
   }
+
+  // private getTableRowCellElts(tableRowElt: HTMLElement): HTMLElement[] {
+  //   const elts = [];
+  //   const tableRowChildElts = tableRowElt.children;
+
+  //   for (let i = 0, len = tableRowChildElts.length; i < len; i++) {
+  //     elts.push(tableRowChildElts.item(i) as HTMLElement);
+  //   }
+
+  //   return elts;
+  // }
 
   private hideUnusedTableBodyRowElts(): void {
     for (let i = this.visibleNodeIndexes.length, len = this.tableBodyRowElts.length; i < len; i++) {
@@ -293,18 +328,20 @@ export abstract class AbstractTable<T> {
   }
 
   private populateVisibleNodes(): void {
-    const columnsLength = this.columns.length;
+    const columnsLength = this.dataColumns.length;
     const defaultCellColor = { backgroundColor: '', color: '' };
 
     for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
+      this.tableBodyRowElts[i].classList.remove(TableUtils.HIDDEN_CLS);
+
       const node = this.nodes[this.visibleNodeIndexes[i]];
       const nodeElt = this.tableBodyRowElts[i];
-      const cellElts = this.getTableRowCellElts(nodeElt);
+      const cellElts = this.getDataCellElts(nodeElt);
       const rowColor = this.options.rowColor?.(node.value);
 
       for (let j = 0; j < columnsLength; j++) {
         const cellElt = cellElts[j];
-        const column = this.columns[j];
+        const column = this.dataColumns[j];
 
         this.populateCellContent(cellElt, column.formatter(node.value));
 
@@ -314,9 +351,15 @@ export abstract class AbstractTable<T> {
         cellElt.style.color = cellColor.color ?? cellElt.style.color;
       }
 
-      // Mark selection
-      if (node.isSelected) {
-        nodeElt.classList.add('selected');
+      // Update selection
+      if (this.options.selectable != null) {
+        if (node.isSelected) {
+          nodeElt.classList.add(TableUtils.SELECTED_CLS);
+          ((nodeElt.firstElementChild as Element).firstElementChild as HTMLInputElement).checked = true;
+        } else {
+          nodeElt.classList.remove(TableUtils.SELECTED_CLS);
+          ((nodeElt.firstElementChild as Element).firstElementChild as HTMLInputElement).checked = false;
+        }
       }
     }
   }
@@ -325,7 +368,7 @@ export abstract class AbstractTable<T> {
     let columnsWidth = 0;
 
     // Set widths from columns definition
-    this.columns.forEach((column, i) => {
+    this.dataColumns.forEach((column, i) => {
       if (column.width) {
         const columnWidth = this.convertToPixel(column.width);
 
@@ -338,9 +381,9 @@ export abstract class AbstractTable<T> {
     const remainingWidth = DomUtils.getComputedWidth(this.containerElt) - columnsWidth;
 
     if (remainingWidth > 0) {
-      const columnWidth = remainingWidth / this.columns.filter((column) => !column.width).length;
+      const columnWidth = remainingWidth / this.dataColumns.filter((column) => !column.width).length;
 
-      this.columns.forEach((column, i) => {
+      this.dataColumns.forEach((column, i) => {
         if (!column.width) {
           this.setTableColumnWidth(i, columnWidth);
         }
@@ -355,44 +398,125 @@ export abstract class AbstractTable<T> {
   }
 
   private setStickyTableColumnsPosition(): void {
-    const tableHeaderCellElts = this.getTableRowCellElts(this.tableHeaderRowElt);
-    const columnsWitdth = tableHeaderCellElts.map((elt) => DomUtils.getEltWidth(elt));
+    const tableHeaderCellElts = this.getDataCellElts(this.tableHeaderRowElt);
+    // const startColumnWidth =
+    //   this.options.selectable != null
+    //     ? DomUtils.getComputedWidth(this.tableHeaderRowElt.firstElementChild as HTMLElement)
+    //     : 0;
 
-    tableHeaderCellElts.forEach((tableHeaderCellElt, i) => {
-      if (this.columns[i].stick === 'left') {
-        const offset = DomUtils.formatInPx(columnsWitdth.slice(0, i).reduce((acc, x) => acc + x, 0));
-        tableHeaderCellElt.style.left = offset;
-        this.tableBodyRowElts.forEach((elt) => (this.getTableRowCellElts(elt)[i].style.left = offset));
-      } else if (this.columns[i].stick === 'right') {
-        const offset = DomUtils.formatInPx(columnsWitdth.slice(i + 1).reduce((acc, x) => acc + x, 0));
-        tableHeaderCellElt.style.right = offset;
-        this.tableBodyRowElts.forEach((elt) => (this.getTableRowCellElts(elt)[i].style.right = offset));
+    const stickyDataColumnsWitdth = [];
+    for (let i = 0, dataColumnsLen = this.dataColumns.length; i < dataColumnsLen; i++) {
+      const column = this.dataColumns[i];
+
+      if (column.sticky != null) {
+        stickyDataColumnsWitdth.push(DomUtils.getWidth(tableHeaderCellElts[i]));
       }
-    });
-  }
+    }
+    const stickyDataColumnsWitdthLen = stickyDataColumnsWitdth.length;
 
-  private setTableColumnWidth(columnIndex: number, width: number): void {
-    const formattedWidth = `${width}px`;
+    for (let i = 0, tableHeaderCellEltsLen = tableHeaderCellElts.length; i < tableHeaderCellEltsLen; i++) {
+      const column = this.dataColumns[i];
+      const tableHeaderCellElt = tableHeaderCellElts[i];
 
-    this.getTableRowCellElts(this.tableHeaderRowElt)[columnIndex].style.width = formattedWidth;
-    for (let i = 0, len = this.tableBodyRowElts.length; i < len; i++) {
-      this.getTableRowCellElts(this.tableBodyRowElts[i])[columnIndex].style.width = formattedWidth;
+      if (column.sticky === 'left') {
+        let offset = 0;
+        for (let j = 0; j < i; j++) offset += stickyDataColumnsWitdth[j];
+        const offsetInPx = DomUtils.withPx(offset);
+
+        tableHeaderCellElt.style.left = offsetInPx;
+        for (let j = 0, tableBodyRowEltsLen = this.tableBodyRowElts.length; j < tableBodyRowEltsLen; j++) {
+          this.getDataCellElts(this.tableBodyRowElts[j])[i].style.left = offsetInPx;
+        }
+      } else if (column.sticky === 'right') {
+        let offset = 0;
+        for (let j = i + 1; j < stickyDataColumnsWitdthLen; j++) offset += stickyDataColumnsWitdth[j];
+        const offsetInPx = DomUtils.withPx(offset);
+
+        tableHeaderCellElt.style.right = offsetInPx;
+        for (let j = 0, tableBodyRowEltsLen = this.tableBodyRowElts.length; j < tableBodyRowEltsLen; j++) {
+          this.getDataCellElts(this.tableBodyRowElts[j])[i].style.right = offsetInPx;
+        }
+      }
     }
   }
 
-  private setTableRowsWidth(): void {
-    const width = this.getTableRowCellElts(this.tableHeaderRowElt)
-      .map((elt) => DomUtils.getEltWidth(elt))
-      .reduce((acc, x) => acc + x, 0);
-    const formattedWidth = `${width}px`;
+  // private setStickyTableColumnsPosition(): void {
+  //   const tableHeaderCellElts = this.getTableRowCellElts(this.tableHeaderRowElt);
+  //   const columnsWitdth = tableHeaderCellElts.map((elt) => DomUtils.getEltWidth(elt));
+  //   const columnsWitdthLen = columnsWitdth.length;
+  //   console.log(tableHeaderCellElts);
 
-    this.tableHeaderElt.style.width = formattedWidth;
-    this.tableBodyElt.style.width = formattedWidth;
+  //   for (let i = 0, len = this.dataColumns.length; i < len; i++) {
+  //     const column = this.dataColumns[i];
+
+  //     if (column.sticky === 'left') {
+  //       let offset = 0;
+  //       for (let j = 0; j < i; j++) offset += columnsWitdth[j];
+  //       const offsetInPx = DomUtils.withPx(offset);
+
+  //       tableHeaderCellElt.style.left = offsetInPx;
+  //       for (let j = 0, tableBodyRowEltsLen = this.tableBodyRowElts.length; j < tableBodyRowEltsLen; j++) {
+  //         this.getDataCellElts(this.tableBodyRowElts[j])[i].style.left = offsetInPx;
+  //       }
+  //     } else if (column.sticky === 'right') {
+  //       let offset = 0;
+  //       for (let j = i + 1; j < columnsWitdthLen; j++) offset += columnsWitdth[j];
+  //       const offsetInPx = DomUtils.withPx(offset);
+
+  //       tableHeaderCellElt.style.right = offsetInPx;
+  //       for (let j = 0, tableBodyRowEltsLen = this.tableBodyRowElts.length; j < tableBodyRowEltsLen; j++) {
+  //         this.getDataCellElts(this.tableBodyRowElts[j])[i].style.right = offsetInPx;
+  //       }
+  //     }
+  //   }
+
+  //   for (let i = 0, tableHeaderCellEltsLen = tableHeaderCellElts.length; i < tableHeaderCellEltsLen; i++) {
+  //     const tableHeaderCellElt = tableHeaderCellElts[i];
+
+  //     if (this.dataColumns[i].sticky === 'left') {
+  //       let offset = 0;
+  //       for (let j = 0; j < i; j++) offset += columnsWitdth[j];
+  //       const offsetInPx = DomUtils.withPx(offset);
+
+  //       tableHeaderCellElt.style.left = offsetInPx;
+  //       for (let j = 0, tableBodyRowEltsLen = this.tableBodyRowElts.length; j < tableBodyRowEltsLen; j++) {
+  //         this.getDataCellElts(this.tableBodyRowElts[j])[i].style.left = offsetInPx;
+  //       }
+  //     } else if (this.dataColumns[i].sticky === 'right') {
+  //       let offset = 0;
+  //       for (let j = i + 1; j < columnsWitdthLen; j++) offset += columnsWitdth[j];
+  //       const offsetInPx = DomUtils.withPx(offset);
+
+  //       tableHeaderCellElt.style.right = offsetInPx;
+  //       for (let j = 0, tableBodyRowEltsLen = this.tableBodyRowElts.length; j < tableBodyRowEltsLen; j++) {
+  //         this.getDataCellElts(this.tableBodyRowElts[j])[i].style.right = offsetInPx;
+  //       }
+  //     }
+  //   }
+  // }
+
+  private setTableColumnWidth(columnIndex: number, width: number): void {
+    const widthInPx = `${width}px`;
+
+    this.getDataCellElts(this.tableHeaderRowElt)[columnIndex].style.width = widthInPx;
+    for (let i = 0, len = this.tableBodyRowElts.length; i < len; i++) {
+      this.getDataCellElts(this.tableBodyRowElts[i])[columnIndex].style.width = widthInPx;
+    }
   }
+
+  // private setTableRowsWidth(): void {
+  //   const width = this.getDataCellElts(this.tableHeaderRowElt)
+  //     .map((elt) => DomUtils.getEltWidth(elt))
+  //     .reduce((acc, x) => acc + x, 0);
+  //   const formattedWidth = `${width}px`;
+
+  //   // this.tableHeaderElt.style.width = formattedWidth;
+  //   // this.tableBodyElt.style.width = formattedWidth;
+  // }
 
   private setVirtualScrollSpacerHeight(): void {
     const height = this.activeNodeIndexes.length * this.options.nodeHeight + this.tableHeaderHeight;
-    this.virtualScrollSpacerElt.style.height = DomUtils.formatInPx(height);
+    this.virtualScrollSpacerElt.style.height = DomUtils.withPx(height);
   }
 
   // ////////////////////////////////////////////////////////////////////////////
@@ -404,15 +528,15 @@ export abstract class AbstractTable<T> {
   //   { position, refColumnId }: { position: 'start' | 'end'; refColumnId?: number }
   // ): void {
   //   const isBebore = position === 'start';
-  //   const refColumnIndex = refColumnId != null ? this.columns.findIndex((column) => column.id === refColumnId) : -1;
+  //   const refColumnIndex = refColumnId != null ? this.dataColumns.findIndex((column) => column.id === refColumnId) : -1;
   //   const newColumnIndex =
-  //     refColumnIndex !== -1 ? (isBebore ? refColumnIndex : refColumnIndex + 1) : isBebore ? 0 : this.columns.length;
+  //     refColumnIndex !== -1 ? (isBebore ? refColumnIndex : refColumnIndex + 1) : isBebore ? 0 : this.dataColumns.length;
 
   //   this.handleAddColumn(columnOption, newColumnIndex);
   // }
 
   // public deleteColumn(columnId: number): void {
-  //   const columnIndex = this.columns.findIndex((column) => column.id === columnId);
+  //   const columnIndex = this.dataColumns.findIndex((column) => column.id === columnId);
 
   //   if (columnIndex !== -1) {
   //     this.handleDeleteColumn(columnIndex);
@@ -425,16 +549,17 @@ export abstract class AbstractTable<T> {
   //   this.updateNodes();
   // }
 
-  // public deselectNodes(nodeIds: number[]): void {
-  //   this.toggleNodesSelection(nodeIds, false);
+  public deselectNodes(nodeIds: number[]): void {
+    this.toggleNodesSelection(nodeIds, false);
 
-  //   // Update nodes selection indicator in table header
-  //   if (this.nodes.every((node) => !node.isSelected)) {
-  //     this.tableHeaderRowElt.classList.remove('selected');
-  //   }
+    // Update nodes selection indicator in table header
+    if (this.nodes.every((node) => !node.isSelected)) {
+      this.tableHeaderRowElt.classList.remove(TableUtils.SELECTED_CLS);
+      ((this.tableHeaderRowElt.firstElementChild as Element).firstElementChild as HTMLInputElement).checked = false;
+    }
 
-  //   this.updateVisibleNodes();
-  // }
+    this.updateVisibleNodes(true);
+  }
 
   // public filter(matchFunc: (value: T) => boolean): void {
   //   this.currentFilter = { matchFunc };
@@ -442,19 +567,20 @@ export abstract class AbstractTable<T> {
   //   this.updateNodes({ performFiltering: true });
   // }
 
-  // public selectNodes(nodeIds: number[]): void {
-  //   this.toggleNodesSelection(nodeIds, true);
+  public selectNodes(nodeIds: number[]): void {
+    this.toggleNodesSelection(nodeIds, true);
 
-  //   // Update nodes selection indicator in table header
-  //   if (this.nodes.some((node) => node.isSelected)) {
-  //     this.tableHeaderRowElt.classList.add('selected');
-  //   }
+    // Update nodes selection indicator in table header
+    if (this.nodes.some((node) => node.isSelected)) {
+      this.tableHeaderRowElt.classList.add(TableUtils.SELECTED_CLS);
+      ((this.tableHeaderRowElt.firstElementChild as Element).firstElementChild as HTMLInputElement).checked = true;
+    }
 
-  //   this.updateVisibleNodes();
-  // }
+    this.updateVisibleNodes(true);
+  }
 
   // public sort(columnId: number, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): void {
-  //   const targetColumn = this.columns.find((column) => column.id === columnId);
+  //   const targetColumn = this.dataColumns.find((column) => column.id === columnId);
 
   //   if (targetColumn?.isSortable != null && targetColumn.isSortable) {
   //     this.currentSort = { column: targetColumn, mode, compareFunc };
@@ -508,7 +634,7 @@ export abstract class AbstractTable<T> {
   //   columnOption: ColumnOptions<T> & Required<Pick<ColumnOptions<T>, 'width'>>,
   //   newColumnIndex: number
   // ): void {
-  //   const isNewLastColumn = newColumnIndex === this.columns.length;
+  //   const isNewLastColumn = newColumnIndex === this.dataColumns.length;
   //   const newColumn: Column<T> = { ...columnOption, sortMode: 'default' };
   //   const newColumnWidth = this.convertInPixel(columnOption.width);
 
@@ -534,7 +660,7 @@ export abstract class AbstractTable<T> {
   //   };
 
   //   //
-  //   this.columns.splice(newColumnIndex, 0, newColumn);
+  //   this.dataColumns.splice(newColumnIndex, 0, newColumn);
 
   //   // Clear frozen context
   //   if (this.options.frozenColumns && newColumnIndex <= this.options.frozenColumns) {
@@ -573,7 +699,7 @@ export abstract class AbstractTable<T> {
   //   const columnWidth = DomUtils.getEltWidth(this.getTableRowCells(this.tableHeaderRowElt)[columnIndex]);
 
   //   //
-  //   this.columns = this.columns.filter((_, i) => i !== columnIndex);
+  //   this.dataColumns = this.dataColumns.filter((_, i) => i !== columnIndex);
 
   //   // Clear frozen context
   //   if (this.options.frozenColumns && columnIndex < this.options.frozenColumns) {
@@ -673,7 +799,7 @@ export abstract class AbstractTable<T> {
   // // ////////////////////////////////////////////////////////////////////////////
 
   // private adjustFrozenColumns(frozenColumns: number): number {
-  //   return frozenColumns < this.columns.length ? frozenColumns : 0;
+  //   return frozenColumns < this.dataColumns.length ? frozenColumns : 0;
   // }
 
   // private buildTable(): void {
@@ -716,7 +842,7 @@ export abstract class AbstractTable<T> {
   //   const elt = DomUtils.createDiv(AbstractTable.BODY_CLS);
   //   elt.appendChild(DomUtils.createDiv()).appendChild(DomUtils.createDiv());
 
-  //   if (this.columns.some((column) => column.isResizable)) {
+  //   if (this.dataColumns.some((column) => column.isResizable)) {
   //     elt.classList.add('resizable');
   //   }
 
@@ -730,7 +856,7 @@ export abstract class AbstractTable<T> {
   // private createTableHeader(): HTMLElement {
   //   const elt = DomUtils.createDiv(AbstractTable.HEADER_CLS);
 
-  //   if (this.columns.some((column) => column.isResizable)) {
+  //   if (this.dataColumns.some((column) => column.isResizable)) {
   //     elt.classList.add('resizable');
   //   }
 
@@ -784,7 +910,7 @@ export abstract class AbstractTable<T> {
   // private createTableHeaderRow(): HTMLElement {
   //   const elt = DomUtils.createDiv(AbstractTable.ROW_CLS);
 
-  //   this.columns.forEach((column, i) => {
+  //   this.dataColumns.forEach((column, i) => {
   //     elt.appendChild(this.createTableHeaderCell(column, { columnIndex: i }));
   //   });
 
@@ -799,7 +925,7 @@ export abstract class AbstractTable<T> {
   //     this.onClickNode(event, ctx.nodeIndex);
   //   });
 
-  //   this.columns.forEach((column) => {
+  //   this.dataColumns.forEach((column) => {
   //     elt.appendChild(this.createTableCell(column, ctx));
   //   });
 
@@ -838,79 +964,84 @@ export abstract class AbstractTable<T> {
   //   this.updateFirstUnfrozenColumnOffset();
   // }
 
-  // private getColumnSortHandles(headerCellElt: HTMLElement): { sortAscElt: HTMLElement; sortDescElt: HTMLElement } {
-  //   const headerCellContentElts = headerCellElt.children;
-  //   const sortAscElt = DomUtils.getEltByClassName(headerCellContentElts, AbstractTable.SORT_ASC_HANDLE_CLS);
-  //   const sortDescElt = DomUtils.getEltByClassName(headerCellContentElts, AbstractTable.SORT_DESC_HANDLE_CLS);
+  private getColumnSortHandles(headerCellElt: HTMLElement): { sortAscElt: HTMLElement; sortDescElt: HTMLElement } {
+    const headerCellContentElts = headerCellElt.children;
+    const sortAscElt = DomUtils.getEltByClassName(headerCellContentElts, TableUtils.SORT_ASC_HANDLE_CLS);
+    const sortDescElt = DomUtils.getEltByClassName(headerCellContentElts, TableUtils.SORT_DESC_HANDLE_CLS);
 
-  //   return { sortAscElt: sortAscElt as HTMLElement, sortDescElt: sortDescElt as HTMLElement };
-  // }
+    return { sortAscElt: sortAscElt as HTMLElement, sortDescElt: sortDescElt as HTMLElement };
+  }
 
-  // private handleFilter(matchFunc: (value: T) => boolean): void {
-  //   const nodesLength = this.nodes.length;
+  private handleFilter(filter: (value: T) => boolean): void {
+    const nodesLength = this.nodes.length;
 
-  //   for (let i = nodesLength - 1; i >= 0; i--) {
-  //     const node = this.nodes[i];
-  //     node.isMatching = matchFunc(node.value);
+    for (let i = nodesLength - 1; i >= 0; i--) {
+      const node = this.nodes[i];
 
-  //     if (!node.isMatching && !node.isLeaf) {
-  //       let nextnodeIndex = i + 1;
+      node.isMatching = filter(node.value);
 
-  //       while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
-  //         if (this.nodes[nextnodeIndex].isMatching) {
-  //           node.isMatching = true;
-  //           break;
-  //         }
-  //         nextnodeIndex++;
-  //       }
-  //     }
-  //   }
-  // }
+      if (!node.isMatching && !node.isLeaf) {
+        let nextnodeIndex = i + 1;
 
-  // private handleSort(column: Column<T>, mode: ColumnSortMode, compareFunc: (a: T, b: T) => number): Node<T>[] {
-  //   const compareWithOrderFunc = (a: T, b: T): number => compareFunc(a, b) * (mode === 'desc' ? -1 : 1);
-  //   const nodesLength = this.nodes.length;
-  //   const rootNodes = [];
-  //   const sortedChildrenByParentNodeId = new Map<number, Node<T>[]>();
+        while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+          if (this.nodes[nextnodeIndex].isMatching) {
+            node.isMatching = true;
+            break;
+          }
+          nextnodeIndex++;
+        }
+      }
+    }
+  }
 
-  //   this.resetColumnSortHandles();
+  private handleSort(column: Column<T>, sortOrder: SortOrder, sort: (a: T, b: T) => number): Node<T>[] {
+    const sortedNodes: Node<T>[] = [];
 
-  //   for (let i = 0; i < nodesLength; i++) {
-  //     const node = this.nodes[i];
-  //     const children = [];
-  //     let nextnodeIndex = i + 1;
+    if (sortOrder === 'default') {
+      Array.prototype.push.apply(
+        sortedNodes,
+        this.nodes.sort((a, b) => (a.initialPos < b.initialPos ? -1 : a.initialPos > b.initialPos ? 1 : 0))
+      );
+    } else {
+      const orderedSort = (a: T, b: T): number => sort(a, b) * (sortOrder === 'asc' ? 1 : -1);
+      const nodesLength = this.nodes.length;
+      const rootNodes = [];
+      const sortedChildrenByParentNodeId = new Map<number, Node<T>[]>();
 
-  //     while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
-  //       if (this.nodes[nextnodeIndex].level === node.level + 1) {
-  //         children.push(this.nodes[nextnodeIndex]);
-  //       }
-  //       nextnodeIndex++;
-  //     }
+      this.resetColumnSortHandles();
 
-  //     sortedChildrenByParentNodeId.set(
-  //       node.id,
-  //       children.sort((a, b) => compareWithOrderFunc(a.value, b.value) * -1)
-  //     );
+      for (let i = 0; i < nodesLength; i++) {
+        const node = this.nodes[i];
+        const children = [];
+        let nextnodeIndex = i + 1;
 
-  //     if (node.level === 0) {
-  //       rootNodes.push(node);
-  //     }
-  //   }
+        while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+          if (this.nodes[nextnodeIndex].level === node.level + 1) children.push(this.nodes[nextnodeIndex]);
+          nextnodeIndex++;
+        }
 
-  //   const sortedNodes = [];
-  //   const stack = rootNodes.sort((a, b) => compareWithOrderFunc(a.value, b.value) * -1);
+        sortedChildrenByParentNodeId.set(
+          node.id,
+          children.sort((a, b) => orderedSort(a.value, b.value) * -1)
+        );
 
-  //   while (stack.length > 0) {
-  //     const node = stack.pop() as Node<T>;
+        if (node.level === 0) rootNodes.push(node);
+      }
 
-  //     sortedNodes.push(node);
-  //     Array.prototype.push.apply(stack, sortedChildrenByParentNodeId.get(node.id) as Node<T>[]);
-  //   }
+      const stack = rootNodes.sort((a, b) => orderedSort(a.value, b.value) * -1);
 
-  //   this.setColumnSortMode(column, mode);
+      while (stack.length > 0) {
+        const node = stack.pop() as Node<T>;
 
-  //   return sortedNodes;
-  // }
+        sortedNodes.push(node);
+        Array.prototype.push.apply(stack, sortedChildrenByParentNodeId.get(node.id) as Node<T>[]);
+      }
+
+      this.setColumnSortOrder(column, sortOrder);
+    }
+
+    return sortedNodes;
+  }
 
   // private hideUnusedTableNodeElts(): void {
   //   for (let i = this.visibleNodeIndexes.length, len = this.tableNodeElts.length; i < len; i++) {
@@ -930,7 +1061,7 @@ export abstract class AbstractTable<T> {
   // }
 
   // private populateVisibleNodes(): void {
-  //   const columnsLength = this.columns.length;
+  //   const columnsLength = this.dataColumns.length;
   //   const defaultCellColor = { backgroundColor: '', color: '' };
 
   //   for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
@@ -941,7 +1072,7 @@ export abstract class AbstractTable<T> {
 
   //     for (let j = 0; j < columnsLength; j++) {
   //       const cellElt = cellElts[j];
-  //       const column = this.columns[j];
+  //       const column = this.dataColumns[j];
 
   //       this.populateCellContent(cellElt, column.formatter(node.value));
 
@@ -958,16 +1089,16 @@ export abstract class AbstractTable<T> {
   //   }
   // }
 
-  // private resetColumnSortHandles(): void {
-  //   for (let i = 0, len = this.columns.length; i < len; i++) {
-  //     if (this.columns[i].isSortable) {
-  //       const headerCellElt = this.getTableRowCells(this.tableHeaderRowElt)[i];
-  //       const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
-  //       sortAscElt.classList.remove('active');
-  //       sortDescElt.classList.remove('active');
-  //     }
-  //   }
-  // }
+  private resetColumnSortHandles(): void {
+    this.dataColumns.forEach((column, i) => {
+      if (column.sortable != null) {
+        const headerCellElt = this.getDataCellElts(this.tableHeaderRowElt)[i];
+        const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
+        sortAscElt.classList.remove(TableUtils.ACTIVE_CLS);
+        sortDescElt.classList.remove(TableUtils.ACTIVE_CLS);
+      }
+    });
+  }
 
   // private resetTableNodeElts(): void {
   //   for (let i = 0, len = this.tableNodeElts.length; i < len; i++) {
@@ -975,25 +1106,25 @@ export abstract class AbstractTable<T> {
   //   }
   // }
 
-  // private setColumnSortMode(targetColumn: Column<T>, sortMode: ColumnSortMode): void {
-  //   const targetColumnIndex = this.columns.findIndex((column) => column.id === targetColumn.id);
-  //   const headerCellElt = this.getTableRowCells(this.tableHeaderRowElt)[targetColumnIndex];
-  //   const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
+  private setColumnSortOrder(targetColumn: Column<T>, sortOrder: SortOrder): void {
+    const targetColumnIndex = this.dataColumns.findIndex((column) => column.id === targetColumn.id);
+    const headerCellElt = this.getDataCellElts(this.tableHeaderRowElt)[targetColumnIndex];
+    const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
 
-  //   targetColumn.sortMode = sortMode;
+    targetColumn.sortOrder = sortOrder;
 
-  //   if (sortMode === 'asc') {
-  //     sortAscElt.classList.add('active');
-  //   } else if (sortMode === 'desc') {
-  //     sortDescElt.classList.add('active');
-  //   }
-  // }
+    if (sortOrder === 'asc') {
+      sortAscElt.classList.add(TableUtils.ACTIVE_CLS);
+    } else if (sortOrder === 'desc') {
+      sortDescElt.classList.add(TableUtils.ACTIVE_CLS);
+    }
+  }
 
   // private setInitialWidths(): void {
   //   let columnsWidth = 0;
 
   //   // Set widths from columns definition
-  //   this.columns.forEach((column, i) => {
+  //   this.dataColumns.forEach((column, i) => {
   //     if (column.width != null) {
   //       const columnWidth = this.convertInPixel(column.width);
   //       const formattedColumnWidth = `${columnWidth}px`;
@@ -1010,10 +1141,10 @@ export abstract class AbstractTable<T> {
   //   const availableWidth = rootEltWidth - columnsWidth;
 
   //   if (availableWidth > 0) {
-  //     const columnWidth = availableWidth / this.columns.filter((column) => !column.width).length;
+  //     const columnWidth = availableWidth / this.dataColumns.filter((column) => !column.width).length;
   //     const formattedColumnWidth = `${columnWidth}px`;
 
-  //     for (let i = 0, len = this.columns.length; i < len; i++) {
+  //     for (let i = 0, len = this.dataColumns.length; i < len; i++) {
   //       const elt = this.getTableRowCells(this.tableHeaderRowElt)[i];
 
   //       if (!elt.style.width) {
@@ -1045,14 +1176,14 @@ export abstract class AbstractTable<T> {
   //   this.visibleNodeIndexes = this.activeNodeIndexes.slice(startIndex, startIndex + this.virtualNodesCount);
   // }
 
-  // private toggleNodesSelection(nodeIds: number[], isSelected: boolean): void {
-  //   (nodeIds.length > 0
-  //     ? (nodeIds.map((nodeId) => this.nodes.find((node) => node.id === nodeId)).filter((node) => node) as Node<T>[])
-  //     : this.nodes
-  //   ).forEach((node) => {
-  //     node.isSelected = isSelected;
-  //   });
-  // }
+  private toggleNodesSelection(nodeIds: number[], isSelected: boolean): void {
+    (nodeIds.length > 0
+      ? (nodeIds.map((nodeId) => this.nodes.find((node) => node.id === nodeId)).filter((node) => node) as Node<T>[])
+      : this.nodes
+    ).forEach((node) => {
+      node.isSelected = isSelected;
+    });
+  }
 
   // private updateFirstUnfrozenColumnOffset(offset?: string): void {
   //   const tableHeaderRowCells = this.getTableRowCells(this.tableHeaderRowElt);
@@ -1108,7 +1239,15 @@ export abstract class AbstractTable<T> {
 
   // // ////////////////////////////////////////////////////////////////////////////
 
-  private onClickNode(event: Event, nodeIndex: number): void {
+  private onClickTableRow(event: Event, nodeIndex: number): void {
+    const node = this.nodes[this.visibleNodeIndexes[nodeIndex]];
+
+    if (node.isSelected) {
+      this.deselectNodes([node.id]);
+    } else {
+      this.selectNodes([node.id]);
+    }
+
     // this.dispatchEventClickNode(event, this.nodes[this.visibleNodeIndexes[nodeIndex]]);
   }
 
@@ -1119,12 +1258,20 @@ export abstract class AbstractTable<T> {
     //   !eventElt.classList.contains(AbstractTable.SORT_ASC_HANDLE_CLS) &&
     //   !eventElt.classList.contains(AbstractTable.SORT_DESC_HANDLE_CLS)
     // ) {
-    //   this.dispatchEventClickTableHeaderCell(event, this.columns[columnIndex]);
+    //   this.dispatchEventClickTableHeaderCell(event, this.dataColumns[columnIndex]);
     // }
   }
 
+  private onClickTableHeaderTick(): void {
+    if (this.nodes.every((node) => node.isSelected)) {
+      this.deselectNodes([]);
+    } else {
+      this.selectNodes([]);
+    }
+  }
+
   private onResizeColumn(startEvent: MouseEvent, columnIndex: number): void {
-    const headerCellElt = this.getTableRowCellElts(this.tableHeaderRowElt)[columnIndex];
+    const headerCellElt = this.getDataCellElts(this.tableHeaderRowElt)[columnIndex];
     // const isFrozenColumn = columnIndex < this.options.frozenColumns;
     const originalColumnWidth = DomUtils.getComputedWidth(headerCellElt);
     const originalPageX = startEvent.pageX;
@@ -1144,6 +1291,8 @@ export abstract class AbstractTable<T> {
       // this.tableBodyRowElts.forEach((elt) => (elt.style.width = formattedTableWidth));
 
       this.setTableColumnWidth(columnIndex, columnWidth);
+
+      this.setStickyTableColumnsPosition();
 
       // Table width
       // this.updateTableWidth(formattedTableWidth);
@@ -1207,8 +1356,8 @@ export abstract class AbstractTable<T> {
   //   }
   // }
 
-  private onSortColumn(event: Event, columnIndex: number, newSortMode: ColumnSortMode): void {
-    // this.dispatchEventSortColumn(event, this.columns[columnIndex], newSortMode);
+  private onSortColumn(event: Event, columnIndex: number, sortOrder: SortOrder): void {
+    // this.dispatchEventSortColumn(event, this.dataColumns[columnIndex], sortOrder);
   }
 
   // // ////////////////////////////////////////////////////////////////////////////

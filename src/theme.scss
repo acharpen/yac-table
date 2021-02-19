@@ -1,10 +1,34 @@
 .yac-table-header {
-  height: 56px;
-  background-color: red;
+  .yac-table-row {
+    height: 56px;
+    background-color: #bdbdbd;
+  }
+
+  .yac-table-cell {
+    align-items: center;
+  }
+}
+
+.yac-table-row {
+  cursor: pointer;
 }
 
 .yac-table-cell {
   background-color: #fff;
+}
+
+.yac-table-header {
+  .yac-table-cell {
+    &.yac-table-sortable {
+      cursor: pointer;
+    }
+  }
+}
+
+.yac-table-row {
+  &.yac-table-selectable .yac-table-cell:first-child {
+    width: 40px;
+  }
 }
 
 // .yac-table-cell {
@@ -18,19 +42,19 @@
 
 // // /* Constants *************************************************************** */
 
-// $dark: #424242;
-// $light: #eee;
-// $primary: #bdbdbd;
-// $selection: #283593;
+$dark: #424242;
+$light: #eee;
+$primary: #bdbdbd;
+$selection: #283593;
 
-// $resize-handle-width: 8px;
-// $sort-handle-width: 6px;
+$resize-handle-width: 8px;
+$sort-handle-width: 6px;
 
 // // /* Mixins ****************************************************************** */
 
-// @mixin transition($property) {
-//   transition: $property 0.25s ease-in;
-// }
+@mixin transition($property) {
+  transition: $property 0.25s ease-in;
+}
 
 // // /* Common ****************************************************************** */
 
@@ -68,111 +92,121 @@
 
 // // /* Header ****************************************************************** */
 
-// .yac-table-header {
-//   &.resizable {
-//     .yac-table-sort-asc-handle,
-//     .yac-table-sort-desc-handle {
-//       right: $resize-handle-width;
-//     }
-//   }
+.yac-table-header {
+  .yac-table-sort-asc-handle,
+  .yac-table-sort-desc-handle {
+    right: $resize-handle-width;
+  }
 
-//   .yac-table-cell {
-//     cursor: pointer;
+  .yac-table-cell {
+    cursor: pointer;
 
-//     &.sortable {
-//       .yac-table-cell-content {
-//         margin-right: calc(#{$sort-handle-width} * 2);
-//       }
-//     }
-//   }
+    &.sortable {
+      .yac-table-cell-content {
+        margin-right: calc(#{$sort-handle-width} * 2);
+      }
+    }
+  }
 
-//   .yac-table-row {
-//     border-bottom: 1px solid $dark;
-//     // height: 32px;
+  .yac-table-row {
+    border-bottom: 1px solid $dark;
+    // height: 32px;
 
-//     &:hover {
-//       .yac-table-resize-handle {
-//         &::before {
-//           background-color: $primary;
-//         }
+    &:hover {
+      .yac-table-resize-handle {
+        &::before {
+          background-color: $primary;
+        }
 
-//         &:hover::before {
-//           background-color: $dark;
-//         }
-//       }
+        &:hover::before {
+          background-color: $dark;
+        }
+      }
 
-//       .yac-table-sort-asc-handle {
-//         &:not(.active) {
-//           border-bottom-color: $primary;
-//         }
+      .yac-table-sort-asc-handle {
+        &:not(.active) {
+          border-bottom-color: $primary;
+        }
 
-//         &:hover {
-//           border-bottom-color: $dark;
-//         }
-//       }
+        &:hover {
+          border-bottom-color: $dark;
+        }
+      }
 
-//       .yac-table-sort-desc-handle {
-//         &:not(.active) {
-//           border-top-color: $primary;
-//         }
+      .yac-table-sort-desc-handle {
+        &:not(.active) {
+          border-top-color: $primary;
+        }
 
-//         &:hover {
-//           border-top-color: $dark;
-//         }
-//       }
-//     }
-//   }
-// }
+        &:hover {
+          border-top-color: $dark;
+        }
+      }
+    }
+  }
+}
 
-// .yac-table-resize-handle {
-//   align-items: center;
-//   cursor: ew-resize;
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: center;
-//   position: relative;
-//   width: $resize-handle-width;
+.yac-table-resize-handle {
+  align-items: center;
+  cursor: ew-resize;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  position: relative;
+  width: $resize-handle-width;
 
-//   &::before {
-//     @include transition(background-color);
+  &::before {
+    @include transition(background-color);
 
-//     background-color: transparent;
-//     content: "";
-//     height: 50%;
-//     width: 1px;
-//   }
-// }
+    background-color: transparent;
+    content: "";
+    height: 50%;
+    width: 1px;
+  }
+}
 
-// .yac-table-sort-asc-handle {
-//   @include transition(border-bottom-color);
+.yac-table-sort-asc-handle {
+  @include transition(border-bottom-color);
 
-//   border-bottom-color: transparent;
-//   border-bottom-width: $sort-handle-width;
+  border-bottom-color: transparent;
+  border-bottom-width: $sort-handle-width;
 
-//   &.active {
-//     border-bottom-color: $dark;
-//   }
-// }
+  &.active {
+    border-bottom-color: $dark;
+  }
+}
 
-// .yac-table-sort-desc-handle {
-//   @include transition(border-top-color);
+.yac-table-sort-desc-handle {
+  @include transition(border-top-color);
 
-//   border-top-color: transparent;
-//   border-top-width: $sort-handle-width;
+  border-top-color: transparent;
+  border-top-width: $sort-handle-width;
 
-//   &.active {
-//     border-top-color: $dark;
-//   }
-// }
+  &.active {
+    border-top-color: $dark;
+  }
+}
 
-// .yac-table-sort-asc-handle,
-// .yac-table-sort-desc-handle {
-//   border-left-width: $sort-handle-width;
-//   border-right-width: $sort-handle-width;
-//   cursor: pointer;
-// }
+.yac-table-sort-asc-handle,
+.yac-table-sort-desc-handle {
+  border-left-width: $sort-handle-width;
+  border-right-width: $sort-handle-width;
+  cursor: pointer;
+}
 
 // // /* Body ******************************************************************** */
+
+.yac-table {
+  &::-webkit-scrollbar {
+    background-color: $light;
+    height: 8px;
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $primary;
+  }
+}
 
 // // .yac-table-body {
 // //   &::-webkit-scrollbar {

@@ -10,13 +10,9 @@ export class DomUtils {
     return elt;
   }
 
-  public static createEvent<T>(eventName: string, arg?: T): CustomEvent<T> {
-    return new CustomEvent(eventName, { detail: arg });
-  }
-
-  public static formatInPx(width: number): string {
-    return `${width}px`;
-  }
+  // public static createEvent<T>(eventName: string, arg?: T): CustomEvent<T> {
+  //   return new CustomEvent(eventName, { detail: arg });
+  // }
 
   public static getComputedHeight(elt: Element): number {
     return parseFloat(getComputedStyle(elt).getPropertyValue('height').replace('px', ''));
@@ -38,7 +34,11 @@ export class DomUtils {
     return null;
   }
 
-  public static getEltWidth(elt: HTMLElement): number {
+  public static getWidth(elt: HTMLElement): number {
     return parseFloat(elt.style.width.replace('px', ''));
+  }
+
+  public static withPx(width: number): string {
+    return `${width}px`;
   }
 }

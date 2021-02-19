@@ -7,21 +7,60 @@
   @include sticky();
 }
 
+.yac-table-row {
+  &.yac-table-selectable .yac-table-cell:first-child {
+    // @include sticky();
+
+    justify-content: center;
+    // left: 0;
+
+    svg {
+      color: #707070;
+      display: none;
+      width: 16px;
+    }
+
+    &:hover {
+      svg {
+        display: block;
+      }
+    }
+  }
+
+  &.yac-table-selected .yac-table-cell:first-child {
+    svg {
+      color: #000;
+      display: block;
+    }
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
 .yac-table {
   contain: strict;
   display: block;
   height: 100%;
   overflow: auto;
   position: relative;
-  transform: translateZ(0);
+  // transform: translateZ(0);
   will-change: scroll-position;
   -webkit-overflow-scrolling: touch;
 }
 
 .yac-table-header {
   @include sticky();
-
+  // position: absolute;
+  // left: 0;
+  // contain: content;
   top: 0;
+  display: inline-block;
+
+  .yac-table-cell {
+    position: sticky;
+  }
 }
 
 .yac-table-body {
@@ -162,10 +201,10 @@
 
 // // /* Mixins ****************************************************************** */
 
-// // @mixin flex-row() {
-// //   display: flex;
-// //   flex-direction: row;
-// // }
+@mixin flex-row() {
+  display: flex;
+  flex-direction: row;
+}
 
 // // /* Common ****************************************************************** */
 
@@ -219,35 +258,35 @@
 // // //   }
 // // // }
 
-// // .yac-table-cell {
-// //   @include flex-row();
+.yac-table-cell {
+  @include flex-row();
 
-// //   // box-sizing: content-box;
-// //   // position: relative;
-// //   // z-index: $z-index-base;
+  // box-sizing: content-box;
+  // position: relative;
+  // z-index: $z-index-base;
 
-// //   // &.frozen {
-// //   //   height: 100%;
-// //   //   position: absolute;
-// //   //   z-index: $frozen-column--z-index;
-// //   // }
-// // }
+  // &.frozen {
+  //   height: 100%;
+  //   position: absolute;
+  //   z-index: $frozen-column--z-index;
+  // }
+}
 
-// // .yac-table-cell-content {
-// //   flex-grow: 1;
+.yac-table-cell-content {
+  flex-grow: 1;
 
-// //   // &.center {
-// //   //   text-align: center;
-// //   // }
+  // &.center {
+  //   text-align: center;
+  // }
 
-// //   // &.left {
-// //   //   text-align: left;
-// //   // }
+  // &.left {
+  //   text-align: left;
+  // }
 
-// //   // &.right {
-// //   //   text-align: right;
-// //   // }
-// // }
+  // &.right {
+  //   text-align: right;
+  // }
+}
 
 // // // /* Header ****************************************************************** */
 
@@ -259,32 +298,32 @@
 // // //   }
 // // // }
 
-// // .yac-table-resize-handle {
-// //   height: 100%;
-// // }
+.yac-table-resize-handle {
+  height: 100%;
+}
 
-// // .yac-table-sort-asc-handle,
-// // .yac-table-sort-desc-handle {
-// //   border-left-color: transparent;
-// //   border-left-style: solid;
-// //   border-right-color: transparent;
-// //   border-right-style: solid;
-// //   height: 0;
-// //   position: absolute;
-// //   width: 0;
-// // }
+.yac-table-sort-asc-handle,
+.yac-table-sort-desc-handle {
+  border-left-color: transparent;
+  border-left-style: solid;
+  border-right-color: transparent;
+  border-right-style: solid;
+  height: 0;
+  position: absolute;
+  width: 0;
+}
 
-// // .yac-table-sort-asc-handle {
-// //   border-bottom-style: solid;
-// //   margin-bottom: 1px;
-// //   bottom: 50%;
-// // }
+.yac-table-sort-asc-handle {
+  border-bottom-style: solid;
+  margin-bottom: 1px;
+  bottom: 50%;
+}
 
-// // .yac-table-sort-desc-handle {
-// //   border-top-style: solid;
-// //   margin-top: 1px;
-// //   top: 50%;
-// // }
+.yac-table-sort-desc-handle {
+  border-top-style: solid;
+  margin-top: 1px;
+  top: 50%;
+}
 
 // // // /* Body ******************************************************************** */
 

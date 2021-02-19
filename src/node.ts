@@ -1,5 +1,6 @@
 export interface Node<T> {
   id: number;
+  initialPos: number;
   isExpanded: boolean;
   isHidden: boolean;
   isLeaf: boolean;

@@ -1,4 +1,4 @@
-import { ColumnWidthUnit } from './column-utils';
+import { ColumnWidthUnit } from './table-utils';
 
 export interface ColumnOptions<T> {
   align: 'center' | 'left' | 'right';
@@ -7,9 +7,9 @@ export interface ColumnOptions<T> {
 
   cellColor?: (item: T) => { backgroundColor?: string; color?: string } | null;
   classList?: string[];
-  resize?: boolean;
-  sort?: boolean;
-  stick?: 'left' | 'right';
+  resizable?: boolean;
+  sortable?: boolean;
+  sticky?: 'left' | 'right';
   title?: string;
   width?: { value: number; unit: ColumnWidthUnit };
 }
