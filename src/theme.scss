@@ -11,6 +11,7 @@
 
 .yac-table-row {
   cursor: pointer;
+  border-bottom: 1px solid #000;
 }
 
 .yac-table-cell {
@@ -124,7 +125,7 @@ $sort-handle-width: 6px;
       }
 
       .yac-table-sort-asc-handle {
-        &:not(.active) {
+        &:not(.yac-table-active) {
           border-bottom-color: $primary;
         }
 
@@ -134,7 +135,7 @@ $sort-handle-width: 6px;
       }
 
       .yac-table-sort-desc-handle {
-        &:not(.active) {
+        &:not(.yac-table-active) {
           border-top-color: $primary;
         }
 
@@ -171,7 +172,7 @@ $sort-handle-width: 6px;
   border-bottom-color: transparent;
   border-bottom-width: $sort-handle-width;
 
-  &.active {
+  &.yac-table-active {
     border-bottom-color: $dark;
   }
 }
@@ -182,7 +183,7 @@ $sort-handle-width: 6px;
   border-top-color: transparent;
   border-top-width: $sort-handle-width;
 
-  &.active {
+  &.yac-table-active {
     border-top-color: $dark;
   }
 }
@@ -244,7 +245,7 @@ $sort-handle-width: 6px;
 // //   width: 24px;
 
 // //   &:hover > i,
-// //   & > i.active {
+// //   & > i.yac-table-active {
 // //     @include transition(border-color);
 
 // //     border-color: $dark;

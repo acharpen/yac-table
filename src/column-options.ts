@@ -8,7 +8,7 @@ export interface ColumnOptions<T> {
   cellColor?: (item: T) => { backgroundColor?: string; color?: string } | null;
   classList?: string[];
   resizable?: boolean;
-  sortable?: boolean;
+  sorter?: (a: T, b: T) => number;
   sticky?: 'left' | 'right';
   title?: string;
   width?: { value: number; unit: ColumnWidthUnit };

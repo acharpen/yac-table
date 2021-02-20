@@ -36,7 +36,7 @@ export const columnOptions = [
     formatter: linkFormatter('col1'),
     id: 1,
     resizable: true,
-    sortable: true,
+    sorter: (a: ExampleObject, b: ExampleObject): number => a.col1.localeCompare(b.col1),
     title: 'col1',
     sticky: 'left',
     width: { value: 400, unit: 'px' as const }
@@ -46,7 +46,7 @@ export const columnOptions = [
     formatter: defaultFormatter('col2'),
     id: 2,
     resizable: true,
-    sortable: true,
+    sorter: (a: ExampleObject, b: ExampleObject): number => a.col2.localeCompare(b.col2),
     title: 'col2',
     sticky: 'left',
     width: { value: 600, unit: 'px' as const }
@@ -56,7 +56,7 @@ export const columnOptions = [
     formatter: defaultFormatter('col3'),
     id: 3,
     resizable: true,
-    sortable: true,
+    sorter: (a: ExampleObject, b: ExampleObject): number => a.col3.localeCompare(b.col3),
     title: 'col3',
     width: { value: 400, unit: 'px' as const }
   },
@@ -65,7 +65,7 @@ export const columnOptions = [
     formatter: defaultFormatter('col4'),
     id: 4,
     resizable: true,
-    sortable: true,
+    sorter: (a: ExampleObject, b: ExampleObject): number => a.col4.localeCompare(b.col4),
     title: 'col4',
     sticky: 'right',
     width: { value: 200, unit: 'px' as const }
