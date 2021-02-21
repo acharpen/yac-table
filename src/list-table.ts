@@ -1,7 +1,6 @@
 import { ListNodeView, Node } from './node';
 import { AbstractTable } from './table';
 import { ColumnOptions } from './column-options';
-import { DomUtils } from './dom-utils';
 import { ListTableOptions } from './table-options';
 
 export class ListTable<T> extends AbstractTable<T> {
@@ -23,6 +22,9 @@ export class ListTable<T> extends AbstractTable<T> {
 
     this.nodes.splice(newNodeIndex, 0, newNode);
 
+    // Update initial position of next nodes
+    this.nodes.slice(newNodeIndex + 1).forEach((node) => (node.initialPos = node.initialPos + 1));
+
     this.updateNodes();
   }
 
@@ -32,11 +34,6 @@ export class ListTable<T> extends AbstractTable<T> {
 
   public setData(items: T[]): void {
     this.setNodes(this.createNodes(items));
-  }
-
-  protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
-    const event = DomUtils.createEvent('onClickNode', { event: originalEvent, node: this.createNodeView(node) });
-    this.rootElt.dispatchEvent(event);
   }
 
   private createNodes(items: T[]): Node<T>[] {
@@ -54,6 +51,6 @@ export class ListTable<T> extends AbstractTable<T> {
   }
 
   private createNodeView(node: Node<T>): ListNodeView<T> {
-    return { id: node.id, value: node.value, isSelected: node.isSelected };
+    return { id: node.id, isSelected: node.isSelected, value: node.value };
   }
 }

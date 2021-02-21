@@ -57,6 +57,12 @@ export abstract class AbstractTable<T> {
 
   // ////////////////////////////////////////////////////////////////////////////
 
+  public deleteNodes(nodeIds: number[]): void {
+    this.nodes = this.nodes.filter((node) => !nodeIds.includes(node.id));
+
+    this.updateNodes();
+  }
+
   public deselectNodes(nodeIds: number[]): void {
     if (this.isSelectionEnabled()) {
       (nodeIds.length > 0 ? this.getNodesById(nodeIds) : this.nodes).forEach((node) => (node.isSelected = false));
@@ -108,6 +114,14 @@ export abstract class AbstractTable<T> {
     }
   }
 
+  public updateNodeHeight(nodeHeight: number): void {
+    this.options.nodeHeight = nodeHeight;
+
+    this.tableBodyRowElts.forEach((elt) => (elt.style.height = DomUtils.withPx(this.options.nodeHeight)));
+
+    this.setVirtualScrollSpacerHeight();
+  }
+
   // ////////////////////////////////////////////////////////////////////////////
 
   protected createTableBodyCellElt(column: Column<T>, _ctx: { nodeIndex: number }): HTMLElement {
@@ -144,16 +158,6 @@ export abstract class AbstractTable<T> {
     this.containerElt.appendChild(this.tableElt);
 
     this.setStickyColumnsPosition();
-  }
-
-  protected setActiveNodeIndexes(): void {
-    this.activeNodeIndexes = [];
-
-    this.nodes.forEach((node, i) => {
-      if (node.isMatching && !node.isHidden) this.activeNodeIndexes.push(i);
-    });
-
-    this.setVirtualScrollSpacerHeight();
   }
 
   protected setNodes(nodes: Node<T>[]): void {
@@ -566,6 +570,16 @@ export abstract class AbstractTable<T> {
     }
   }
 
+  private setActiveNodeIndexes(): void {
+    this.activeNodeIndexes = [];
+
+    this.nodes.forEach((node, i) => {
+      if (node.isMatching && !node.isHidden) this.activeNodeIndexes.push(i);
+    });
+
+    this.setVirtualScrollSpacerHeight();
+  }
+
   private resetColumnSortHandles(): void {
     this.dataColumns.forEach((column, i) => {
       if (column.sorter != null) {
@@ -674,149 +688,4 @@ export abstract class AbstractTable<T> {
     const height = this.activeNodeIndexes.length * this.options.nodeHeight + this.tableHeaderHeight;
     this.virtualScrollSpacerElt.style.height = DomUtils.withPx(height);
   }
-
-  // ////////////////////////////////////////////////////////////////////////////
-  // ////////////////////////////////////////////////////////////////////////////
-  // ////////////////////////////////////////////////////////////////////////////
-
-  // public addColumn(
-  //   columnOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
-  //   { position, refColumnId }: { position: 'start' | 'end'; refColumnId?: number }
-  // ): void {
-  //   const isBebore = position === 'start';
-  //   const refColumnIndex = refColumnId != null ? this.dataColumns.findIndex((column) => column.id === refColumnId) : -1;
-  //   const newColumnIndex =
-  //     refColumnIndex !== -1 ? (isBebore ? refColumnIndex : refColumnIndex + 1) : isBebore ? 0 : this.dataColumns.length;
-
-  //   this.handleAddColumn(columnOption, newColumnIndex);
-  // }
-
-  // public deleteColumn(columnId: number): void {
-  //   const columnIndex = this.dataColumns.findIndex((column) => column.id === columnId);
-
-  //   if (columnIndex !== -1) {
-  //     this.handleDeleteColumn(columnIndex);
-  //   }
-  // }
-
-  // public deleteNodes(nodeIds: number[]): void {
-  //   this.nodes = this.nodes.filter((node) => !nodeIds.includes(node.id));
-
-  //   this.updateNodes();
-  // }
-
-  // public updateNodeHeight(nodeHeight: number): void {
-  //   this.options.nodeHeight = nodeHeight;
-
-  //   this.tableNodeElts.forEach((nodeElt) => {
-  //     nodeElt.style.height = `${this.options.nodeHeight}px`;
-  //   });
-
-  //   this.setTableBodyHeight();
-  //   this.setVirtualTableHeight();
-  // }
-
-  // // ////////////////////////////////////////////////////////////////////////////
-
-  // protected handleAddColumn(
-  //   columnOption: ColumnOptions<T> & Required<Pick<ColumnOptions<T>, 'width'>>,
-  //   newColumnIndex: number
-  // ): void {
-  //   const isNewLastColumn = newColumnIndex === this.dataColumns.length;
-  //   const newColumn: Column<T> = { ...columnOption, sortMode: 'default' };
-  //   const newColumnWidth = this.convertInPixel(columnOption.width);
-
-  //   const insertNewElt = (elt: HTMLElement, parentElt: HTMLElement): void => {
-  //     const tableNodeCells = this.getTableRowCells(elt);
-
-  //     if (isNewLastColumn) {
-  //       tableNodeCells[0].insertAdjacentElement('afterend', elt);
-  //       parentElt.appendChild(elt);
-  //     } else {
-  //       tableNodeCells[newColumnIndex].insertAdjacentElement('beforebegin', elt);
-  //     }
-
-  //     elt.style.width = `${newColumnWidth}px`;
-  //   };
-
-  //   const unfreeze = (elt: HTMLElement): void => {
-  //     const tableNodeCells = this.getTableRowCells(elt);
-  //     for (let i = 0; i < this.options.frozenColumns; i++) {
-  //       tableNodeCells[i].classList.remove('frozen');
-  //       tableNodeCells[i].style.left = '';
-  //     }
-  //   };
-
-  //   //
-  //   this.dataColumns.splice(newColumnIndex, 0, newColumn);
-
-  //   // Clear frozen context
-  //   if (this.options.frozenColumns && newColumnIndex <= this.options.frozenColumns) {
-  //     this.updateFirstUnfrozenColumnOffset('');
-
-  //     if (newColumnIndex < this.options.frozenColumns) {
-  //       unfreeze(this.tableHeaderRowElt);
-
-  //       this.tableNodeElts.forEach((nodeElt) => {
-  //         unfreeze(nodeElt);
-  //       });
-  //     }
-  //   }
-
-  //   // Add new elements
-  //   insertNewElt(this.createTableHeaderCell(newColumn, { columnIndex: newColumnIndex }), this.tableHeaderRowElt);
-  //   this.tableNodeElts.forEach((nodeElt, i) => {
-  //     insertNewElt(this.createTableCell(newColumn, { nodeIndex: i }), nodeElt);
-  //   });
-
-  //   // Update frozen context
-  //   if (this.options.frozenColumns && newColumnIndex <= this.options.frozenColumns) {
-  //     if (newColumnIndex < this.options.frozenColumns) {
-  //       this.freezeColumns();
-  //     } else {
-  //       this.updateFirstUnfrozenColumnOffset();
-  //     }
-  //   }
-
-  //   //
-  //   this.updateTableWidth(`${DomUtils.getEltWidth(this.tableBodyElt) + newColumnWidth}px`);
-  //   this.updateVisibleNodes();
-  // }
-
-  // protected handleDeleteColumn(columnIndex: number): void {
-  //   const columnWidth = DomUtils.getEltWidth(this.getTableRowCells(this.tableHeaderRowElt)[columnIndex]);
-
-  //   //
-  //   this.dataColumns = this.dataColumns.filter((_, i) => i !== columnIndex);
-
-  //   // Clear frozen context
-  //   if (this.options.frozenColumns && columnIndex < this.options.frozenColumns) {
-  //     this.updateFirstUnfrozenColumnOffset('');
-  //   }
-
-  //   // Adjust 'frozenColumns' option if there are no longer enough columns
-  //   this.options.frozenColumns = this.adjustFrozenColumns(this.options.frozenColumns);
-
-  //   // Remove elements
-  //   this.getTableRowCells(this.tableHeaderRowElt)[columnIndex].remove();
-
-  //   this.tableNodeElts.forEach((tableNodeElt) => {
-  //     this.getTableRowCells(tableNodeElt)[columnIndex].remove();
-  //   });
-
-  //   // Update frozen context
-  //   if (this.options.frozenColumns && columnIndex <= this.options.frozenColumns) {
-  //     if (columnIndex < this.options.frozenColumns) {
-  //       this.freezeColumns();
-  //     } else {
-  //       this.updateFirstUnfrozenColumnOffset();
-  //     }
-  //   }
-
-  //   //
-  //   this.updateTableWidth(`${DomUtils.getEltWidth(this.tableBodyElt) - columnWidth}px`);
-  //   this.updateVisibleNodes();
-  // }
-
-  // // ////////////////////////////////////////////////////////////////////////////
 }

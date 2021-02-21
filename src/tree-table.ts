@@ -1,18 +1,14 @@
-// import { Node, TreeNode, TreeNodeView } from './node';
+import { Node, TreeNode, TreeNodeView } from './node';
 import { AbstractTable } from './table';
-// import { Column } from './column';
+import { Column } from './column';
 import { ColumnOptions } from './column-options';
-// import { ColumnWidthUnit } from './column-utils';
-// import { DomUtils } from './dom-utils';
+import { DomUtils } from './dom-utils';
+import { TableUtils } from './table-utils';
 import { TreeTableOptions } from './table-options';
 
 export class TreeTable<T> extends AbstractTable<T> {
-  // private static readonly EXPAND_TOGGLER_CLASS: string = `${AbstractTable.VENDOR_PREFIX}-expand-toggler`;
-
-  // private readonly childNodeOffset: number;
-  // private readonly expandTogglerWidth: number;
-
-  // private expandTogglerColumnIndex: number | null;
+  private readonly childNodeOffset: number;
+  private readonly expandTogglerWidth: number;
 
   public constructor(
     rootElt: HTMLElement,
@@ -20,337 +16,306 @@ export class TreeTable<T> extends AbstractTable<T> {
   ) {
     super(rootElt, options);
 
-    // this.childNodeOffset = options.tableOptions.childNodeOffset;
-    // this.expandTogglerColumnIndex =
-    //   options.tableOptions.expandTogglerColumnIndex < options.columnOptions.length
-    //     ? options.tableOptions.expandTogglerColumnIndex
-    //     : 0;
+    this.childNodeOffset = options.tableOptions.childNodeOffset;
 
     this.init();
 
-    // this.expandTogglerWidth = this.computeExpandTogglerWidth();
+    this.expandTogglerWidth = this.computeExpandTogglerWidth();
   }
 
-  // public addData(
-  //   item: TreeNode<T>,
-  //   options: { position: 'top' | 'bottom'; refNodeId?: number } | { position: 'child' | 'parent'; refNodeId: number }
-  // ): void {
-  //   const isAbove = options.position === 'top' || options.position === 'parent';
-  //   const refNodeIndex = options.refNodeId != null ? this.nodes.findIndex((node) => node.id === options.refNodeId) : -1;
-  //   const newNodeIndex =
-  //     refNodeIndex !== -1 ? (isAbove ? refNodeIndex : refNodeIndex + 1) : isAbove ? 0 : this.nodes.length;
-  //   const refNode = isAbove ? this.nodes[newNodeIndex] : this.nodes[newNodeIndex - 1];
-  //   const [newNode] = this.createNodes([item]);
+  public addData(
+    item: TreeNode<T>,
+    options: { position: 'top' | 'bottom'; refNodeId?: number } | { position: 'child' | 'parent'; refNodeId: number }
+  ): void {
+    const isAbove = options.position === 'top' || options.position === 'parent';
+    const refNodeIndex = options.refNodeId != null ? this.nodes.findIndex((node) => node.id === options.refNodeId) : -1;
+    const newNodeIndex =
+      refNodeIndex !== -1 ? (isAbove ? refNodeIndex : refNodeIndex + 1) : isAbove ? 0 : this.nodes.length;
+    const refNode = isAbove ? this.nodes[newNodeIndex] : this.nodes[newNodeIndex - 1];
+    const newNodes = this.createNodes([item]);
+    const newRootNode = newNodes[0];
 
-  //   // Insert new node
-  //   this.nodes.splice(newNodeIndex, 0, newNode);
+    // Insert new node
+    this.nodes.splice(newNodeIndex, 0, newRootNode);
 
-  //   // Set new node's level
-  //   newNode.level =
-  //     options.position === 'top' || options.position === 'bottom' || options.position === 'parent'
-  //       ? refNode.level
-  //       : refNode.level + 1;
+    // Set new node's level
+    newRootNode.level =
+      options.position === 'top' || options.position === 'bottom' || options.position === 'parent'
+        ? refNode.level
+        : refNode.level + 1;
 
-  //   // Set new node's visibility
-  //   newNode.isHidden =
-  //     options.position === 'top' || options.position === 'bottom' || options.position === 'parent'
-  //       ? refNode.isHidden
-  //       : !refNode.isExpanded;
+    // Set new node's visibility
+    newRootNode.isHidden =
+      options.position === 'top' || options.position === 'bottom' || options.position === 'parent'
+        ? refNode.isHidden
+        : !refNode.isExpanded;
 
-  //   // Update new node's children
-  //   if (options.position === 'parent') {
-  //     const nodesLength = this.nodes.length;
-  //     let nextnodeIndex = refNodeIndex;
+    // Update new node's children
+    if (options.position === 'parent') {
+      const nodesLength = this.nodes.length;
+      let nextnodeIndex = refNodeIndex;
 
-  //     do {
-  //       this.nodes[nextnodeIndex].level++;
-  //       nextnodeIndex++;
-  //     } while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > newNode.level);
-  //   }
+      do {
+        this.nodes[nextnodeIndex].level++;
+        nextnodeIndex++;
+      } while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > newRootNode.level);
+    }
 
-  //   // Update nodes
-  //   this.updateNodes();
-  // }
+    // Update initial position of next nodes
+    this.nodes
+      .slice(newNodeIndex + newNodes.length + 1)
+      .forEach((node) => (node.initialPos = node.initialPos + newNodes.length));
 
-  // public collapseNodes(nodeIds: number[]): void {
-  //   this.toggleNodesVisibility(nodeIds, { isExpanded: false });
-  // }
+    // Update nodes
+    this.updateNodes();
+  }
 
-  // public deselectNodes(
-  //   nodeIds: number[],
-  //   options: { withChildren: false | true | number; withParents: false | true | number } = {
-  //     withChildren: false,
-  //     withParents: false
-  //   }
-  // ): void {
-  //   super.deselectNodes(
-  //     options.withChildren === false && options.withParents === false
-  //       ? nodeIds
-  //       : this.handleToggleNodes(nodeIds, options)
-  //   );
-  // }
+  public collapseNodes(nodeIds: number[]): void {
+    this.toggleNodesVisibility(nodeIds, { isExpanded: false });
+  }
 
-  // public expandNodes(nodeIds: number[]): void {
-  //   this.toggleNodesVisibility(nodeIds, { isExpanded: true });
-  // }
+  public deselectNodes(
+    nodeIds: number[],
+    options: { withChildren: false | true | number; withParents: false | true | number } = {
+      withChildren: false,
+      withParents: false
+    }
+  ): void {
+    super.deselectNodes(
+      options.withChildren === false && options.withParents === false
+        ? nodeIds
+        : this.handleToggleNodes(nodeIds, options)
+    );
+  }
 
-  // public getNodes(): TreeNodeView<T>[] {
-  //   return this.nodes.map((node) => this.createNodeView(node));
-  // }
+  public expandNodes(nodeIds: number[]): void {
+    this.toggleNodesVisibility(nodeIds, { isExpanded: true });
+  }
 
-  // public selectNodes(
-  //   nodeIds: number[],
-  //   options: { withChildren: false | true | number; withParents: false | true | number } = {
-  //     withChildren: false,
-  //     withParents: false
-  //   }
-  // ): void {
-  //   super.selectNodes(
-  //     options.withChildren === false && options.withParents === false
-  //       ? nodeIds
-  //       : this.handleToggleNodes(nodeIds, options)
-  //   );
-  // }
+  public getNodes(): TreeNodeView<T>[] {
+    return this.nodes.map((node) => this.createNodeView(node));
+  }
 
-  // public setData(items: TreeNode<T>[]): void {
-  //   this.setNodes(this.createNodes(items));
-  // }
+  public selectNodes(
+    nodeIds: number[],
+    options: { withChildren: false | true | number; withParents: false | true | number } = {
+      withChildren: false,
+      withParents: false
+    }
+  ): void {
+    super.selectNodes(
+      options.withChildren === false && options.withParents === false
+        ? nodeIds
+        : this.handleToggleNodes(nodeIds, options)
+    );
+  }
 
-  // protected createTableCell(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
-  //   const elt = super.createTableCell(column, ctx);
+  public setData(items: TreeNode<T>[]): void {
+    this.setNodes(this.createNodes(items));
+  }
 
-  //   if (this.expandTogglerColumnIndex !== null && column.id === this.columns[this.expandTogglerColumnIndex].id) {
-  //     this.addExpandTogglerElt(elt, ctx.nodeIndex);
-  //   }
+  protected createTableBodyCellElt(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
+    const elt = super.createTableBodyCellElt(column, ctx);
 
-  //   return elt;
-  // }
+    if (column.id === this.dataColumns[0].id) {
+      elt.insertAdjacentElement('afterbegin', this.createExpandTogglerElt(ctx.nodeIndex));
+    }
 
-  // protected dispatchEventClickNode(originalEvent: Event, node: Node<T>): void {
-  //   const event = DomUtils.createEvent('onClickNode', { event: originalEvent, node: this.createNodeView(node) });
-  //   this.rootElt.dispatchEvent(event);
-  // }
+    return elt;
+  }
 
-  // protected handleAddColumn(
-  //   columnToAddOption: Omit<ColumnOptions<T>, 'width'> & { width: { value: number; unit: ColumnWidthUnit } },
-  //   newColumnIndex: number
-  // ): void {
-  //   if (this.expandTogglerColumnIndex !== null && newColumnIndex <= this.expandTogglerColumnIndex) {
-  //     this.expandTogglerColumnIndex = this.expandTogglerColumnIndex + 1;
-  //   }
+  protected updateVisibleNodes(): void {
+    super.updateVisibleNodes();
 
-  //   super.handleAddColumn(columnToAddOption, newColumnIndex);
-  // }
+    for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
+      const node = this.nodes[this.visibleNodeIndexes[i]];
+      const firstCellElt = this.getDataCellElts(this.tableBodyRowElts[i])[0];
+      const cellContentElt = firstCellElt.lastElementChild as HTMLElement;
+      const expandTogglerElt = firstCellElt.firstElementChild as HTMLElement;
+      const nodeOffset = this.childNodeOffset * node.level + (node.isLeaf ? this.expandTogglerWidth : 0);
 
-  // protected handleDeleteColumn(columnIndex: number): void {
-  //   if (this.expandTogglerColumnIndex !== null && columnIndex === this.expandTogglerColumnIndex) {
-  //     this.expandTogglerColumnIndex = null;
-  //   }
+      if (node.isLeaf) {
+        cellContentElt.style.marginLeft = `${nodeOffset}px`;
+        expandTogglerElt.classList.add('hidden');
+      } else {
+        cellContentElt.style.marginLeft = '0px';
+        expandTogglerElt.classList.remove('hidden');
+        expandTogglerElt.style.marginLeft = `${nodeOffset}px`;
 
-  //   super.handleDeleteColumn(columnIndex);
-  // }
+        if (node.isExpanded) {
+          (expandTogglerElt.firstElementChild as HTMLElement).classList.add('active');
+        } else {
+          (expandTogglerElt.firstElementChild as HTMLElement).classList.remove('active');
+        }
+      }
+    }
+  }
 
-  // protected updateVisibleNodes(): void {
-  //   super.updateVisibleNodes();
+  private computeExpandTogglerWidth(): number {
+    const elts = this.tableBodyElt.getElementsByClassName(TableUtils.EXPAND_TOGGLER_CLS);
 
-  //   if (this.expandTogglerColumnIndex !== null) {
-  //     for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
-  //       const node = this.nodes[this.visibleNodeIndexes[i]];
-  //       const firstCellElt = this.getTableRowCells(this.tableNodeElts[i])[this.expandTogglerColumnIndex];
-  //       const cellContentElt = firstCellElt.lastElementChild as HTMLElement;
-  //       const expandTogglerElt = firstCellElt.firstElementChild as HTMLElement;
-  //       const nodeOffset = this.childNodeOffset * node.level + (node.isLeaf ? this.expandTogglerWidth : 0);
+    return elts.length > 0 ? DomUtils.getComputedWidth(elts[0] as HTMLElement) : 0;
+  }
 
-  //       if (node.isLeaf) {
-  //         cellContentElt.style.marginLeft = `${nodeOffset}px`;
-  //         expandTogglerElt.classList.add('hidden');
-  //       } else {
-  //         cellContentElt.style.marginLeft = '0px';
-  //         expandTogglerElt.classList.remove('hidden');
-  //         expandTogglerElt.style.marginLeft = `${nodeOffset}px`;
+  private createExpandTogglerElt(nodeIndex: number): HTMLElement {
+    const elt = DomUtils.createDiv(TableUtils.EXPAND_TOGGLER_CLS);
+    elt.appendChild(DomUtils.createElt('i'));
 
-  //         if (node.isExpanded) {
-  //           (expandTogglerElt.firstElementChild as HTMLElement).classList.add('active');
-  //         } else {
-  //           (expandTogglerElt.firstElementChild as HTMLElement).classList.remove('active');
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
+    elt.addEventListener('mouseup', (event) => {
+      event.stopPropagation();
 
-  // private addExpandTogglerElt(cellElt: HTMLElement, nodeIndex: number): void {
-  //   cellElt.insertAdjacentElement('afterbegin', this.createExpandToggler(nodeIndex));
-  // }
+      this.onToggleNode(nodeIndex);
+    });
 
-  // private computeExpandTogglerWidth(): number {
-  //   const elts = this.tableBodyElt.getElementsByClassName(TreeTable.EXPAND_TOGGLER_CLASS);
+    return elt;
+  }
 
-  //   return elts.length > 0 ? DomUtils.getEltComputedWidth(elts[0] as HTMLElement) : 0;
-  // }
+  private createNodes(items: TreeNode<T>[]): Node<T>[] {
+    const nodes = [];
+    const stack = [];
+    let counter = 0;
 
-  // private createExpandToggler(nodeIndex: number): HTMLElement {
-  //   const elt = DomUtils.createDiv(TreeTable.EXPAND_TOGGLER_CLASS);
-  //   elt.appendChild(DomUtils.createElt('i'));
-  //   elt.addEventListener('mouseup', (event) => {
-  //     event.stopPropagation();
+    for (let i = items.length - 1; i >= 0; i--) {
+      stack.push({ treeNode: items[i], level: 0 });
+    }
 
-  //     this.onToggleNode(event, nodeIndex);
-  //   });
+    while (stack.length > 0) {
+      const { treeNode, level } = stack.pop() as { treeNode: TreeNode<T>; level: number };
+      const childItems = treeNode.children;
+      const childItemsLength = childItems.length;
+      const nextLevel = level + 1;
 
-  //   return elt;
-  // }
+      nodes.push({
+        level,
+        id: this.generateId(),
+        initialPos: counter++,
+        isExpanded: false,
+        isHidden: level > 0,
+        isLeaf: childItemsLength === 0,
+        isMatching: true,
+        isSelected: false,
+        value: treeNode.value
+      });
 
-  // private createNodes(items: TreeNode<T>[]): Node<T>[] {
-  //   const nodes = [];
-  //   const stack = [];
+      for (let i = childItemsLength - 1; i >= 0; i--) {
+        stack.push({ treeNode: childItems[i], level: nextLevel });
+      }
+    }
 
-  //   for (let i = items.length - 1; i >= 0; i--) {
-  //     stack.push({ treeNode: items[i], level: 0 });
-  //   }
+    return nodes;
+  }
 
-  //   while (stack.length > 0) {
-  //     const { treeNode, level } = stack.pop() as { treeNode: TreeNode<T>; level: number };
-  //     const childItems = treeNode.children;
-  //     const childItemsLength = childItems.length;
-  //     const nextLevel = level + 1;
+  private createNodeView(node: Node<T>): TreeNodeView<T> {
+    return { id: node.id, value: node.value, isSelected: node.isSelected, isExpanded: node.isExpanded };
+  }
 
-  //     nodes.push({
-  //       level,
-  //       id: this.generateId(),
-  //       isExpanded: false,
-  //       isHidden: level > 0,
-  //       isLeaf: childItemsLength === 0,
-  //       isMatching: true,
-  //       isSelected: false,
-  //       value: treeNode.value
-  //     });
+  private handleToggleNodes(
+    nodeIds: number[],
+    { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number }
+  ): number[] {
+    const allNodeIds = new Set<number>(nodeIds);
+    const nodesLength = this.nodes.length;
+    const targetNodes = nodeIds.map((nodeId) => {
+      const nodeIndex = this.nodes.findIndex((node) => node.id === nodeId);
 
-  //     for (let i = childItemsLength - 1; i >= 0; i--) {
-  //       stack.push({ treeNode: childItems[i], level: nextLevel });
-  //     }
-  //   }
+      return {
+        nodeIndex,
+        node: this.nodes[nodeIndex]
+      };
+    });
 
-  //   return nodes;
-  // }
+    const addChildren = ({ node, nodeIndex }: { node: Node<T>; nodeIndex: number }, maxChildren?: number): void => {
+      let count = maxChildren ?? -1;
+      let nextnodeIndex = nodeIndex + 1;
 
-  // private createNodeView(node: Node<T>): TreeNodeView<T> {
-  //   return { id: node.id, value: node.value, isSelected: node.isSelected, isExpanded: node.isExpanded };
-  // }
+      while (count !== 0 && nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+        allNodeIds.add(nextnodeIndex);
+        count--;
+        nextnodeIndex++;
+      }
+    };
 
-  // private dispatchEventToggleNode(originalEvent: Event, node: Node<T>): void {
-  //   const event = DomUtils.createEvent('onToggleNode', { event: originalEvent, node: this.createNodeView(node) });
-  //   this.rootElt.dispatchEvent(event);
-  // }
+    const addParent = ({ node, nodeIndex }: { node: Node<T>; nodeIndex: number }, maxParent?: number): void => {
+      let count = maxParent ?? -1;
+      let nextnodeIndex = nodeIndex - 1;
 
-  // private handleToggleNodes(
-  //   nodeIds: number[],
-  //   { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number }
-  // ): number[] {
-  //   const allNodeIds = new Set<number>(nodeIds);
-  //   const nodesLength = this.nodes.length;
-  //   const targetNodes = nodeIds.map((nodeId) => {
-  //     const nodeIndex = this.nodes.findIndex((node) => node.id === nodeId);
+      while (count !== 0 && nextnodeIndex >= 0) {
+        if (this.nodes[nextnodeIndex].level < node.level) {
+          allNodeIds.add(nextnodeIndex);
 
-  //     return {
-  //       nodeIndex,
-  //       node: this.nodes[nodeIndex]
-  //     };
-  //   });
+          // A node has only one parent at level 0
+          count = this.nodes[nextnodeIndex].level === 0 ? 0 : count - 1;
+        }
+        nextnodeIndex--;
+      }
+    };
 
-  //   const addChildren = ({ node, nodeIndex }: { node: Node<T>; nodeIndex: number }, maxChildren?: number): void => {
-  //     let count = maxChildren ?? -1;
-  //     let nextnodeIndex = nodeIndex + 1;
+    if (withChildren !== false) {
+      switch (withChildren) {
+        case true:
+          targetNodes.forEach((targetNode) => addChildren(targetNode));
+          break;
 
-  //     while (count !== 0 && nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
-  //       allNodeIds.add(nextnodeIndex);
-  //       count--;
-  //       nextnodeIndex++;
-  //     }
-  //   };
+        default:
+          targetNodes.forEach((targetNode) => addChildren(targetNode, withChildren));
+      }
+    }
 
-  //   const addParent = ({ node, nodeIndex }: { node: Node<T>; nodeIndex: number }, maxParent?: number): void => {
-  //     let count = maxParent ?? -1;
-  //     let nextnodeIndex = nodeIndex - 1;
+    if (withParents !== false) {
+      switch (withParents) {
+        case true:
+          targetNodes.forEach((targetNode) => addParent(targetNode));
+          break;
 
-  //     while (count !== 0 && nextnodeIndex >= 0) {
-  //       if (this.nodes[nextnodeIndex].level < node.level) {
-  //         allNodeIds.add(nextnodeIndex);
+        default:
+          targetNodes.forEach((targetNode) => addParent(targetNode, withParents));
+      }
+    }
 
-  //         // A node has only one parent at level 0
-  //         count = this.nodes[nextnodeIndex].level === 0 ? 0 : count - 1;
-  //       }
-  //       nextnodeIndex--;
-  //     }
-  //   };
+    return [...allNodeIds];
+  }
 
-  //   if (withChildren !== false) {
-  //     switch (withChildren) {
-  //       case true:
-  //         targetNodes.forEach((targetNode) => addChildren(targetNode));
-  //         break;
+  private onToggleNode(nodeIndex: number): void {
+    const node = this.nodes[this.visibleNodeIndexes[nodeIndex]];
+    this.toggleNodesVisibility([node.id], { isExpanded: !node.isExpanded });
+  }
 
-  //       default:
-  //         targetNodes.forEach((targetNode) => addChildren(targetNode, withChildren));
-  //     }
-  //   }
+  private toggleNodesVisibility(nodeIds: number[], { isExpanded }: { isExpanded: boolean }): void {
+    const nodeIndexes: number[] = [];
+    const nodesLength = this.nodes.length;
 
-  //   if (withParents !== false) {
-  //     switch (withParents) {
-  //       case true:
-  //         targetNodes.forEach((targetNode) => addParent(targetNode));
-  //         break;
+    const aux = (node: Node<T>, nodeIndex: number): void => {
+      let nextnodeIndex = nodeIndex + 1;
 
-  //       default:
-  //         targetNodes.forEach((targetNode) => addParent(targetNode, withParents));
-  //     }
-  //   }
+      while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+        if (this.nodes[nextnodeIndex].level === node.level + 1) {
+          this.nodes[nextnodeIndex].isHidden = !isExpanded || !node.isExpanded;
+          aux(this.nodes[nextnodeIndex], nextnodeIndex);
+        }
+        nextnodeIndex++;
+      }
+    };
 
-  //   return [...allNodeIds];
-  // }
+    if (nodeIds.length > 0) {
+      Array.prototype.push.apply(
+        nodeIndexes,
+        nodeIds.map((nodeId) => this.nodes.findIndex((node) => node.id === nodeId)).filter((i) => i !== -1)
+      );
+    } else {
+      for (let i = 0; i < nodesLength; i++) {
+        if (!this.nodes[i].isLeaf) {
+          nodeIndexes.push(i);
+        }
+      }
+    }
 
-  // private onToggleNode(event: Event, nodeIndex: number): void {
-  //   this.dispatchEventToggleNode(event, this.nodes[this.visibleNodeIndexes[nodeIndex]]);
-  // }
+    nodeIndexes.forEach((i) => {
+      const node = this.nodes[i];
+      node.isExpanded = isExpanded;
 
-  // private toggleNodesVisibility(nodeIds: number[], { isExpanded }: { isExpanded: boolean }): void {
-  //   const nodeIndexes: number[] = [];
-  //   const nodesLength = this.nodes.length;
+      aux(node, i);
+    });
 
-  //   const aux = (node: Node<T>, nodeIndex: number): void => {
-  //     let nextnodeIndex = nodeIndex + 1;
-
-  //     while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
-  //       if (this.nodes[nextnodeIndex].level === node.level + 1) {
-  //         this.nodes[nextnodeIndex].isHidden = !isExpanded || !node.isExpanded;
-  //         aux(this.nodes[nextnodeIndex], nextnodeIndex);
-  //       }
-  //       nextnodeIndex++;
-  //     }
-  //   };
-
-  //   if (nodeIds.length > 0) {
-  //     Array.prototype.push.apply(
-  //       nodeIndexes,
-  //       nodeIds.map((nodeId) => this.nodes.findIndex((node) => node.id === nodeId)).filter((i) => i !== -1)
-  //     );
-  //   } else {
-  //     for (let i = 0; i < nodesLength; i++) {
-  //       if (!this.nodes[i].isLeaf) {
-  //         nodeIndexes.push(i);
-  //       }
-  //     }
-  //   }
-
-  //   nodeIndexes.forEach((i) => {
-  //     const node = this.nodes[i];
-  //     node.isExpanded = isExpanded;
-
-  //     aux(node, i);
-  //   });
-
-  //   this.setActiveNodeIndexes();
-
-  //   this.updateVisibleNodes();
-  // }
+    this.updateNodes();
+  }
 }

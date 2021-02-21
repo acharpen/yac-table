@@ -5,25 +5,10 @@ import { ListTable } from '../list-table';
 import { getByText } from '@testing-library/dom';
 
 const columnOptions = [
-  {
-    align: 'left' as const,
-    formatter: defaultFormatter('col1'),
-    id: 1,
-    isResizable: true,
-    isSortable: true,
-    title: 'col1'
-  },
-  {
-    align: 'left' as const,
-    formatter: defaultFormatter('col2'),
-    id: 2,
-    isResizable: true,
-    isSortable: true,
-    title: 'col2'
-  }
+  { align: 'left' as const, formatter: defaultFormatter('col1'), id: 1, title: 'col1' },
+  { align: 'left' as const, formatter: defaultFormatter('col2'), id: 2, title: 'col2' }
 ];
-const tableOptions = { frozenColumns: 1, nodeHeight: 40, visibleNodes: 10 };
-
+const tableOptions = { columnMinWidth: 40, nodeHeight: 40, visibleNodes: 10 };
 const table = new ListTable<TestObject>(document.body, { columnOptions, tableOptions });
 
 // ////////////////////////////////////////////////////////////////////////////

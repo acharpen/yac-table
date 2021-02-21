@@ -7,7 +7,7 @@ export interface ExampleObject {
 
 // ////////////////////////////////////////////////////////////////////////////
 
-export const defaultFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => DocumentFragment) => {
+const defaultFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => DocumentFragment) => {
   return (obj: ExampleObject): DocumentFragment => {
     const fragment = document.createDocumentFragment();
     fragment.textContent = obj[field];
@@ -16,7 +16,7 @@ export const defaultFormatter = (field: keyof ExampleObject): ((obj: ExampleObje
   };
 };
 
-export const linkFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => DocumentFragment) => {
+const linkFormatter = (field: keyof ExampleObject): ((obj: ExampleObject) => DocumentFragment) => {
   return (obj: ExampleObject): DocumentFragment => {
     const fragment = document.createDocumentFragment();
 
@@ -37,8 +37,8 @@ export const columnOptions = [
     id: 1,
     resizable: true,
     sorter: (a: ExampleObject, b: ExampleObject): number => a.col1.localeCompare(b.col1),
+    sticky: 'left' as const,
     title: 'col1',
-    sticky: 'left',
     width: { value: 400, unit: 'px' as const }
   },
   {
@@ -47,8 +47,8 @@ export const columnOptions = [
     id: 2,
     resizable: true,
     sorter: (a: ExampleObject, b: ExampleObject): number => a.col2.localeCompare(b.col2),
+    sticky: 'left' as const,
     title: 'col2',
-    sticky: 'left',
     width: { value: 600, unit: 'px' as const }
   },
   {
@@ -66,14 +66,13 @@ export const columnOptions = [
     id: 4,
     resizable: true,
     sorter: (a: ExampleObject, b: ExampleObject): number => a.col4.localeCompare(b.col4),
+    sticky: 'right' as const,
     title: 'col4',
-    sticky: 'right',
     width: { value: 200, unit: 'px' as const }
   }
 ];
 
 export const tableOptions = {
-  frozenColumns: 1,
   columnMinWidth: 40,
   nodeHeight: 40,
   selectable: true,

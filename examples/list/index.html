@@ -8,57 +8,10 @@
 
     <link rel="stylesheet" href="../../src/core.scss" />
     <link rel="stylesheet" href="../../src/theme.scss" />
-
-    <style>
-      .celda {
-        height: 18px;
-        border: 1px solid #000;
-      }
-
-      .sticky {
-        position: sticky;
-        top: 0;
-      }
-
-      .example-viewport {
-        height: 200px;
-      }
-
-      .cdk-virtual-scroll-viewport {
-        display: block;
-        position: relative;
-        overflow: auto;
-        contain: strict;
-        transform: translateZ(0);
-        will-change: scroll-position;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      .cdk-virtual-scroll-content-wrapper {
-        position: absolute;
-        top: 0;
-        left: 0;
-        contain: content;
-        min-width: 100%;
-      }
-
-      .cdk-virtual-scroll-spacer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 1px;
-        width: 1px;
-        transform-origin: 0 0;
-      }
-
-      .example-item {
-        height: 50px;
-      }
-    </style>
   </head>
 
   <body>
-    <div id="table-container" style="height: 400px; width: 1100px"></div>
+    <div id="table-container" style="height: 400px; width: 1200px"></div>
 
     <script src="list-example.ts"></script>
   </body>

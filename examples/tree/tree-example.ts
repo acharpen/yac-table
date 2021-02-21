@@ -1,5 +1,4 @@
 import { ExampleObject, columnOptions, tableOptions } from '../setup';
-import { TreeNodeView } from '../../src/node';
 import { TreeTable } from '../../src/tree-table';
 
 const treeData = [...Array(1e5).keys()].map((i) => ({
@@ -41,28 +40,10 @@ const treeData = [...Array(1e5).keys()].map((i) => ({
   }
 }));
 
-const tableContainerElt = document.getElementById('table-container') as HTMLElement;
-const table = new TreeTable<ExampleObject>(tableContainerElt, {
+const containerElt = document.getElementById('table-container') as HTMLElement;
+const table = new TreeTable<ExampleObject>(containerElt, {
   columnOptions,
-  tableOptions: { ...tableOptions, childNodeOffset: 8, expandTogglerColumnIndex: 0 }
+  tableOptions: { ...tableOptions, childNodeOffset: 8 }
 });
 
-// tableContainerElt.addEventListener('onClickNode', (event) => {
-//   const { node } = (event as CustomEvent<{ node: TreeNodeView<ExampleObject> }>).detail;
-//   if (node.isSelected) {
-//     table.deselectNodes([node.id], { withChildren: true, withParents: false });
-//   } else {
-//     table.selectNodes([node.id], { withChildren: true, withParents: false });
-//   }
-// });
-
-// tableContainerElt.addEventListener('onToggleNode', (event) => {
-//   const { node } = (event as CustomEvent<{ node: TreeNodeView<ExampleObject> }>).detail;
-//   if (node.isExpanded) {
-//     table.collapseNodes([node.id]);
-//   } else {
-//     table.expandNodes([node.id]);
-//   }
-// });
-
-// table.setData(treeData);
+table.setData(treeData);
