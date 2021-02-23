@@ -19,6 +19,8 @@ export class TableUtils {
   public static readonly TABLE_CELL_CONTENT_CLS: string = `${TableUtils.VENDOR_CLS}-cell-content`;
   public static readonly TABLE_CLS: string = TableUtils.VENDOR_CLS;
   public static readonly TABLE_HEADER_CLS: string = `${TableUtils.VENDOR_CLS}-header`;
+  public static readonly TABLE_ROW_ACTIONS_CLS: string = `${TableUtils.VENDOR_CLS}-row-actions`;
+  public static readonly TABLE_ROW_ACTIONS_HANDLE_CLS: string = `${TableUtils.VENDOR_CLS}-row-actions-handle`;
   public static readonly TABLE_ROW_CLS: string = `${TableUtils.VENDOR_CLS}-row`;
   public static readonly VIRTUAL_SCROLL_SPACER_CLS: string = `${TableUtils.VENDOR_CLS}-virtual-scroll-spacer`;
 
@@ -26,8 +28,12 @@ export class TableUtils {
     return `${TableUtils.VENDOR_CLS}-text-${alignment}`;
   }
 
+  public static getEllipsisIcon(): string {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"></path></svg>`;
+  }
+
   public static getTickIcon(): string {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
       <g>
         <path d="M0 7a7 7 0 1 1 14 0A7 7 0 0 1 0 7z" fill="currentColor"></path>
         <path d="M13 7A6 6 0 1 0 1 7a6 6 0 0 0 12 0z" fill="#fff"></path>
