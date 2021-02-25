@@ -10,10 +10,6 @@ export class DomUtils {
     return elt;
   }
 
-  // public static createEvent<T>(eventName: string, arg?: T): CustomEvent<T> {
-  //   return new CustomEvent(eventName, { detail: arg });
-  // }
-
   public static getComputedHeight(elt: Element): number {
     return parseFloat(getComputedStyle(elt).getPropertyValue('height').replace('px', ''));
   }
@@ -22,16 +18,18 @@ export class DomUtils {
     return parseFloat(getComputedStyle(elt).getPropertyValue('width').replace('px', ''));
   }
 
-  public static getEltByClassName(elts: HTMLCollection, className: string): HTMLElement | null {
-    for (let i = 0, len = elts.length; i < len; i++) {
-      const elt = elts[i];
+  public static getRenderedSize(containerElt: HTMLElement, elt: HTMLElement): { height: number; width: number } {
+    const clone = elt.cloneNode(true) as HTMLElement;
+    clone.style.visibility = 'hidden';
 
-      if (elt.classList.contains(className)) {
-        return elt as HTMLElement;
-      }
-    }
+    containerElt.appendChild(clone);
 
-    return null;
+    const height = DomUtils.getComputedHeight(clone);
+    const width = DomUtils.getComputedWidth(clone);
+
+    containerElt.removeChild(clone);
+
+    return { height, width };
   }
 
   public static getWidth(elt: HTMLElement): number {

@@ -1,172 +1,140 @@
-.yac-table-header {
-  .yac-table-row {
-    height: 56px;
-    background-color: #bdbdbd;
-  }
+@import "core";
 
-  .yac-table-cell {
-    align-items: center;
-  }
-}
-
-.yac-table-row {
-  cursor: pointer;
-  // border-bottom: 1px solid #000;
-  // background-color: #fff;
-  box-shadow: inset 0 -1px 0 0 rgb(100 121 143 / 12%);
-
-  // &:hover {
-  //   box-shadow: inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0, 0 1px 2px 0 rgb(60 64 67 / 30%),
-  //     0 1px 3px 1px rgb(60 64 67 / 15%);
-  //   z-index: 100;
-  // }
-}
-
-.yac-table-body {
-  .yac-table-row-actions-handle {
-    align-items: center;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-
-    svg {
-      width: 16px;
-    }
-  }
-}
-
-.yac-table-row-actions-handle {
-  width: 40px;
-}
-
-.yac-table-cell {
-  background-color: #fff;
-  margin: 1px 0;
-}
-
-.yac-table-header {
-  .yac-table-cell {
-    &.yac-table-sortable {
-      cursor: pointer;
-    }
-  }
-}
-
-.yac-table-row {
-  &.yac-table-selectable .yac-table-cell:first-child {
-    width: 40px;
-  }
-}
-
-// .yac-table-cell {
-//   background-color: #fff;
-//   // border: 1px solid #000;
-// }
-
-// // .yac-table-cell {
-// //   padding: 16px;
-// // }
-
-// // /* Constants *************************************************************** */
-
-$dark: #424242;
-$light: #eee;
-$primary: #bdbdbd;
-$selection: #283593;
+/* Variables *************************************************************** */
 
 $resize-handle-width: 8px;
 $sort-handle-width: 6px;
+$table-border-radius: 6px;
+$table-header-height: 40px;
 
-// // /* Mixins ****************************************************************** */
-
-@mixin transition($property) {
-  transition: $property 0.25s ease-in;
+:root {
+  --yac-table-color-bg-primary: #fff;
+  --yac-table-color-bg-tertiary: #f6f8fa;
+  --yac-table-color-border-primary: #d1d5db;
+  --yac-table-color-border-secondary: #f3f4f6;
+  --yac-table-color-box-header-blue-bg: #eff6ff;
+  --yac-table-color-text-primary: #4b5563;
 }
 
-// // /* Common ****************************************************************** */
+/* Common ****************************************************************** */
 
-// // *,
-// // *::before,
-// // *::after {
-// //   box-sizing: border-box;
-// // }
+* {
+  box-sizing: border-box;
+}
 
-// // .yac-table-row {
-// //   cursor: pointer;
+.yac-table {
+  border: 1px solid var(--yac-table-color-border-primary);
+  border-radius: $table-border-radius;
+  width: fit-content;
 
-// //   &::before {
-// //     width: 4px;
-// //   }
-
-// //   &.selected {
-// //     &::before {
-// //       background-color: $selection;
-// //     }
-// //   }
-// // }
-
-// // // NOTE: `yac-table-cell` elements must have a background color
-// // .yac-table-cell {
-// //   background-color: #fff;
-// // }
-
-// // .yac-table-cell-content {
-// //   overflow: hidden;
-// //   padding: 0 4px;
-// //   text-overflow: ellipsis;
-// //   white-space: nowrap;
-// // }
-
-// // /* Header ****************************************************************** */
-
-.yac-table-header {
-  .yac-table-sort-asc-handle,
-  .yac-table-sort-desc-handle {
-    right: $resize-handle-width;
+  &::-webkit-scrollbar {
+    background-color: var(--yac-table-color-border-secondary);
+    border-bottom-left-radius: $table-border-radius;
+    border-bottom-right-radius: $table-border-radius;
+    border-top-right-radius: $table-border-radius;
+    height: 8px;
+    width: 8px;
   }
 
-  .yac-table-cell {
-    cursor: pointer;
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--yac-table-color-border-primary);
+    border-radius: $table-border-radius;
+  }
 
-    &.sortable {
-      .yac-table-cell-content {
-        margin-right: calc(#{$sort-handle-width} * 2);
-      }
-    }
+  &::-webkit-scrollbar-corner {
+    border-bottom-right-radius: $table-border-radius;
+  }
+}
+
+.yac-table-cell {
+  color: var(--yac-table-color-text-primary);
+  cursor: pointer;
+  display: flex;
+
+  &:not(.yac-table-cell-check):not(.yac-table-row-actions-handle) {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  &.yac-table-sortable .yac-table-cell-content {
+    margin-right: calc(#{$sort-handle-width} * 2);
+  }
+}
+
+.yac-table-cell-check {
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+
+  &:hover svg {
+    display: block;
+  }
+
+  svg {
+    display: none;
+    width: 16px;
+  }
+}
+
+.yac-table-cell-content {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yac-table-row-actions-handle {
+  @extend .yac-table-sticky;
+
+  color: var(--yac-table-color-border-primary);
+  right: 0;
+  width: 40px;
+
+  &:hover,
+  &.yac-table-active {
+    color: var(--yac-table-color-text-primary);
+  }
+}
+
+/* Header ****************************************************************** */
+
+.yac-table-header {
+  .yac-table-cell {
+    align-items: center;
+    background-color: var(--yac-table-color-box-header-blue-bg); // mandatory
   }
 
   .yac-table-row {
-    border-bottom: 1px solid $dark;
-    // height: 32px;
+    height: $table-header-height; // mandatory
 
     &:hover {
       .yac-table-resize-handle {
         &::before {
-          background-color: $primary;
+          background-color: var(--yac-table-color-border-primary);
         }
 
         &:hover::before {
-          background-color: $dark;
+          background-color: var(--yac-table-color-text-primary);
         }
       }
 
       .yac-table-sort-asc-handle {
         &:not(.yac-table-active) {
-          border-bottom-color: $primary;
+          border-bottom-color: var(--yac-table-color-border-primary);
         }
 
         &:hover {
-          border-bottom-color: $dark;
+          border-bottom-color: var(--yac-table-color-text-primary);
         }
       }
 
       .yac-table-sort-desc-handle {
         &:not(.yac-table-active) {
-          border-top-color: $primary;
+          border-top-color: var(--yac-table-color-border-primary);
         }
 
         &:hover {
-          border-top-color: $dark;
+          border-top-color: var(--yac-table-color-text-primary);
         }
       }
     }
@@ -177,109 +145,86 @@ $sort-handle-width: 6px;
   align-items: center;
   cursor: ew-resize;
   display: flex;
-  flex-direction: row;
+  height: 100%;
   justify-content: center;
-  position: relative;
+  position: absolute;
+  right: 0;
   width: $resize-handle-width;
 
   &::before {
-    @include transition(background-color);
-
     background-color: transparent;
     content: "";
     height: 50%;
     width: 1px;
-  }
-}
 
-.yac-table-sort-asc-handle {
-  @include transition(border-bottom-color);
-
-  border-bottom-color: transparent;
-  border-bottom-width: $sort-handle-width;
-
-  &.yac-table-active {
-    border-bottom-color: $dark;
-  }
-}
-
-.yac-table-sort-desc-handle {
-  @include transition(border-top-color);
-
-  border-top-color: transparent;
-  border-top-width: $sort-handle-width;
-
-  &.yac-table-active {
-    border-top-color: $dark;
+    transition: background-color 0.25s ease-in;
   }
 }
 
 .yac-table-sort-asc-handle,
 .yac-table-sort-desc-handle {
-  border-left-width: $sort-handle-width;
-  border-right-width: $sort-handle-width;
-  cursor: pointer;
+  border-left: $sort-handle-width solid transparent;
+  border-right: $sort-handle-width solid transparent;
+  height: 0;
+  position: absolute;
+  right: $resize-handle-width;
+  width: 0;
 }
 
-// // /* Body ******************************************************************** */
+.yac-table-sort-asc-handle {
+  border-bottom: $sort-handle-width solid transparent;
+  bottom: 50%;
+  margin-bottom: 1px;
 
-.yac-table {
-  &::-webkit-scrollbar {
-    background-color: $light;
-    height: 8px;
-    width: 8px;
-  }
+  transition: border-bottom-color 0.25s ease-in;
 
-  &::-webkit-scrollbar-thumb {
-    background-color: $primary;
+  &.yac-table-active {
+    border-bottom-color: var(--yac-table-color-text-primary);
   }
 }
 
-// // .yac-table-body {
-// //   &::-webkit-scrollbar {
-// //     background-color: $light;
-// //     height: 8px;
-// //     width: 8px;
-// //   }
+.yac-table-sort-desc-handle {
+  border-top: $sort-handle-width solid transparent;
+  margin-top: 1px;
+  top: 50%;
 
-// //   &::-webkit-scrollbar-thumb {
-// //     background-color: $primary;
-// //   }
+  transition: border-top-color 0.25s ease-in;
 
-// //   &.resizable {
-// //     .yac-table-cell {
-// //       &.sortable {
-// //         .yac-table-cell-content {
-// //           margin-right: calc(#{$sort-handle-width} * 2 + #{$resize-handle-width});
-// //         }
-// //       }
-// //     }
-// //   }
+  &.yac-table-active {
+    border-top-color: var(--yac-table-color-text-primary);
+  }
+}
 
-// //   .yac-table-cell {
-// //     &.sortable {
-// //       .yac-table-cell-content {
-// //         margin-right: calc(#{$sort-handle-width} * 2);
-// //       }
-// //     }
-// //   }
-// // }
+/* Body ******************************************************************** */
 
-// // .yac-table-expand-toggler {
-// //   cursor: pointer;
-// //   min-width: 24px;
-// //   width: 24px;
+.yac-table-body {
+  top: $table-header-height; // mandatory
 
-// //   &:hover > i,
-// //   & > i.yac-table-active {
-// //     @include transition(border-color);
+  .yac-table-cell {
+    background-color: var(--yac-table-color-bg-primary); // mandatory
+    box-shadow: inset 0 -1px 0 0 var(--yac-table-color-border-secondary);
+  }
 
-// //     border-color: $dark;
-// //   }
+  .yac-table-row {
+    &:hover,
+    &.yac-table-selected {
+      .yac-table-cell {
+        background-color: var(--yac-table-color-bg-tertiary);
+      }
+    }
 
-// //   & > i {
-// //     border: solid $primary;
-// //     border-width: 0 2px 2px 0;
-// //     padding: 3px;
-// //   }
-// // }
+    &.yac-table-selected .yac-table-cell-check svg {
+      color: var(--yac-table-color-text-primary);
+      display: block;
+    }
+  }
+
+  .yac-table-row-actions-handle {
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 16px;
+    }
+  }
+}

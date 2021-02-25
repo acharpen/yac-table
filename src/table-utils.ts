@@ -15,6 +15,7 @@ export class TableUtils {
   public static readonly SORTABLE_CLS: string = `${TableUtils.VENDOR_CLS}-sortable`;
   public static readonly STICKY_CLS: string = `${TableUtils.VENDOR_CLS}-sticky`;
   public static readonly TABLE_BODY_CLS: string = `${TableUtils.VENDOR_CLS}-body`;
+  public static readonly TABLE_CELL_CHECK_CLS: string = `${TableUtils.VENDOR_CLS}-cell-check`;
   public static readonly TABLE_CELL_CLS: string = `${TableUtils.VENDOR_CLS}-cell`;
   public static readonly TABLE_CELL_CONTENT_CLS: string = `${TableUtils.VENDOR_CLS}-cell-content`;
   public static readonly TABLE_CLS: string = TableUtils.VENDOR_CLS;
@@ -29,7 +30,7 @@ export class TableUtils {
   }
 
   public static getEllipsisIcon(): string {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"></path></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" fill="currentColor"></path></svg>`;
   }
 
   public static getTickIcon(): string {

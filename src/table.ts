@@ -52,7 +52,7 @@ export abstract class AbstractTable<T> {
     this.tableHeaderElt = this.createTableHeaderElt();
     this.tableElt = this.createTableElt();
 
-    this.tableHeaderHeight = this.computeTableHeaderHeight();
+    this.tableHeaderHeight = DomUtils.getRenderedSize(this.containerElt, this.tableHeaderElt).height;
   }
 
   // ////////////////////////////////////////////////////////////////////////////
@@ -127,6 +127,7 @@ export abstract class AbstractTable<T> {
   protected createTableBodyCellElt(column: Column<T>, _ctx: { nodeIndex: number }): HTMLElement {
     const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
     if (column.classList) elt.classList.add(...column.classList);
+    if (column.sorter) elt.classList.add(TableUtils.SORTABLE_CLS);
     if (column.sticky != null) elt.classList.add(TableUtils.STICKY_CLS);
 
     elt.appendChild(this.createTableBodyCellContentElt(column));
@@ -188,7 +189,7 @@ export abstract class AbstractTable<T> {
 
     if (force || newRangeStart !== this.currentRangeStart) {
       this.currentRangeStart = newRangeStart;
-      this.tableBodyElt.style.transform = `translateY(${newRangeStart * this.options.nodeHeight}px)`;
+      this.tableBodyElt.style.transform = `translateY(${DomUtils.withPx(newRangeStart * this.options.nodeHeight)})`;
       this.visibleNodeIndexes = this.activeNodeIndexes.slice(newRangeStart, newRangeStart + this.virtualNodesCount);
 
       this.hideUnusedTableBodyRowElts();
@@ -242,36 +243,17 @@ export abstract class AbstractTable<T> {
     return elt;
   }
 
-  private createTableBodyRowActionsContentElt(node: Node<T>): HTMLElement {
-    const elt = document.createElement('ul');
-
-    (this.options.rowActions ?? []).forEach((rowAction) => {
-      const linkElt = document.createElement('a');
-      linkElt.addEventListener('mouseup', () => rowAction.callback(node.value));
-      linkElt.appendChild(document.createTextNode(rowAction.label));
-
-      const childElt = document.createElement('li');
-      childElt.appendChild(linkElt);
-
-      elt.appendChild(childElt);
-    });
-
-    return elt;
-  }
-
-  private createTableBodyRowActionsElt(): HTMLElement {
-    return DomUtils.createDiv(TableUtils.TABLE_ROW_ACTIONS_CLS);
-  }
-
   private createTableBodyRowActionsHandleElt(ctx: { nodeIndex: number }): HTMLElement {
     const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS);
     elt.innerHTML = TableUtils.getEllipsisIcon();
-    elt.addEventListener('mouseup', (event) => {
-      event.stopPropagation();
-      this.onClickTableBodyRowActionsHandle(ctx.nodeIndex);
-    });
-
-    elt.appendChild(this.createTableBodyRowActionsElt());
+    elt.addEventListener(
+      'mouseup',
+      (event) => {
+        event.stopPropagation();
+        this.onClickTableBodyRowActionsHandle(ctx.nodeIndex, event);
+      },
+      false
+    );
 
     return elt;
   }
@@ -301,7 +283,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableBodyTickElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
+    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_CELL_CHECK_CLS);
     elt.innerHTML = TableUtils.getTickIcon();
 
     return elt;
@@ -326,14 +308,14 @@ export abstract class AbstractTable<T> {
 
     elt.appendChild(this.createTableHeaderCellContentElt(column));
 
-    if (column.resizable != null) {
-      elt.appendChild(this.createResizeHandleElt(ctx));
-    }
-    if (column.sorter != null) {
+    if (column.sorter) {
       elt.classList.add(TableUtils.SORTABLE_CLS);
 
       elt.appendChild(this.createSortHandleElt('asc', ctx));
       elt.appendChild(this.createSortHandleElt('desc', ctx));
+    }
+    if (column.resizable != null) {
+      elt.appendChild(this.createResizeHandleElt(ctx));
     }
 
     return elt;
@@ -346,21 +328,8 @@ export abstract class AbstractTable<T> {
     return elt;
   }
 
-  private computeTableHeaderHeight(): number {
-    const clone = this.tableHeaderElt.cloneNode(true) as HTMLElement;
-    clone.style.visibility = 'hidden';
-
-    this.containerElt.appendChild(clone);
-
-    const height = DomUtils.getComputedHeight(clone);
-
-    this.containerElt.removeChild(clone);
-
-    return height;
-  }
-
   private createTableHeaderElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_HEADER_CLS);
+    const elt = DomUtils.createDiv(TableUtils.TABLE_HEADER_CLS, TableUtils.STICKY_CLS);
 
     elt.appendChild(this.tableHeaderRowElt);
 
@@ -379,14 +348,16 @@ export abstract class AbstractTable<T> {
     this.dataColumns.forEach((column, i) => elt.appendChild(this.createTableHeaderCellElt(column, { columnIndex: i })));
 
     if (this.options.rowActions) {
-      elt.appendChild(DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS));
+      elt.appendChild(
+        DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS, TableUtils.STICKY_CLS)
+      );
     }
 
     return elt;
   }
 
   private createTableHeaderTickElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
+    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_CELL_CHECK_CLS);
     elt.innerHTML = TableUtils.getTickIcon();
     elt.addEventListener('mouseup', () => this.onClickTableHeaderTick());
 
@@ -398,11 +369,10 @@ export abstract class AbstractTable<T> {
   }
 
   private getColumnSortHandles(headerCellElt: HTMLElement): { sortAscElt: HTMLElement; sortDescElt: HTMLElement } {
-    const headerCellContentElts = headerCellElt.children;
-    const sortAscElt = DomUtils.getEltByClassName(headerCellContentElts, TableUtils.SORT_ASC_HANDLE_CLS);
-    const sortDescElt = DomUtils.getEltByClassName(headerCellContentElts, TableUtils.SORT_DESC_HANDLE_CLS);
-
-    return { sortAscElt: sortAscElt as HTMLElement, sortDescElt: sortDescElt as HTMLElement };
+    return {
+      sortAscElt: headerCellElt.getElementsByClassName(TableUtils.SORT_ASC_HANDLE_CLS).item(0) as HTMLElement,
+      sortDescElt: headerCellElt.getElementsByClassName(TableUtils.SORT_DESC_HANDLE_CLS).item(0) as HTMLElement
+    };
   }
 
   private getNodeByIndex(index: number): Node<T> {
@@ -508,18 +478,72 @@ export abstract class AbstractTable<T> {
     }
   }
 
-  private onClickTableBodyRowActionsHandle(nodeIndex: number): void {
-    const tableBodyRowElt = this.tableBodyRowElts[nodeIndex];
-    const tableBodyRowActionsHandleElt = tableBodyRowElt.lastElementChild as HTMLElement;
-    const tableBodyRowActionsElt = tableBodyRowActionsHandleElt.lastElementChild as HTMLElement;
-
-    if (tableBodyRowActionsHandleElt.classList.contains(TableUtils.ACTIVE_CLS)) {
-      tableBodyRowActionsHandleElt.classList.remove(TableUtils.ACTIVE_CLS);
-      tableBodyRowActionsElt.innerHTML = '';
-    } else {
-      tableBodyRowActionsElt.appendChild(this.createTableBodyRowActionsContentElt(this.getNodeByIndex(nodeIndex)));
-      tableBodyRowActionsHandleElt.classList.add(TableUtils.ACTIVE_CLS);
-    }
+  private onClickTableBodyRowActionsHandle(nodeIndex: number, event: Event): void {
+    // const eventTarget = event.target as HTMLElement;
+    // const a = eventTarget.closest(`.${TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS}`);
+    // if (a && this.options.rowActions && this.options.rowActions.length > 0) {
+    //   const b = a as HTMLElement;
+    //   b.classList.add(TableUtils.ACTIVE_CLS);
+    //   const e = DomUtils.createDiv('yac-table-row-actions-overlay');
+    //   const listElt = DomUtils.createElt('ul', 'list');
+    //   const createRowActionsGroup = (rowActions: { callback: (item: T) => void; label: string }[]): void => {
+    //     for (let i = 0, len = rowActions.length; i < len; i++) {
+    //       const rowAction = rowActions[i];
+    //       const listItemElt = DomUtils.createElt('li', 'list-item');
+    //       listItemElt.appendChild(document.createTextNode(rowAction.label));
+    //       listElt.appendChild(listItemElt);
+    //     }
+    //   };
+    //   createRowActionsGroup(this.options.rowActions[0]);
+    //   for (let i = 1, len = this.options.rowActions.length; i < len; i++) {
+    //     const listItemElt = DomUtils.createElt('li', 'divider');
+    //     listElt.appendChild(listItemElt);
+    //     const group = this.options.rowActions[i];
+    //     createRowActionsGroup(group);
+    //   }
+    //   e.appendChild(listElt);
+    //   const { height, width } = DomUtils.getRenderedSize(this.containerElt, e);
+    //   // Height
+    //   if (b.getBoundingClientRect().top + height <= window.innerHeight) {
+    //     e.style.top = DomUtils.withPx(b.getBoundingClientRect().top);
+    //   } else {
+    //     e.style.top = DomUtils.withPx(b.getBoundingClientRect().bottom - height);
+    //   }
+    //   // Width
+    //   if (width + b.getBoundingClientRect().left + 40 <= window.innerWidth) {
+    //     e.style.left = DomUtils.withPx(b.getBoundingClientRect().left + 40);
+    //   } else {
+    //     e.style.left = DomUtils.withPx(b.getBoundingClientRect().left - width);
+    //   }
+    //   e.style.maxHeight = DomUtils.withPx(window.innerHeight);
+    //   this.containerElt.appendChild(e);
+    //   const m = (event2: Event) => {
+    //     window.removeEventListener('mouseup', m, true);
+    //     event2.stopPropagation();
+    //     this.containerElt.removeChild(e);
+    //     b.classList.remove(TableUtils.ACTIVE_CLS);
+    //   };
+    //   const m2 = (event2: Event) => {
+    //     window.removeEventListener('scroll', m2);
+    //     event2.stopPropagation();
+    //     this.containerElt.removeChild(e);
+    //     b.classList.remove(TableUtils.ACTIVE_CLS);
+    //   };
+    //   // window.addEventListener('mouseup', m, true);
+    //   window.addEventListener('mouseup', m, true);
+    //   // window.addEventListener('scroll', m2);
+    //   // this.tableElt.addEventListener('scroll', m2);
+    // }
+    // // const tableBodyRowElt = this.tableBodyRowElts[nodeIndex];
+    // // const tableBodyRowActionsHandleElt = tableBodyRowElt.lastElementChild as HTMLElement;
+    // // const tableBodyRowActionsElt = tableBodyRowActionsHandleElt.lastElementChild as HTMLElement;
+    // // if (tableBodyRowActionsHandleElt.classList.contains(TableUtils.ACTIVE_CLS)) {
+    // //   tableBodyRowActionsHandleElt.classList.remove(TableUtils.ACTIVE_CLS);
+    // //   tableBodyRowActionsElt.innerHTML = '';
+    // // } else {
+    // //   tableBodyRowActionsElt.appendChild(this.createTableBodyRowActionsContentElt(this.getNodeByIndex(nodeIndex)));
+    // //   tableBodyRowActionsHandleElt.classList.add(TableUtils.ACTIVE_CLS);
+    // }
   }
 
   private onClickTableHeaderCell(columnIndex: number): void {
@@ -569,14 +593,14 @@ export abstract class AbstractTable<T> {
     const stopResize = (stopEvent: Event): void => {
       stopEvent.stopPropagation();
 
-      window.removeEventListener('mouseup', stopResize, { capture: true });
+      window.removeEventListener('mouseup', stopResize, true);
       window.removeEventListener('mousemove', resize);
     };
 
     startEvent.preventDefault();
 
     window.addEventListener('mousemove', resize);
-    window.addEventListener('mouseup', stopResize, { capture: true });
+    window.addEventListener('mouseup', stopResize, true);
   }
 
   private onSortTable(columnIndex: number, sortOrder: SortOrder): void {
@@ -639,7 +663,7 @@ export abstract class AbstractTable<T> {
 
   private resetColumnSortHandles(): void {
     this.dataColumns.forEach((column, i) => {
-      if (column.sorter != null) {
+      if (column.sorter) {
         const headerCellElt = this.getDataCellElts(this.tableHeaderRowElt)[i];
         const { sortAscElt, sortDescElt } = this.getColumnSortHandles(headerCellElt);
         sortAscElt.classList.remove(TableUtils.ACTIVE_CLS);
@@ -693,7 +717,7 @@ export abstract class AbstractTable<T> {
   }
 
   private setColumnWidth(columnIndex: number, width: number): void {
-    const widthInPx = `${width}px`;
+    const widthInPx = DomUtils.withPx(width);
 
     this.getDataCellElts(this.tableHeaderRowElt)[columnIndex].style.width = widthInPx;
     for (let i = 0, len = this.tableBodyRowElts.length; i < len; i++) {
@@ -710,16 +734,28 @@ export abstract class AbstractTable<T> {
     }
     const stickyDataColumnsWidthLen = stickyDataColumnsWidth.length;
 
-    const rowActionsHandleCellWidth = this.options.rowActions
-      ? DomUtils.getComputedWidth(this.tableHeaderRowElt.lastElementChild as HTMLElement)
-      : 0;
+    let checkCellWidth = 0;
+    if (this.options.selectable != null) {
+      const checkCellElt = this.tableHeaderRowElt.firstElementChild as HTMLElement;
+      if (checkCellElt.classList.contains(TableUtils.STICKY_CLS)) {
+        checkCellWidth = DomUtils.getComputedWidth(checkCellElt);
+      }
+    }
+
+    let rowActionsHandleCellWidth = 0;
+    if (this.options.rowActions) {
+      const rowActionsHandleElt = this.tableHeaderRowElt.lastElementChild as HTMLElement;
+      if (rowActionsHandleElt.classList.contains(TableUtils.STICKY_CLS)) {
+        rowActionsHandleCellWidth = DomUtils.getComputedWidth(rowActionsHandleElt);
+      }
+    }
 
     for (let i = 0, tableHeaderCellEltsLen = tableHeaderCellElts.length; i < tableHeaderCellEltsLen; i++) {
       const column = this.dataColumns[i];
       const tableHeaderCellElt = tableHeaderCellElts[i];
 
       if (column.sticky === 'left') {
-        let offset = 0;
+        let offset = checkCellWidth;
         for (let j = 0; j < i; j++) offset += stickyDataColumnsWidth[j];
         const offsetInPx = DomUtils.withPx(offset);
 
