@@ -244,7 +244,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableBodyRowActionsHandleElt(ctx: { nodeIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS);
+    const elt = DomUtils.createDiv(TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS);
     elt.innerHTML = TableUtils.getEllipsisIcon();
     elt.addEventListener(
       'mouseup',
@@ -263,17 +263,11 @@ export abstract class AbstractTable<T> {
     elt.style.height = DomUtils.withPx(this.options.nodeHeight);
     elt.addEventListener('mouseup', () => this.onClickTableBodyRow(ctx.nodeIndex), false);
 
-    if (this.isSelectionEnabled()) {
-      elt.classList.add(TableUtils.SELECTABLE_CLS);
-
-      elt.appendChild(this.createTableBodyTickElt());
-    }
+    if (this.isSelectionEnabled()) elt.appendChild(this.createTableBodyTickElt());
 
     this.dataColumns.forEach((column) => elt.appendChild(this.createTableBodyCellElt(column, ctx)));
 
-    if (this.options.rowActions) {
-      elt.appendChild(this.createTableBodyRowActionsHandleElt(ctx));
-    }
+    if (this.options.rowActions) elt.appendChild(this.createTableBodyRowActionsHandleElt(ctx));
 
     return elt;
   }
@@ -283,7 +277,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableBodyTickElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_CELL_CHECK_CLS);
+    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CHECK_CLS);
     elt.innerHTML = TableUtils.getTickIcon();
 
     return elt;
@@ -339,25 +333,19 @@ export abstract class AbstractTable<T> {
   private createTableHeaderRowElt(): HTMLElement {
     const elt = DomUtils.createDiv(TableUtils.TABLE_ROW_CLS);
 
-    if (this.isSelectionEnabled()) {
-      elt.classList.add(TableUtils.SELECTABLE_CLS);
-
-      elt.appendChild(this.createTableHeaderTickElt());
-    }
+    if (this.isSelectionEnabled()) elt.appendChild(this.createTableHeaderTickElt());
 
     this.dataColumns.forEach((column, i) => elt.appendChild(this.createTableHeaderCellElt(column, { columnIndex: i })));
 
     if (this.options.rowActions) {
-      elt.appendChild(
-        DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS, TableUtils.STICKY_CLS)
-      );
+      elt.appendChild(DomUtils.createDiv(TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS, TableUtils.STICKY_CLS));
     }
 
     return elt;
   }
 
   private createTableHeaderTickElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS, TableUtils.TABLE_CELL_CHECK_CLS);
+    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CHECK_CLS);
     elt.innerHTML = TableUtils.getTickIcon();
     elt.addEventListener('mouseup', () => this.onClickTableHeaderTick());
 
@@ -479,61 +467,85 @@ export abstract class AbstractTable<T> {
   }
 
   private onClickTableBodyRowActionsHandle(nodeIndex: number, event: Event): void {
-    // const eventTarget = event.target as HTMLElement;
-    // const a = eventTarget.closest(`.${TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS}`);
-    // if (a && this.options.rowActions && this.options.rowActions.length > 0) {
-    //   const b = a as HTMLElement;
-    //   b.classList.add(TableUtils.ACTIVE_CLS);
-    //   const e = DomUtils.createDiv('yac-table-row-actions-overlay');
-    //   const listElt = DomUtils.createElt('ul', 'list');
-    //   const createRowActionsGroup = (rowActions: { callback: (item: T) => void; label: string }[]): void => {
-    //     for (let i = 0, len = rowActions.length; i < len; i++) {
-    //       const rowAction = rowActions[i];
-    //       const listItemElt = DomUtils.createElt('li', 'list-item');
-    //       listItemElt.appendChild(document.createTextNode(rowAction.label));
-    //       listElt.appendChild(listItemElt);
-    //     }
-    //   };
-    //   createRowActionsGroup(this.options.rowActions[0]);
-    //   for (let i = 1, len = this.options.rowActions.length; i < len; i++) {
-    //     const listItemElt = DomUtils.createElt('li', 'divider');
-    //     listElt.appendChild(listItemElt);
-    //     const group = this.options.rowActions[i];
-    //     createRowActionsGroup(group);
-    //   }
-    //   e.appendChild(listElt);
-    //   const { height, width } = DomUtils.getRenderedSize(this.containerElt, e);
-    //   // Height
-    //   if (b.getBoundingClientRect().top + height <= window.innerHeight) {
-    //     e.style.top = DomUtils.withPx(b.getBoundingClientRect().top);
-    //   } else {
-    //     e.style.top = DomUtils.withPx(b.getBoundingClientRect().bottom - height);
-    //   }
-    //   // Width
-    //   if (width + b.getBoundingClientRect().left + 40 <= window.innerWidth) {
-    //     e.style.left = DomUtils.withPx(b.getBoundingClientRect().left + 40);
-    //   } else {
-    //     e.style.left = DomUtils.withPx(b.getBoundingClientRect().left - width);
-    //   }
-    //   e.style.maxHeight = DomUtils.withPx(window.innerHeight);
-    //   this.containerElt.appendChild(e);
-    //   const m = (event2: Event) => {
-    //     window.removeEventListener('mouseup', m, true);
-    //     event2.stopPropagation();
-    //     this.containerElt.removeChild(e);
-    //     b.classList.remove(TableUtils.ACTIVE_CLS);
-    //   };
-    //   const m2 = (event2: Event) => {
-    //     window.removeEventListener('scroll', m2);
-    //     event2.stopPropagation();
-    //     this.containerElt.removeChild(e);
-    //     b.classList.remove(TableUtils.ACTIVE_CLS);
-    //   };
-    //   // window.addEventListener('mouseup', m, true);
-    //   window.addEventListener('mouseup', m, true);
-    //   // window.addEventListener('scroll', m2);
-    //   // this.tableElt.addEventListener('scroll', m2);
-    // }
+    const eventTarget = event.target as HTMLElement;
+    const node = this.getNodeByIndex(nodeIndex);
+    const a = eventTarget.closest(`.${TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS}`);
+    if (a && this.options.rowActions && this.options.rowActions.length > 0) {
+      const b = a as HTMLElement;
+      b.classList.add(TableUtils.ACTIVE_CLS);
+      const e = DomUtils.createDiv('yac-table-row-actions-overlay');
+      const listElt = DomUtils.createElt('ul', 'list');
+
+      const m = (event2: Event) => {
+        window.removeEventListener('mouseup', m, false);
+        this.tableElt.removeEventListener('scroll', m2);
+
+        event2.stopPropagation();
+        this.containerElt.removeChild(e);
+        b.classList.remove(TableUtils.ACTIVE_CLS);
+      };
+      const m2 = (event2: Event) => {
+        this.tableElt.removeEventListener('scroll', m2);
+        window.removeEventListener('mouseup', m, false);
+
+        event2.stopPropagation();
+        this.containerElt.removeChild(e);
+        b.classList.remove(TableUtils.ACTIVE_CLS);
+      };
+
+      if ((this.containerElt.lastElementChild as HTMLElement).classList.contains('yac-table-row-actions-overlay')) {
+        this.tableElt.removeEventListener('scroll', m2);
+        window.removeEventListener('mouseup', m, false);
+        this.containerElt.lastElementChild?.remove();
+
+        const p = this.tableBodyRowElts.filter((tableBodyRowElt) =>
+          (tableBodyRowElt.lastElementChild as HTMLElement).classList.contains(TableUtils.ACTIVE_CLS)
+        );
+        console.log(p);
+        // p?.classList.remove(TableUtils.ACTIVE_CLS);
+
+        return;
+      }
+
+      const createRowActionsGroup = (rowActions: { callback: (item: T) => void; label: string }[]): void => {
+        for (let i = 0, len = rowActions.length; i < len; i++) {
+          const rowAction = rowActions[i];
+          const listItemElt = DomUtils.createElt('li', 'list-item');
+          listItemElt.appendChild(document.createTextNode(rowAction.label));
+          listElt.appendChild(listItemElt);
+
+          listItemElt.addEventListener('mouseup', () => rowAction.callback(node.value));
+        }
+      };
+      createRowActionsGroup(this.options.rowActions[0]);
+      for (let i = 1, len = this.options.rowActions.length; i < len; i++) {
+        const listItemElt = DomUtils.createElt('li', 'divider');
+        listElt.appendChild(listItemElt);
+        const group = this.options.rowActions[i];
+        createRowActionsGroup(group);
+      }
+      e.appendChild(listElt);
+      const { height, width } = DomUtils.getRenderedSize(this.containerElt, e);
+      // Height
+      if (b.getBoundingClientRect().top + height <= window.innerHeight) {
+        e.style.top = DomUtils.withPx(b.getBoundingClientRect().top);
+      } else {
+        e.style.top = DomUtils.withPx(b.getBoundingClientRect().bottom - height);
+      }
+      // Width
+      if (width + b.getBoundingClientRect().left + 40 <= window.innerWidth) {
+        e.style.left = DomUtils.withPx(b.getBoundingClientRect().left + 40);
+      } else {
+        e.style.left = DomUtils.withPx(b.getBoundingClientRect().left - width);
+      }
+      e.style.maxHeight = DomUtils.withPx(window.innerHeight);
+      this.containerElt.appendChild(e);
+
+      // window.addEventListener('mouseup', m, true);
+      window.addEventListener('mouseup', m, false);
+      // window.addEventListener('scroll', m2);
+      this.tableElt.addEventListener('scroll', m2);
+    }
     // // const tableBodyRowElt = this.tableBodyRowElts[nodeIndex];
     // // const tableBodyRowActionsHandleElt = tableBodyRowElt.lastElementChild as HTMLElement;
     // // const tableBodyRowActionsElt = tableBodyRowActionsHandleElt.lastElementChild as HTMLElement;

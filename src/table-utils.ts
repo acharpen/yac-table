@@ -8,7 +8,6 @@ export class TableUtils {
   public static readonly EXPAND_TOGGLER_CLS: string = `${TableUtils.VENDOR_CLS}-expand-toggler`;
   public static readonly HIDDEN_CLS: string = `${TableUtils.VENDOR_CLS}-hidden`;
   public static readonly RESIZE_HANDLE_CLS: string = `${TableUtils.VENDOR_CLS}-resize-handle`;
-  public static readonly SELECTABLE_CLS: string = `${TableUtils.VENDOR_CLS}-selectable`;
   public static readonly SELECTED_CLS: string = `${TableUtils.VENDOR_CLS}-selected`;
   public static readonly SORT_ASC_HANDLE_CLS: string = `${TableUtils.VENDOR_CLS}-sort-asc-handle`;
   public static readonly SORT_DESC_HANDLE_CLS: string = `${TableUtils.VENDOR_CLS}-sort-desc-handle`;
