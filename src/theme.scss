@@ -3,7 +3,7 @@
 /* Variables *************************************************************** */
 
 $resize-handle-width: 8px;
-$sort-handle-width: 6px;
+$sort-handle-width: 7px;
 $table-border-radius: 4px;
 $table-header-height: 40px;
 
@@ -69,6 +69,7 @@ $table-header-height: 40px;
 
 .yac-table-cell-check {
   align-items: center;
+  color: var(--yac-table-color-border-primary);
   justify-content: center;
   width: 32px;
 
@@ -83,6 +84,8 @@ $table-header-height: 40px;
 }
 
 .yac-table-cell-content {
+  align-items: center;
+  display: flex;
   flex-grow: 1;
   overflow: hidden;
   text-overflow: ellipsis;

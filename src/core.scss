@@ -22,15 +22,15 @@
 }
 
 .yac-table-text-center {
-  text-align: center;
+  justify-content: center;
 }
 
 .yac-table-text-left {
-  text-align: left;
+  justify-content: flex-start;
 }
 
 .yac-table-text-right {
-  text-align: right;
+  justify-content: flex-end;
 }
 
 /* Header ****************************************************************** */
