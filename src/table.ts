@@ -165,6 +165,10 @@ export abstract class AbstractTable<T> {
     return elts;
   }
 
+  protected getNodeByIndex(index: number): Node<T> {
+    return this.nodes[this.visibleNodeIndexes[index]];
+  }
+
   protected init(): void {
     this.hideUnusedTableBodyRowElts();
     this.setColumnsWidth();
@@ -403,10 +407,6 @@ export abstract class AbstractTable<T> {
       sortAscElt: headerCellElt.getElementsByClassName(TableUtils.SORT_ASC_HANDLE_CLS).item(0) as HTMLElement,
       sortDescElt: headerCellElt.getElementsByClassName(TableUtils.SORT_DESC_HANDLE_CLS).item(0) as HTMLElement
     };
-  }
-
-  private getNodeByIndex(index: number): Node<T> {
-    return this.nodes[this.visibleNodeIndexes[index]];
   }
 
   private getNodesById(ids: number[]): Node<T>[] {
@@ -649,7 +649,7 @@ export abstract class AbstractTable<T> {
     for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
       this.tableBodyRowElts[i].classList.remove(TableUtils.HIDDEN_CLS);
 
-      const node = this.nodes[this.visibleNodeIndexes[i]];
+      const node = this.getNodeByIndex(i);
       const nodeElt = this.tableBodyRowElts[i];
       const cellElts = this.getDataCellElts(nodeElt);
       const rowColor = this.options.rowColor?.(node.value);

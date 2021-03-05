@@ -116,7 +116,6 @@ export class TreeTable<T> extends AbstractTable<T> {
 
   protected createTableBodyCellElt(column: Column<T>, ctx: { nodeIndex: number }): HTMLElement {
     const elt = super.createTableBodyCellElt(column, ctx);
-
     if (column.id === this.dataColumns[0].id) {
       elt.insertAdjacentElement('afterbegin', this.createExpandTogglerElt(ctx.nodeIndex));
     }
@@ -124,11 +123,11 @@ export class TreeTable<T> extends AbstractTable<T> {
     return elt;
   }
 
-  protected updateVisibleNodes(): void {
-    super.updateVisibleNodes();
+  protected updateVisibleNodes(force = false): void {
+    super.updateVisibleNodes(force);
 
     for (let i = 0, len = this.visibleNodeIndexes.length; i < len; i++) {
-      const node = this.nodes[this.visibleNodeIndexes[i]];
+      const node = this.getNodeByIndex(i);
       const firstCellElt = this.getDataCellElts(this.tableBodyRowElts[i])[0];
       const cellContentElt = firstCellElt.lastElementChild as HTMLElement;
       const expandTogglerElt = firstCellElt.firstElementChild as HTMLElement;
@@ -136,16 +135,16 @@ export class TreeTable<T> extends AbstractTable<T> {
 
       if (node.isLeaf) {
         cellContentElt.style.marginLeft = `${nodeOffset}px`;
-        expandTogglerElt.classList.add('hidden');
+        expandTogglerElt.classList.add(TableUtils.HIDDEN_CLS);
       } else {
         cellContentElt.style.marginLeft = '0px';
-        expandTogglerElt.classList.remove('hidden');
+        expandTogglerElt.classList.remove(TableUtils.HIDDEN_CLS);
         expandTogglerElt.style.marginLeft = `${nodeOffset}px`;
 
         if (node.isExpanded) {
-          (expandTogglerElt.firstElementChild as HTMLElement).classList.add('active');
+          (expandTogglerElt.firstElementChild as HTMLElement).classList.add(TableUtils.ACTIVE_CLS);
         } else {
-          (expandTogglerElt.firstElementChild as HTMLElement).classList.remove('active');
+          (expandTogglerElt.firstElementChild as HTMLElement).classList.remove(TableUtils.ACTIVE_CLS);
         }
       }
     }
@@ -283,7 +282,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   }
 
   private onToggleNode(nodeIndex: number): void {
-    const node = this.nodes[this.visibleNodeIndexes[nodeIndex]];
+    const node = this.getNodeByIndex(nodeIndex);
     this.toggleNodesVisibility([node.id], { isExpanded: !node.isExpanded });
   }
 

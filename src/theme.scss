@@ -259,6 +259,37 @@ $table-header-height: 40px;
   }
 }
 
+.yac-table-expand-toggler {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  min-width: 24px;
+  width: 24px;
+
+  &:hover > i,
+  & > i.yac-table-active {
+    border-color: var(--yac-table-color-text-primary);
+
+    transition: border-color 0.25s ease-in;
+  }
+
+  &.yac-table-hidden {
+    display: none;
+  }
+
+  & > i {
+    border: solid var(--yac-table-color-border-primary);
+    border-width: 0 2px 2px 0;
+    padding: 3px;
+    transform: rotate(-45deg);
+
+    &.yac-table-active {
+      transform: rotate(45deg);
+    }
+  }
+}
+
 /* Overlay ***************************************************************** */
 
 .yac-table-overlay {
