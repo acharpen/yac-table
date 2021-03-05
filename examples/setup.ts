@@ -47,7 +47,7 @@ export const columnOptions = [
     id: 2,
     resizable: true,
     sorter: (a: ExampleObject, b: ExampleObject): number => a.col2.localeCompare(b.col2),
-    // sticky: 'left' as const,
+    pinned: 'left' as const,
     title: 'col2',
     width: { value: 500, unit: 'px' as const }
   },
@@ -66,7 +66,6 @@ export const columnOptions = [
     id: 4,
     resizable: true,
     sorter: (a: ExampleObject, b: ExampleObject): number => a.col4.localeCompare(b.col4),
-    sticky: 'right' as const,
     title: 'col4',
     width: { value: 200, unit: 'px' as const }
   }
@@ -76,8 +75,8 @@ export const tableOptions = {
   columnMinWidth: 40,
   nodeHeight: 40,
   rowActions: [
-    [{ callback: () => console.log('plop1'), label: 'First Action' }],
-    [{ callback: () => console.log('plop2'), label: 'Second Action' }]
+    [{ callback: () => console.log('First Action'), label: 'First Action' }],
+    [{ callback: () => console.log('Second Action'), label: 'Second Action' }]
   ],
   selectable: true,
   visibleNodes: 10

@@ -7,6 +7,9 @@ export class TableUtils {
   public static readonly ACTIVE_CLS: string = `${TableUtils.VENDOR_CLS}-active`;
   public static readonly EXPAND_TOGGLER_CLS: string = `${TableUtils.VENDOR_CLS}-expand-toggler`;
   public static readonly HIDDEN_CLS: string = `${TableUtils.VENDOR_CLS}-hidden`;
+  public static readonly LIST_DIVIDER_CLS: string = `${TableUtils.VENDOR_CLS}-list-divider`;
+  public static readonly LIST_ITEM_CLS: string = `${TableUtils.VENDOR_CLS}-list-item`;
+  public static readonly OVERLAY_CLS: string = `${TableUtils.VENDOR_CLS}-overlay`;
   public static readonly RESIZE_HANDLE_CLS: string = `${TableUtils.VENDOR_CLS}-resize-handle`;
   public static readonly SELECTED_CLS: string = `${TableUtils.VENDOR_CLS}-selected`;
   public static readonly SORT_ASC_HANDLE_CLS: string = `${TableUtils.VENDOR_CLS}-sort-asc-handle`;

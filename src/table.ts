@@ -39,7 +39,7 @@ export abstract class AbstractTable<T> {
     this.currentFilter = null;
     this.currentRangeStart = null;
     this.currentSort = null;
-    this.dataColumns = columnOptions.map((column) => ({ ...column, sortOrder: 'default' }));
+    this.dataColumns = this.initColumnOptions(columnOptions);
     this.nodes = [];
     this.options = tableOptions;
     this.virtualNodesCount = this.options.visibleNodes + AbstractTable.VIRTUAL_SCROLL_PADDING * 2;
@@ -128,7 +128,7 @@ export abstract class AbstractTable<T> {
     const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
     if (column.classList) elt.classList.add(...column.classList);
     if (column.sorter) elt.classList.add(TableUtils.SORTABLE_CLS);
-    if (column.sticky != null) elt.classList.add(TableUtils.STICKY_CLS);
+    if (column.pinned != null) elt.classList.add(TableUtils.STICKY_CLS);
 
     elt.appendChild(this.createTableBodyCellContentElt(column));
 
@@ -207,6 +207,27 @@ export abstract class AbstractTable<T> {
       default:
         return value;
     }
+  }
+
+  private createOverlayElt(onClose?: () => void): HTMLElement {
+    const overlayElt = DomUtils.createDiv(TableUtils.OVERLAY_CLS);
+
+    const listener = (event: Event): void => {
+      this.containerElt.removeChild(overlayElt);
+      this.containerElt.removeEventListener('mouseup', listener, { capture: true });
+      this.containerElt.removeEventListener('scroll', listener, { capture: true });
+
+      onClose?.();
+
+      if (!(event.target as HTMLElement).closest(`.${TableUtils.OVERLAY_CLS}`)) {
+        event.stopPropagation();
+      }
+    };
+
+    this.containerElt.addEventListener('mouseup', listener, { capture: true });
+    this.containerElt.addEventListener('scroll', listener, { capture: true });
+
+    return overlayElt;
   }
 
   private createResizeHandleElt(ctx: { columnIndex: number }): HTMLElement {
@@ -298,7 +319,7 @@ export abstract class AbstractTable<T> {
     const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
     elt.addEventListener('mouseup', () => this.onClickTableHeaderCell(ctx.columnIndex), false);
     if (column.classList) elt.classList.add(...column.classList);
-    if (column.sticky != null) elt.classList.add(TableUtils.STICKY_CLS);
+    if (column.pinned != null) elt.classList.add(TableUtils.STICKY_CLS);
 
     elt.appendChild(this.createTableHeaderCellContentElt(column));
 
@@ -448,6 +469,17 @@ export abstract class AbstractTable<T> {
     }
   }
 
+  private initColumnOptions(columnOptions: ColumnOptions<T>[]): Column<T>[] {
+    return columnOptions
+      .map((column) => ({ ...column, sortOrder: 'default' as const }))
+      .sort((a, b) => {
+        if (a.pinned === 'left' && b.pinned !== 'left') return -1;
+        else if (b.pinned === 'left' && a.pinned !== 'left') return 1;
+
+        return a.order - b.order;
+      });
+  }
+
   private isSelectionEnabled(): boolean {
     return (
       this.options.selectable != null &&
@@ -468,94 +500,53 @@ export abstract class AbstractTable<T> {
 
   private onClickTableBodyRowActionsHandle(nodeIndex: number, event: Event): void {
     const eventTarget = event.target as HTMLElement;
-    const node = this.getNodeByIndex(nodeIndex);
-    const a = eventTarget.closest(`.${TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS}`);
-    if (a && this.options.rowActions && this.options.rowActions.length > 0) {
-      const b = a as HTMLElement;
-      b.classList.add(TableUtils.ACTIVE_CLS);
-      const e = DomUtils.createDiv('yac-table-row-actions-overlay');
-      const listElt = DomUtils.createElt('ul', 'list');
-
-      const m = (event2: Event) => {
-        window.removeEventListener('mouseup', m, false);
-        this.tableElt.removeEventListener('scroll', m2);
-
-        event2.stopPropagation();
-        this.containerElt.removeChild(e);
-        b.classList.remove(TableUtils.ACTIVE_CLS);
-      };
-      const m2 = (event2: Event) => {
-        this.tableElt.removeEventListener('scroll', m2);
-        window.removeEventListener('mouseup', m, false);
-
-        event2.stopPropagation();
-        this.containerElt.removeChild(e);
-        b.classList.remove(TableUtils.ACTIVE_CLS);
-      };
-
-      if ((this.containerElt.lastElementChild as HTMLElement).classList.contains('yac-table-row-actions-overlay')) {
-        this.tableElt.removeEventListener('scroll', m2);
-        window.removeEventListener('mouseup', m, false);
-        this.containerElt.lastElementChild?.remove();
-
-        const p = this.tableBodyRowElts.filter((tableBodyRowElt) =>
-          (tableBodyRowElt.lastElementChild as HTMLElement).classList.contains(TableUtils.ACTIVE_CLS)
-        );
-        console.log(p);
-        // p?.classList.remove(TableUtils.ACTIVE_CLS);
-
-        return;
-      }
+    const rowActionsHandleElt = eventTarget.closest(`.${TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS}`) as HTMLElement;
+    if (this.options.rowActions && this.options.rowActions.length > 0) {
+      const listElt = DomUtils.createElt('ul');
+      const node = this.getNodeByIndex(nodeIndex);
+      const overlayElt = this.createOverlayElt(() => rowActionsHandleElt.classList.remove(TableUtils.ACTIVE_CLS));
 
       const createRowActionsGroup = (rowActions: { callback: (item: T) => void; label: string }[]): void => {
         for (let i = 0, len = rowActions.length; i < len; i++) {
           const rowAction = rowActions[i];
-          const listItemElt = DomUtils.createElt('li', 'list-item');
+          const listItemElt = DomUtils.createElt('li', TableUtils.LIST_ITEM_CLS);
           listItemElt.appendChild(document.createTextNode(rowAction.label));
           listElt.appendChild(listItemElt);
 
           listItemElt.addEventListener('mouseup', () => rowAction.callback(node.value));
         }
       };
+
+      // Create overlay content
       createRowActionsGroup(this.options.rowActions[0]);
       for (let i = 1, len = this.options.rowActions.length; i < len; i++) {
-        const listItemElt = DomUtils.createElt('li', 'divider');
+        const listItemElt = DomUtils.createElt('li', TableUtils.LIST_DIVIDER_CLS);
         listElt.appendChild(listItemElt);
         const group = this.options.rowActions[i];
         createRowActionsGroup(group);
       }
-      e.appendChild(listElt);
-      const { height, width } = DomUtils.getRenderedSize(this.containerElt, e);
-      // Height
-      if (b.getBoundingClientRect().top + height <= window.innerHeight) {
-        e.style.top = DomUtils.withPx(b.getBoundingClientRect().top);
-      } else {
-        e.style.top = DomUtils.withPx(b.getBoundingClientRect().bottom - height);
-      }
-      // Width
-      if (width + b.getBoundingClientRect().left + 40 <= window.innerWidth) {
-        e.style.left = DomUtils.withPx(b.getBoundingClientRect().left + 40);
-      } else {
-        e.style.left = DomUtils.withPx(b.getBoundingClientRect().left - width);
-      }
-      e.style.maxHeight = DomUtils.withPx(window.innerHeight);
-      this.containerElt.appendChild(e);
+      overlayElt.appendChild(listElt);
 
-      // window.addEventListener('mouseup', m, true);
-      window.addEventListener('mouseup', m, false);
-      // window.addEventListener('scroll', m2);
-      this.tableElt.addEventListener('scroll', m2);
+      // Set overlay size
+      const { height, width } = DomUtils.getRenderedSize(this.containerElt, overlayElt);
+
+      if (rowActionsHandleElt.getBoundingClientRect().top + height <= window.innerHeight) {
+        overlayElt.style.top = DomUtils.withPx(rowActionsHandleElt.getBoundingClientRect().top);
+      } else {
+        overlayElt.style.top = DomUtils.withPx(rowActionsHandleElt.getBoundingClientRect().bottom - height);
+      }
+
+      if (width + rowActionsHandleElt.getBoundingClientRect().left + 40 <= window.innerWidth) {
+        overlayElt.style.left = DomUtils.withPx(rowActionsHandleElt.getBoundingClientRect().left + 40);
+      } else {
+        overlayElt.style.left = DomUtils.withPx(rowActionsHandleElt.getBoundingClientRect().left - width);
+      }
+      overlayElt.style.maxHeight = DomUtils.withPx(window.innerHeight);
+
+      // Append overlay
+      this.containerElt.appendChild(overlayElt);
+      rowActionsHandleElt.classList.add(TableUtils.ACTIVE_CLS);
     }
-    // // const tableBodyRowElt = this.tableBodyRowElts[nodeIndex];
-    // // const tableBodyRowActionsHandleElt = tableBodyRowElt.lastElementChild as HTMLElement;
-    // // const tableBodyRowActionsElt = tableBodyRowActionsHandleElt.lastElementChild as HTMLElement;
-    // // if (tableBodyRowActionsHandleElt.classList.contains(TableUtils.ACTIVE_CLS)) {
-    // //   tableBodyRowActionsHandleElt.classList.remove(TableUtils.ACTIVE_CLS);
-    // //   tableBodyRowActionsElt.innerHTML = '';
-    // // } else {
-    // //   tableBodyRowActionsElt.appendChild(this.createTableBodyRowActionsContentElt(this.getNodeByIndex(nodeIndex)));
-    // //   tableBodyRowActionsHandleElt.classList.add(TableUtils.ACTIVE_CLS);
-    // }
   }
 
   private onClickTableHeaderCell(columnIndex: number): void {
@@ -742,7 +733,7 @@ export abstract class AbstractTable<T> {
 
     const stickyDataColumnsWidth = [];
     for (let i = 0, dataColumnsLen = this.dataColumns.length; i < dataColumnsLen; i++) {
-      stickyDataColumnsWidth.push(this.dataColumns[i].sticky != null ? DomUtils.getWidth(tableHeaderCellElts[i]) : 0);
+      stickyDataColumnsWidth.push(this.dataColumns[i].pinned != null ? DomUtils.getWidth(tableHeaderCellElts[i]) : 0);
     }
     const stickyDataColumnsWidthLen = stickyDataColumnsWidth.length;
 
@@ -766,7 +757,7 @@ export abstract class AbstractTable<T> {
       const column = this.dataColumns[i];
       const tableHeaderCellElt = tableHeaderCellElts[i];
 
-      if (column.sticky === 'left') {
+      if (column.pinned === 'left') {
         let offset = checkCellWidth;
         for (let j = 0; j < i; j++) offset += stickyDataColumnsWidth[j];
         const offsetInPx = DomUtils.withPx(offset);
@@ -775,7 +766,7 @@ export abstract class AbstractTable<T> {
         for (let j = 0, tableBodyRowEltsLen = this.tableBodyRowElts.length; j < tableBodyRowEltsLen; j++) {
           this.getDataCellElts(this.tableBodyRowElts[j])[i].style.left = offsetInPx;
         }
-      } else if (column.sticky === 'right') {
+      } else if (column.pinned === 'right') {
         let offset = rowActionsHandleCellWidth;
         for (let j = i + 1; j < stickyDataColumnsWidthLen; j++) offset += stickyDataColumnsWidth[j];
         const offsetInPx = DomUtils.withPx(offset);

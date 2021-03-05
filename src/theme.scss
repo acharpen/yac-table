@@ -253,7 +253,7 @@ $table-header-height: 40px;
 
 /* Overlay ***************************************************************** */
 
-.yac-table-row-actions-overlay {
+.yac-table-overlay {
   background-color: var(--yac-table-color-bg-primary);
   border-radius: 2px;
   box-shadow: rgb(0 0 0 / 13%) 0px 3.2px 7.2px 0px, rgb(0 0 0 / 11%) 0px 0.6px 1.8px 0px;
@@ -266,15 +266,15 @@ $table-header-height: 40px;
     margin: 0;
     padding: 0;
 
-    li.divider {
+    li.yac-table-list-divider {
       background-color: rgb(237, 235, 233);
       display: block;
       height: 1px;
       position: relative;
     }
 
-    li.list-item {
-      color: rgb(50, 49, 48);
+    li.yac-table-list-item {
+      color: var(--yac-table-color-text-primary);
       cursor: pointer;
       height: 36px;
       line-height: 36px;
