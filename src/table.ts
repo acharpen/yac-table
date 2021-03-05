@@ -128,7 +128,20 @@ export abstract class AbstractTable<T> {
     const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
     if (column.classList) elt.classList.add(...column.classList);
     if (column.sorter) elt.classList.add(TableUtils.SORTABLE_CLS);
-    if (column.pinned != null) elt.classList.add(TableUtils.STICKY_CLS);
+    if (column.pinned != null) {
+      const targetColumnIndex = this.dataColumns.findIndex((_column) => _column.id === column.id);
+
+      elt.classList.add(TableUtils.STICKY_CLS);
+      if (column.pinned === 'left') {
+        if (this.dataColumns.slice(targetColumnIndex + 1).every((_column) => _column.pinned !== 'left')) {
+          elt.classList.add(TableUtils.STICKY_RIGHTMOST_CLS);
+        }
+      } else {
+        if (this.dataColumns.slice(0, targetColumnIndex).every((_column) => _column.pinned !== 'right')) {
+          elt.classList.add(TableUtils.STICKY_LEFTMOST_CLS);
+        }
+      }
+    }
 
     elt.appendChild(this.createTableBodyCellContentElt(column));
 
@@ -275,6 +288,9 @@ export abstract class AbstractTable<T> {
       },
       false
     );
+    if (this.dataColumns.every((column) => column.pinned !== 'right')) {
+      elt.classList.add(TableUtils.STICKY_LEFTMOST_CLS);
+    }
 
     return elt;
   }
@@ -359,7 +375,12 @@ export abstract class AbstractTable<T> {
     this.dataColumns.forEach((column, i) => elt.appendChild(this.createTableHeaderCellElt(column, { columnIndex: i })));
 
     if (this.options.rowActions) {
-      elt.appendChild(DomUtils.createDiv(TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS, TableUtils.STICKY_CLS));
+      const rowActionsHandleElt = DomUtils.createDiv(TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS);
+      if (this.dataColumns.every((column) => column.pinned !== 'right')) {
+        rowActionsHandleElt.classList.add(TableUtils.STICKY_LEFTMOST_CLS);
+      }
+
+      elt.appendChild(rowActionsHandleElt);
     }
 
     return elt;

@@ -16,6 +16,8 @@ export class TableUtils {
   public static readonly SORT_DESC_HANDLE_CLS: string = `${TableUtils.VENDOR_CLS}-sort-desc-handle`;
   public static readonly SORTABLE_CLS: string = `${TableUtils.VENDOR_CLS}-sortable`;
   public static readonly STICKY_CLS: string = `${TableUtils.VENDOR_CLS}-sticky`;
+  public static readonly STICKY_LEFTMOST_CLS: string = `${TableUtils.VENDOR_CLS}-sticky-leftmost`;
+  public static readonly STICKY_RIGHTMOST_CLS: string = `${TableUtils.VENDOR_CLS}-sticky-rightmost`;
   public static readonly TABLE_BODY_CLS: string = `${TableUtils.VENDOR_CLS}-body`;
   public static readonly TABLE_CELL_CHECK_CLS: string = `${TableUtils.VENDOR_CLS}-cell-check`;
   public static readonly TABLE_CELL_CLS: string = `${TableUtils.VENDOR_CLS}-cell`;

@@ -37,7 +37,7 @@ export const columnOptions = [
     id: 1,
     resizable: true,
     sorter: (a: ExampleObject, b: ExampleObject): number => a.col1.localeCompare(b.col1),
-    sticky: 'left' as const,
+    pinned: 'left' as const,
     title: 'col1',
     width: { value: 300, unit: 'px' as const }
   },
@@ -47,7 +47,6 @@ export const columnOptions = [
     id: 2,
     resizable: true,
     sorter: (a: ExampleObject, b: ExampleObject): number => a.col2.localeCompare(b.col2),
-    pinned: 'left' as const,
     title: 'col2',
     width: { value: 500, unit: 'px' as const }
   },
