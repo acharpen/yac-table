@@ -53,6 +53,6 @@ export class ListTable<T> extends AbstractTable<T> {
   }
 
   private createNodeView(node: Node<T>): ListNodeView<T> {
-    return { id: node.id, value: node.value, isSelected: node.isSelected };
+    return { id: node.id, value: node.value, isMatching: node.isMatching, isSelected: node.isSelected };
   }
 }

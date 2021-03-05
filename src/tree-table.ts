@@ -235,7 +235,13 @@ export class TreeTable<T> extends AbstractTable<T> {
   }
 
   private createNodeView(node: Node<T>): TreeNodeView<T> {
-    return { id: node.id, value: node.value, isSelected: node.isSelected, isExpanded: node.isExpanded };
+    return {
+      id: node.id,
+      value: node.value,
+      isMatching: node.isMatching,
+      isSelected: node.isSelected,
+      isExpanded: node.isExpanded
+    };
   }
 
   private dispatchEventToggleNode(originalEvent: Event, node: Node<T>): void {
