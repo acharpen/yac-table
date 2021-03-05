@@ -226,27 +226,28 @@ export class TreeTable<T> extends AbstractTable<T> {
 
     const addChildren = ({ node, nodeIndex }: { node: Node<T>; nodeIndex: number }, maxChildren?: number): void => {
       let count = maxChildren ?? -1;
-      let nextnodeIndex = nodeIndex + 1;
+      let nextNodeIndex = nodeIndex + 1;
 
-      while (count !== 0 && nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
-        allNodeIds.add(nextnodeIndex);
+      while (count !== 0 && nextNodeIndex < nodesLength && this.nodes[nextNodeIndex].level > node.level) {
+        allNodeIds.add(this.nodes[nextNodeIndex].id);
         count--;
-        nextnodeIndex++;
+        nextNodeIndex++;
       }
     };
 
     const addParent = ({ node, nodeIndex }: { node: Node<T>; nodeIndex: number }, maxParent?: number): void => {
       let count = maxParent ?? -1;
-      let nextnodeIndex = nodeIndex - 1;
+      let previousNodeIndex = nodeIndex - 1;
 
-      while (count !== 0 && nextnodeIndex >= 0) {
-        if (this.nodes[nextnodeIndex].level < node.level) {
-          allNodeIds.add(nextnodeIndex);
+      while (count !== 0 && previousNodeIndex >= 0) {
+        const previousNode = this.nodes[previousNodeIndex];
+        if (previousNode.level < node.level) {
+          allNodeIds.add(previousNode.id);
 
           // A node has only one parent at level 0
-          count = this.nodes[nextnodeIndex].level === 0 ? 0 : count - 1;
+          count = previousNode.level === 0 ? 0 : count - 1;
         }
-        nextnodeIndex--;
+        previousNodeIndex--;
       }
     };
 
