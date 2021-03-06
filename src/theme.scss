@@ -30,6 +30,12 @@ $table-header-height: 40px;
   display: flex;
 }
 
+.yac-table,
+.yac-table-overlay {
+  font-family: inherit;
+  font-size: inherit;
+}
+
 .yac-table {
   border: 1px solid var(--yac-table-color-border-primary);
   border-radius: $table-border-radius;
@@ -306,7 +312,7 @@ $table-header-height: 40px;
     padding: 0;
 
     li.yac-table-list-divider {
-      background-color: rgb(237, 235, 233);
+      background-color: var(--yac-table-color-border-secondary);
       display: block;
       height: 1px;
       position: relative;
@@ -321,8 +327,7 @@ $table-header-height: 40px;
       padding-right: 16px;
 
       &:hover {
-        background-color: rgb(243, 242, 241);
-        // color: rgb(32, 31, 30);
+        background-color: var(--yac-table-color-bg-tertiary);
       }
     }
   }
