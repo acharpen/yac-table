@@ -1,61 +1,61 @@
 /* Common ****************************************************************** */
 
-.yac-table,
-.yac-table-cell {
+.oo-table,
+.oo-table-cell {
   position: relative;
 }
 
-.yac-table {
+.oo-table {
   height: 100%;
   max-width: 100%;
   overflow: auto;
   will-change: scroll-position;
 }
 
-.yac-table-row {
+.oo-table-row {
   display: flex;
 }
 
-.yac-table-sticky {
+.oo-table-sticky {
   position: sticky;
   z-index: 2;
 }
 
-.yac-table-text-center {
+.oo-table-text-center {
   text-align: center;
 }
 
-.yac-table-text-left {
+.oo-table-text-left {
   text-align: left;
 }
 
-.yac-table-text-right {
+.oo-table-text-right {
   text-align: right;
 }
 
 /* Header ****************************************************************** */
 
-.yac-table-header {
+.oo-table-header {
   display: inline-block;
   top: 0;
 }
 
 /* Body ******************************************************************** */
 
-.yac-table-body,
-.yac-table-virtual-scroll-spacer {
+.oo-table-body,
+.oo-table-virtual-scroll-spacer {
   position: absolute;
 }
 
-.yac-table-body {
+.oo-table-body {
   contain: content;
 
-  .yac-table-row.yac-table-hidden {
+  .oo-table-row.oo-table-hidden {
     display: none;
   }
 }
 
-.yac-table-virtual-scroll-spacer {
+.oo-table-virtual-scroll-spacer {
   left: 0;
   top: 0;
   transform-origin: 0 0;

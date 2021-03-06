@@ -1,6 +1,6 @@
-# YAC-table
+# OO-table
 
-YAC-table is an opinionated table for JavaScript ecosystem.
+OO-table is an opinionated table for JavaScript ecosystem.
 
 Core concepts are:
 

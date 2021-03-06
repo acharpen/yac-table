@@ -9,12 +9,12 @@ $table-cell-padding: 16px;
 $table-header-height: 40px;
 
 :root {
-  --yac-table-color-bg-primary: #fff;
-  --yac-table-color-bg-tertiary: #f6f8fa;
-  --yac-table-color-border-primary: #d1d5db;
-  --yac-table-color-border-secondary: #f3f4f6;
-  --yac-table-color-box-header-blue-bg: #eff6ff;
-  --yac-table-color-text-primary: #4b5563;
+  --oo-table-color-bg-primary: #fff;
+  --oo-table-color-bg-tertiary: #f6f8fa;
+  --oo-table-color-border-primary: #d1d5db;
+  --oo-table-color-border-secondary: #f3f4f6;
+  --oo-table-color-box-header-blue-bg: #eff6ff;
+  --oo-table-color-text-primary: #4b5563;
 }
 
 /* Mixins ****************************************************************** */
@@ -33,116 +33,116 @@ $table-header-height: 40px;
   box-sizing: border-box;
 }
 
-.yac-table-cell,
-.yac-table-cell-tick,
-.yac-table-cell-tick i,
-.yac-table-expand-toggler,
-.yac-table-resize-handle,
-.yac-table-row-actions-handle {
+.oo-table-cell,
+.oo-table-cell-tick,
+.oo-table-cell-tick i,
+.oo-table-expand-toggler,
+.oo-table-resize-handle,
+.oo-table-row-actions-handle {
   align-items: center;
   display: flex;
 }
 
-.yac-table,
-.yac-table-body .yac-table-row:hover .yac-table-cell-tick i,
-.yac-table-expand-toggler i,
-.yac-table-header .yac-table-cell:hover .yac-table-sort-asc-handle i,
-.yac-table-header .yac-table-cell:hover .yac-table-sort-desc-handle i {
-  border-color: var(--yac-table-color-border-primary);
+.oo-table,
+.oo-table-body .oo-table-row:hover .oo-table-cell-tick i,
+.oo-table-expand-toggler i,
+.oo-table-header .oo-table-cell:hover .oo-table-sort-asc-handle i,
+.oo-table-header .oo-table-cell:hover .oo-table-sort-desc-handle i {
+  border-color: var(--oo-table-color-border-primary);
 }
 
-.yac-table-body .yac-table-row:hover,
-.yac-table-body .yac-table-row.yac-table-selected .yac-table-cell,
-.yac-table-body .yac-table-row.yac-table-selected .yac-table-cell-tick,
-.yac-table-body .yac-table-row.yac-table-selected .yac-table-row-actions-handle,
-.yac-table-overlay ul li.yac-table-list-item:hover {
-  background-color: var(--yac-table-color-bg-tertiary);
+.oo-table-body .oo-table-row:hover,
+.oo-table-body .oo-table-row.oo-table-selected .oo-table-cell,
+.oo-table-body .oo-table-row.oo-table-selected .oo-table-cell-tick,
+.oo-table-body .oo-table-row.oo-table-selected .oo-table-row-actions-handle,
+.oo-table-overlay ul li.oo-table-list-item:hover {
+  background-color: var(--oo-table-color-bg-tertiary);
 }
 
-.yac-table-body .yac-table-row-actions-handle,
-.yac-table-cell-tick,
-.yac-table-cell-tick i,
-.yac-table-sort-asc-handle,
-.yac-table-sort-desc-handle {
+.oo-table-body .oo-table-row-actions-handle,
+.oo-table-cell-tick,
+.oo-table-cell-tick i,
+.oo-table-sort-asc-handle,
+.oo-table-sort-desc-handle {
   justify-content: center;
 }
 
-.yac-table-body .yac-table-row-actions-handle,
-.yac-table-expand-toggler,
-.yac-table-header .yac-table-cell,
-.yac-table-header .yac-table-cell-tick,
-.yac-table-overlay ul li.yac-table-list-item {
+.oo-table-body .oo-table-row-actions-handle,
+.oo-table-expand-toggler,
+.oo-table-header .oo-table-cell,
+.oo-table-header .oo-table-cell-tick,
+.oo-table-overlay ul li.oo-table-list-item {
   cursor: pointer;
 }
 
-.yac-table-body .yac-table-row-actions-handle:hover,
-.yac-table-body .yac-table-row-actions-handle.yac-table-active,
-.yac-table-cell,
-.yac-table-overlay ul li.yac-table-list-item {
-  color: var(--yac-table-color-text-primary);
+.oo-table-body .oo-table-row-actions-handle:hover,
+.oo-table-body .oo-table-row-actions-handle.oo-table-active,
+.oo-table-cell,
+.oo-table-overlay ul li.oo-table-list-item {
+  color: var(--oo-table-color-text-primary);
 }
 
-.yac-table-expand-toggler:hover i,
-.yac-table-expand-toggler.yac-table-active i,
-.yac-table-header .yac-table-cell:hover .yac-table-sort-asc-handle:hover i,
-.yac-table-header .yac-table-cell:hover .yac-table-sort-desc-handle:hover i {
-  border-color: var(--yac-table-color-text-primary);
+.oo-table-expand-toggler:hover i,
+.oo-table-expand-toggler.oo-table-active i,
+.oo-table-header .oo-table-cell:hover .oo-table-sort-asc-handle:hover i,
+.oo-table-header .oo-table-cell:hover .oo-table-sort-desc-handle:hover i {
+  border-color: var(--oo-table-color-text-primary);
 }
 
-.yac-table-expand-toggler i,
-.yac-table-sort-asc-handle i,
-.yac-table-sort-desc-handle i {
+.oo-table-expand-toggler i,
+.oo-table-sort-asc-handle i,
+.oo-table-sort-desc-handle i {
   @include chevron();
 }
 
-.yac-table-row.yac-table-selected .yac-table-cell-tick i,
-.yac-table-sort-asc-handle.yac-table-active i,
-.yac-table-sort-desc-handle.yac-table-active i {
-  border-color: var(--yac-table-color-text-primary) !important;
+.oo-table-row.oo-table-selected .oo-table-cell-tick i,
+.oo-table-sort-asc-handle.oo-table-active i,
+.oo-table-sort-desc-handle.oo-table-active i {
+  border-color: var(--oo-table-color-text-primary) !important;
 }
 
-.yac-table,
-.yac-table::-webkit-scrollbar-thumb {
+.oo-table,
+.oo-table::-webkit-scrollbar-thumb {
   border-radius: $table-border-radius;
 }
 
-.yac-table,
-.yac-table-overlay {
+.oo-table,
+.oo-table-overlay {
   font-family: inherit;
   font-size: inherit;
 }
 
-.yac-table::-webkit-scrollbar,
-.yac-table-overlay ul li.yac-table-list-divider {
-  background-color: var(--yac-table-color-border-secondary);
+.oo-table::-webkit-scrollbar,
+.oo-table-overlay ul li.oo-table-list-divider {
+  background-color: var(--oo-table-color-border-secondary);
 }
 
-.yac-table::-webkit-scrollbar-thumb,
-.yac-table-header .yac-table-row:hover .yac-table-resize-handle::before {
-  background-color: var(--yac-table-color-border-primary);
+.oo-table::-webkit-scrollbar-thumb,
+.oo-table-header .oo-table-row:hover .oo-table-resize-handle::before {
+  background-color: var(--oo-table-color-border-primary);
 }
 
-.yac-table-cell-tick i,
-.yac-table-cell-tick i::before {
+.oo-table-cell-tick i,
+.oo-table-cell-tick i::before {
   border-radius: 50%;
 }
 
-.yac-table-cell-tick,
-.yac-table-row-actions-handle {
+.oo-table-cell-tick,
+.oo-table-row-actions-handle {
   width: 32px;
 }
 
-.yac-table-cell-tick + .yac-table-cell,
-.yac-table-expand-toggler {
+.oo-table-cell-tick + .oo-table-cell,
+.oo-table-expand-toggler {
   padding-left: 2px;
 }
 
-.yac-table-header .yac-table-row:hover .yac-table-resize-handle:hover::before,
-.yac-table-row.yac-table-selected .yac-table-cell-tick i::before {
-  background-color: var(--yac-table-color-text-primary);
+.oo-table-header .oo-table-row:hover .oo-table-resize-handle:hover::before,
+.oo-table-row.oo-table-selected .oo-table-cell-tick i::before {
+  background-color: var(--oo-table-color-text-primary);
 }
 
-.yac-table {
+.oo-table {
   border-style: solid;
   border-width: 1px;
   width: fit-content;
@@ -160,23 +160,23 @@ $table-header-height: 40px;
   }
 }
 
-.yac-table-cell {
+.oo-table-cell {
   padding-left: $table-cell-padding;
   padding-right: $table-cell-padding;
 
-  &.yac-table-sortable .yac-table-cell-content {
+  &.oo-table-sortable .oo-table-cell-content {
     margin-right: calc(#{$resize-handle-width + $sort-handle-width - $table-cell-padding} + 8px);
   }
 }
 
-.yac-table-cell-content {
+.oo-table-cell-content {
   flex-grow: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.yac-table-cell-tick {
+.oo-table-cell-tick {
   i {
     border: 1px solid transparent;
     height: 16px;
@@ -190,17 +190,17 @@ $table-header-height: 40px;
   }
 }
 
-.yac-table-row-actions-handle {
-  @extend .yac-table-sticky;
+.oo-table-row-actions-handle {
+  @extend .oo-table-sticky;
 
-  color: var(--yac-table-color-border-primary);
+  color: var(--oo-table-color-border-primary);
   right: 0;
 }
 
 /* Header ****************************************************************** */
 
-.yac-table-sort-asc-handle,
-.yac-table-sort-desc-handle {
+.oo-table-sort-asc-handle,
+.oo-table-sort-desc-handle {
   display: flex;
   position: absolute;
   right: $resize-handle-width;
@@ -211,19 +211,19 @@ $table-header-height: 40px;
   }
 }
 
-.yac-table-header {
-  .yac-table-cell,
-  .yac-table-cell-tick,
-  .yac-table-row-actions-handle {
-    background-color: var(--yac-table-color-box-header-blue-bg); // mandatory
+.oo-table-header {
+  .oo-table-cell,
+  .oo-table-cell-tick,
+  .oo-table-row-actions-handle {
+    background-color: var(--oo-table-color-box-header-blue-bg); // mandatory
   }
 
-  .yac-table-row {
+  .oo-table-row {
     height: $table-header-height; // mandatory
   }
 }
 
-.yac-table-resize-handle {
+.oo-table-resize-handle {
   cursor: ew-resize;
   height: 100%;
   justify-content: flex-end;
@@ -241,7 +241,7 @@ $table-header-height: 40px;
   }
 }
 
-.yac-table-sort-asc-handle {
+.oo-table-sort-asc-handle {
   margin-bottom: 8px;
 
   i {
@@ -249,7 +249,7 @@ $table-header-height: 40px;
   }
 }
 
-.yac-table-sort-desc-handle {
+.oo-table-sort-desc-handle {
   margin-top: 8px;
 
   i {
@@ -259,41 +259,41 @@ $table-header-height: 40px;
 
 /* Body ******************************************************************** */
 
-.yac-table-body {
+.oo-table-body {
   top: $table-header-height; // mandatory
 
-  .yac-table-cell,
-  .yac-table-cell-tick,
-  .yac-table-row-actions-handle {
-    background-color: var(--yac-table-color-bg-primary); // mandatory
-    box-shadow: inset 0 -1px 0 0 var(--yac-table-color-border-secondary);
+  .oo-table-cell,
+  .oo-table-cell-tick,
+  .oo-table-row-actions-handle {
+    background-color: var(--oo-table-color-bg-primary); // mandatory
+    box-shadow: inset 0 -1px 0 0 var(--oo-table-color-border-secondary);
   }
 
-  .yac-table-sticky-leftmost {
-    border-left: 1px solid var(--yac-table-color-border-secondary);
+  .oo-table-sticky-leftmost {
+    border-left: 1px solid var(--oo-table-color-border-secondary);
   }
 
-  .yac-table-sticky-rightmost {
-    border-right: 1px solid var(--yac-table-color-border-secondary);
+  .oo-table-sticky-rightmost {
+    border-right: 1px solid var(--oo-table-color-border-secondary);
   }
 
-  .yac-table-row-actions-handle {
+  .oo-table-row-actions-handle {
     svg {
       width: 16px;
     }
   }
 }
 
-.yac-table-expand-toggler {
+.oo-table-expand-toggler {
   justify-content: flex-start;
   min-width: 24px;
   width: 24px;
 
-  &.yac-table-active i {
+  &.oo-table-active i {
     transform: rotate(45deg);
   }
 
-  &.yac-table-hidden {
+  &.oo-table-hidden {
     display: none;
   }
 
@@ -304,8 +304,8 @@ $table-header-height: 40px;
 
 /* Overlay ***************************************************************** */
 
-.yac-table-overlay {
-  background-color: var(--yac-table-color-bg-primary);
+.oo-table-overlay {
+  background-color: var(--oo-table-color-bg-primary);
   border-radius: 2px;
   box-shadow: rgb(0 0 0 / 13%) 0px 3.2px 7.2px 0px, rgb(0 0 0 / 11%) 0px 0.6px 1.8px 0px;
   overflow: hidden auto;
@@ -317,13 +317,13 @@ $table-header-height: 40px;
     margin: 0;
     padding: 0;
 
-    li.yac-table-list-divider {
+    li.oo-table-list-divider {
       display: block;
       height: 1px;
       position: relative;
     }
 
-    li.yac-table-list-item {
+    li.oo-table-list-item {
       height: 36px;
       line-height: 36px;
       padding-left: 16px;

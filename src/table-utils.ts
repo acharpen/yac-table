@@ -3,7 +3,7 @@ export type ColumnWidthUnit = 'px' | '%';
 export type SortOrder = 'asc' | 'default' | 'desc';
 
 export class TableUtils {
-  public static readonly VENDOR_CLS: string = 'yac-table';
+  public static readonly VENDOR_CLS: string = 'oo-table';
   public static readonly ACTIVE_CLS: string = `${TableUtils.VENDOR_CLS}-active`;
   public static readonly EXPAND_TOGGLER_CLS: string = `${TableUtils.VENDOR_CLS}-expand-toggler`;
   public static readonly HIDDEN_CLS: string = `${TableUtils.VENDOR_CLS}-hidden`;
