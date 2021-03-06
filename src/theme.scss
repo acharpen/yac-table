@@ -112,6 +112,11 @@ $table-header-height: 40px;
   font-size: inherit;
 }
 
+.yac-table::-webkit-scrollbar,
+.yac-table-overlay ul li.yac-table-list-divider {
+  background-color: var(--yac-table-color-border-secondary);
+}
+
 .yac-table::-webkit-scrollbar-thumb,
 .yac-table-header .yac-table-row:hover .yac-table-resize-handle::before {
   background-color: var(--yac-table-color-border-primary);
@@ -148,7 +153,6 @@ $table-header-height: 40px;
   }
 
   &::-webkit-scrollbar {
-    background-color: var(--yac-table-color-border-secondary);
     border-bottom-left-radius: $table-border-radius;
     border-top-right-radius: $table-border-radius;
     height: 8px;
@@ -314,7 +318,6 @@ $table-header-height: 40px;
     padding: 0;
 
     li.yac-table-list-divider {
-      background-color: var(--yac-table-color-border-secondary);
       display: block;
       height: 1px;
       position: relative;
