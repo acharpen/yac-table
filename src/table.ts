@@ -440,15 +440,12 @@ export abstract class AbstractTable<T> {
   }
 
   private handleSort(column: Column<T>, sortOrder: SortOrder, sort: (a: T, b: T) => number): Node<T>[] {
-    const sortedNodes: Node<T>[] = [];
+    let sortedNodes: Node<T>[] = [];
 
     this.resetColumnSortHandles();
 
     if (sortOrder === 'default') {
-      Array.prototype.push.apply(
-        sortedNodes,
-        this.nodes.sort((a, b) => a.initialPos - b.initialPos)
-      );
+      sortedNodes = this.nodes.sort((a, b) => a.initialPos - b.initialPos);
     } else {
       const orderedSort = (a: T, b: T): number => sort(a, b) * (sortOrder === 'asc' ? 1 : -1);
       const nodesLength = this.nodes.length;
