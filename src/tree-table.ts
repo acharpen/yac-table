@@ -157,7 +157,7 @@ export class TreeTable<T> extends AbstractTable<T> {
   }
 
   private createExpandTogglerElt(nodeIndex: number): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.EXPAND_TOGGLER_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.EXPAND_TOGGLER_CLS);
     elt.appendChild(DomUtils.createElt('i'));
 
     elt.addEventListener('mouseup', (event) => {

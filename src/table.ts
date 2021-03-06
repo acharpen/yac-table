@@ -125,7 +125,7 @@ export abstract class AbstractTable<T> {
   // ////////////////////////////////////////////////////////////////////////////
 
   protected createTableBodyCellElt(column: Column<T>, _ctx: { nodeIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_CELL_CLS);
     if (column.classList) elt.classList.add(...column.classList);
     if (column.sorter) elt.classList.add(TableUtils.SORTABLE_CLS);
     if (column.pinned != null) {
@@ -227,7 +227,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createOverlayElt(onClose?: () => void): HTMLElement {
-    const overlayElt = DomUtils.createDiv(TableUtils.OVERLAY_CLS);
+    const overlayElt = DomUtils.createElt('div', TableUtils.OVERLAY_CLS);
 
     const listener = (event: Event): void => {
       this.containerElt.removeChild(overlayElt);
@@ -248,7 +248,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createResizeHandleElt(ctx: { columnIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.RESIZE_HANDLE_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.RESIZE_HANDLE_CLS);
     elt.addEventListener('mousedown', (event) => {
       event.stopPropagation();
       this.onResizeColumn(ctx.columnIndex, event);
@@ -258,7 +258,8 @@ export abstract class AbstractTable<T> {
   }
 
   private createSortHandleElt(sortOrder: 'asc' | 'desc', ctx: { columnIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv(
+    const elt = DomUtils.createElt(
+      'div',
       sortOrder === 'asc' ? TableUtils.SORT_ASC_HANDLE_CLS : TableUtils.SORT_DESC_HANDLE_CLS
     );
     elt.addEventListener('mouseup', (event) => {
@@ -272,11 +273,11 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableBodyCellContentElt(column: Column<T>): HTMLElement {
-    return DomUtils.createDiv(TableUtils.TABLE_CELL_CONTENT_CLS, TableUtils.getTextAlignmentCls(column.align));
+    return DomUtils.createElt('div', TableUtils.TABLE_CELL_CONTENT_CLS, TableUtils.getTextAlignCls(column.align));
   }
 
   private createTableBodyElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_BODY_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_BODY_CLS);
 
     this.tableBodyRowElts.forEach((tableBodyRowElt) => elt.appendChild(tableBodyRowElt));
 
@@ -284,8 +285,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableBodyRowActionsHandleElt(ctx: { nodeIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS);
-    elt.innerHTML = TableUtils.getEllipsisIcon();
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS);
     elt.addEventListener(
       'mouseup',
       (event) => {
@@ -298,11 +298,13 @@ export abstract class AbstractTable<T> {
       elt.classList.add(TableUtils.STICKY_LEFTMOST_CLS);
     }
 
+    elt.appendChild(DomUtils.createElt('i'));
+
     return elt;
   }
 
   private createTableBodyRowElt(ctx: { nodeIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_ROW_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_ROW_CLS);
     elt.style.height = DomUtils.withPx(this.options.nodeHeight);
     elt.addEventListener('mouseup', () => this.onClickTableBodyRow(ctx.nodeIndex), false);
 
@@ -320,7 +322,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableBodyTickElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_TICK_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_CELL_TICK_CLS);
 
     elt.appendChild(DomUtils.createElt('i'));
 
@@ -328,7 +330,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_CLS);
     elt.addEventListener('scroll', () => requestAnimationFrame(() => this.updateVisibleNodes()));
 
     elt.appendChild(this.tableHeaderElt);
@@ -339,7 +341,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeaderCellElt(column: Column<T>, ctx: { columnIndex: number }): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_CELL_CLS);
     elt.addEventListener('mouseup', () => this.onClickTableHeaderCell(ctx.columnIndex), false);
     if (column.classList) elt.classList.add(...column.classList);
     if (column.pinned != null) elt.classList.add(TableUtils.STICKY_CLS);
@@ -360,14 +362,14 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeaderCellContentElt(column: Column<T>): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CONTENT_CLS, TableUtils.getTextAlignmentCls(column.align));
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_CELL_CONTENT_CLS, TableUtils.getTextAlignCls(column.align));
     elt.textContent = column.title ?? '';
 
     return elt;
   }
 
   private createTableHeaderElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_HEADER_CLS, TableUtils.STICKY_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_HEADER_CLS, TableUtils.STICKY_CLS);
 
     elt.appendChild(this.tableHeaderRowElt);
 
@@ -375,14 +377,14 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeaderRowElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_ROW_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_ROW_CLS);
 
     if (this.isSelectionEnabled()) elt.appendChild(this.createTableHeaderTickElt());
 
     this.dataColumns.forEach((column, i) => elt.appendChild(this.createTableHeaderCellElt(column, { columnIndex: i })));
 
     if (this.options.rowActions) {
-      const rowActionsHandleElt = DomUtils.createDiv(TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS);
+      const rowActionsHandleElt = DomUtils.createElt('div', TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS);
       if (this.dataColumns.every((column) => column.pinned !== 'right')) {
         rowActionsHandleElt.classList.add(TableUtils.STICKY_LEFTMOST_CLS);
       }
@@ -394,7 +396,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeaderTickElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_TICK_CLS);
+    const elt = DomUtils.createElt('div', TableUtils.TABLE_CELL_TICK_CLS);
     elt.addEventListener('mouseup', () => this.onClickTableHeaderTick());
 
     elt.appendChild(DomUtils.createElt('i'));
@@ -403,7 +405,7 @@ export abstract class AbstractTable<T> {
   }
 
   private createVirtualScrollSpacerElt(): HTMLElement {
-    return DomUtils.createDiv(TableUtils.VIRTUAL_SCROLL_SPACER_CLS);
+    return DomUtils.createElt('div', TableUtils.VIRTUAL_SCROLL_SPACER_CLS);
   }
 
   private getColumnSortHandles(headerCellElt: HTMLElement): { sortAscElt: HTMLElement; sortDescElt: HTMLElement } {

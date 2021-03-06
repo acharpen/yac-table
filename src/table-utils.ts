@@ -29,11 +29,7 @@ export class TableUtils {
   public static readonly TABLE_ROW_CLS: string = `${TableUtils.VENDOR_CLS}-row`;
   public static readonly VIRTUAL_SCROLL_SPACER_CLS: string = `${TableUtils.VENDOR_CLS}-virtual-scroll-spacer`;
 
-  public static getTextAlignmentCls(alignment: string): string {
+  public static getTextAlignCls(alignment: string): string {
     return `${TableUtils.VENDOR_CLS}-text-${alignment}`;
-  }
-
-  public static getEllipsisIcon(): string {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" fill="currentColor"></path></svg>`;
   }
 }

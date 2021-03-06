@@ -1,8 +1,4 @@
 export class DomUtils {
-  public static createDiv(...classes: string[]): HTMLElement {
-    return DomUtils.createElt('div', ...classes);
-  }
-
   public static createElt(tagName: string, ...classes: string[]): HTMLElement {
     const elt = document.createElement(tagName);
     if (classes.length > 0) elt.classList.add(...classes);
