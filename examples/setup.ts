@@ -43,7 +43,7 @@ export const columnOptions = [
     width: { value: 300, unit: 'px' as const }
   },
   {
-    align: 'left' as const,
+    align: 'right' as const,
     formatter: defaultFormatter('col2'),
     id: 2,
     order: 2,

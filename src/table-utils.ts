@@ -19,9 +19,9 @@ export class TableUtils {
   public static readonly STICKY_LEFTMOST_CLS: string = `${TableUtils.VENDOR_CLS}-sticky-leftmost`;
   public static readonly STICKY_RIGHTMOST_CLS: string = `${TableUtils.VENDOR_CLS}-sticky-rightmost`;
   public static readonly TABLE_BODY_CLS: string = `${TableUtils.VENDOR_CLS}-body`;
-  public static readonly TABLE_CELL_CHECK_CLS: string = `${TableUtils.VENDOR_CLS}-cell-check`;
   public static readonly TABLE_CELL_CLS: string = `${TableUtils.VENDOR_CLS}-cell`;
   public static readonly TABLE_CELL_CONTENT_CLS: string = `${TableUtils.VENDOR_CLS}-cell-content`;
+  public static readonly TABLE_CELL_TICK_CLS: string = `${TableUtils.VENDOR_CLS}-cell-tick`;
   public static readonly TABLE_CLS: string = TableUtils.VENDOR_CLS;
   public static readonly TABLE_HEADER_CLS: string = `${TableUtils.VENDOR_CLS}-header`;
   public static readonly TABLE_ROW_ACTIONS_CLS: string = `${TableUtils.VENDOR_CLS}-row-actions`;
@@ -35,18 +35,5 @@ export class TableUtils {
 
   public static getEllipsisIcon(): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm0-6a2 2 0 1 1 0 4 2 2 0 0 1 0-4z" fill="currentColor"></path></svg>`;
-  }
-
-  public static getTickIcon(): string {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-      <g>
-        <path d="M0 7a7 7 0 1 1 14 0A7 7 0 0 1 0 7z" fill="currentColor"></path>
-        <path d="M13 7A6 6 0 1 0 1 7a6 6 0 0 0 12 0z" fill="#fff"></path>
-        <path
-          d="M6.278 7.697L5.045 6.464a.296.296 0 0 0-.42-.002l-.613.614a.298.298 0 0 0 .002.42l1.91 1.909a.5.5 0 0 0 .703.005l.265-.265L9.997 6.04a.291.291 0 0 0-.009-.408l-.614-.614a.29.29 0 0 0-.408-.009L6.278 7.697z"
-          fill="currentColor"
-        ></path>
-      </g>
-    </svg>`;
   }
 }

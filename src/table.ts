@@ -320,8 +320,9 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableBodyTickElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CHECK_CLS);
-    elt.innerHTML = TableUtils.getTickIcon();
+    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_TICK_CLS);
+
+    elt.appendChild(DomUtils.createElt('i'));
 
     return elt;
   }
@@ -393,9 +394,10 @@ export abstract class AbstractTable<T> {
   }
 
   private createTableHeaderTickElt(): HTMLElement {
-    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_CHECK_CLS);
-    elt.innerHTML = TableUtils.getTickIcon();
+    const elt = DomUtils.createDiv(TableUtils.TABLE_CELL_TICK_CLS);
     elt.addEventListener('mouseup', () => this.onClickTableHeaderTick());
+
+    elt.appendChild(DomUtils.createElt('i'));
 
     return elt;
   }
@@ -760,11 +762,11 @@ export abstract class AbstractTable<T> {
     }
     const stickyDataColumnsWidthLen = stickyDataColumnsWidth.length;
 
-    let checkCellWidth = 0;
+    let tickCellWidth = 0;
     if (this.options.selectable != null) {
-      const checkCellElt = this.tableHeaderRowElt.firstElementChild as HTMLElement;
-      if (checkCellElt.classList.contains(TableUtils.STICKY_CLS)) {
-        checkCellWidth = DomUtils.getComputedWidth(checkCellElt);
+      const tickCellElt = this.tableHeaderRowElt.firstElementChild as HTMLElement;
+      if (tickCellElt.classList.contains(TableUtils.STICKY_CLS)) {
+        tickCellWidth = DomUtils.getComputedWidth(tickCellElt);
       }
     }
 
@@ -781,7 +783,7 @@ export abstract class AbstractTable<T> {
       const tableHeaderCellElt = tableHeaderCellElts[i];
 
       if (column.pinned === 'left') {
-        let offset = checkCellWidth;
+        let offset = tickCellWidth;
         for (let j = 0; j < i; j++) offset += stickyDataColumnsWidth[j];
         const offsetInPx = DomUtils.withPx(offset);
 
