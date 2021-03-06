@@ -26,7 +26,6 @@ $table-header-height: 40px;
 .yac-table-cell-check,
 .yac-table-row-actions-handle {
   color: var(--yac-table-color-text-primary);
-  cursor: pointer;
   display: flex;
 }
 
@@ -80,7 +79,7 @@ $table-header-height: 40px;
   }
 
   & + .yac-table-cell {
-    padding-left: 0 !important;
+    padding-left: 2px;
   }
 
   svg {
@@ -141,25 +140,26 @@ $table-header-height: 40px;
           background-color: var(--yac-table-color-text-primary);
         }
       }
+    }
+  }
 
-      .yac-table-sort-asc-handle {
-        &:not(.yac-table-active) {
-          border-bottom-color: var(--yac-table-color-border-primary);
-        }
+  .yac-table-cell,
+  .yac-table-cell-check {
+    cursor: pointer;
+  }
 
-        &:hover {
-          border-bottom-color: var(--yac-table-color-text-primary);
+  .yac-table-cell:hover {
+    .yac-table-sort-asc-handle,
+    .yac-table-sort-desc-handle {
+      &:hover,
+      &.yac-table-active {
+        i {
+          border-color: var(--yac-table-color-text-primary);
         }
       }
 
-      .yac-table-sort-desc-handle {
-        &:not(.yac-table-active) {
-          border-top-color: var(--yac-table-color-border-primary);
-        }
-
-        &:hover {
-          border-top-color: var(--yac-table-color-text-primary);
-        }
+      i {
+        border-color: var(--yac-table-color-border-primary);
       }
     }
   }
@@ -170,7 +170,7 @@ $table-header-height: 40px;
   cursor: ew-resize;
   display: flex;
   height: 100%;
-  justify-content: center;
+  justify-content: flex-end;
   position: absolute;
   right: 0;
   width: $resize-handle-width;
@@ -178,7 +178,7 @@ $table-header-height: 40px;
   &::before {
     background-color: transparent;
     content: "";
-    height: 50%;
+    height: 75%;
     width: 1px;
 
     transition: background-color 0.25s ease-in;
@@ -187,35 +187,34 @@ $table-header-height: 40px;
 
 .yac-table-sort-asc-handle,
 .yac-table-sort-desc-handle {
-  border-left: $sort-handle-width solid transparent;
-  border-right: $sort-handle-width solid transparent;
-  height: 0;
+  display: flex;
+  padding: 4px;
   position: absolute;
   right: $resize-handle-width;
-  width: 0;
+
+  i {
+    border-color: transparent;
+    border-style: solid;
+    border-width: 0 2px 2px 0;
+    padding: 3px;
+
+    transition: border-color 0.25s ease-in;
+  }
 }
 
 .yac-table-sort-asc-handle {
-  border-bottom: $sort-handle-width solid transparent;
-  bottom: 50%;
-  margin-bottom: 1px;
+  margin-bottom: 8px;
 
-  transition: border-bottom-color 0.25s ease-in;
-
-  &.yac-table-active {
-    border-bottom-color: var(--yac-table-color-text-primary);
+  i {
+    transform: rotate(-135deg);
   }
 }
 
 .yac-table-sort-desc-handle {
-  border-top: $sort-handle-width solid transparent;
-  margin-top: 1px;
-  top: 50%;
+  margin-top: 8px;
 
-  transition: border-top-color 0.25s ease-in;
-
-  &.yac-table-active {
-    border-top-color: var(--yac-table-color-text-primary);
+  i {
+    transform: rotate(45deg);
   }
 }
 
@@ -252,6 +251,7 @@ $table-header-height: 40px;
 
   .yac-table-row-actions-handle {
     align-items: center;
+    cursor: pointer;
     justify-content: center;
 
     &:hover,
@@ -273,26 +273,28 @@ $table-header-height: 40px;
   min-width: 24px;
   width: 24px;
 
-  &:hover > i,
-  & > i.yac-table-active {
-    border-color: var(--yac-table-color-text-primary);
+  &:hover,
+  &.yac-table-active {
+    i {
+      border-color: var(--yac-table-color-text-primary);
 
-    transition: border-color 0.25s ease-in;
+      transition: border-color 0.25s ease-in;
+    }
+  }
+
+  &.yac-table-active i {
+    transform: rotate(45deg);
   }
 
   &.yac-table-hidden {
     display: none;
   }
 
-  & > i {
+  i {
     border: solid var(--yac-table-color-border-primary);
     border-width: 0 2px 2px 0;
     padding: 3px;
     transform: rotate(-45deg);
-
-    &.yac-table-active {
-      transform: rotate(45deg);
-    }
   }
 }
 

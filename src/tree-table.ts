@@ -142,9 +142,9 @@ export class TreeTable<T> extends AbstractTable<T> {
         expandTogglerElt.style.marginLeft = `${nodeOffset}px`;
 
         if (node.isExpanded) {
-          (expandTogglerElt.firstElementChild as HTMLElement).classList.add(TableUtils.ACTIVE_CLS);
+          expandTogglerElt.classList.add(TableUtils.ACTIVE_CLS);
         } else {
-          (expandTogglerElt.firstElementChild as HTMLElement).classList.remove(TableUtils.ACTIVE_CLS);
+          expandTogglerElt.classList.remove(TableUtils.ACTIVE_CLS);
         }
       }
     }

@@ -266,6 +266,8 @@ export abstract class AbstractTable<T> {
       this.onSortTable(ctx.columnIndex, sortOrder);
     });
 
+    elt.appendChild(DomUtils.createElt('i'));
+
     return elt;
   }
 
