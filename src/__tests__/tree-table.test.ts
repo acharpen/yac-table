@@ -5,8 +5,8 @@ import { TreeTable } from '../tree-table';
 import { getByText } from '@testing-library/dom';
 
 const columnOptions = [
-  { align: 'left' as const, formatter: defaultFormatter('col1'), id: 1, title: 'col1' },
-  { align: 'left' as const, formatter: defaultFormatter('col2'), id: 2, title: 'col2' }
+  { align: 'left' as const, formatter: defaultFormatter('col1'), id: 1, order: 1, title: 'col1' },
+  { align: 'left' as const, formatter: defaultFormatter('col2'), id: 2, order: 2, title: 'col2' }
 ];
 const tableOptions = { columnMinWidth: 40, nodeHeight: 40, visibleNodes: 10 };
 const table = new TreeTable<TestObject>(document.body, {
