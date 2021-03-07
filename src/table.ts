@@ -22,7 +22,9 @@ export abstract class AbstractTable<T> {
   protected nodes: Node<T>[];
   protected visibleNodeIndexes: number[];
 
+  private readonly rowActionsHandleCellWidth: number;
   private readonly tableHeaderHeight: number;
+  private readonly tickCellWidth: number;
   private activeNodeIndexes: number[];
   private counter: number;
   private currentFilter: { matcher: (value: T) => boolean } | null;
@@ -52,7 +54,9 @@ export abstract class AbstractTable<T> {
     this.tableHeaderElt = this.createTableHeaderElt();
     this.tableElt = this.createTableElt();
 
+    this.rowActionsHandleCellWidth = this.computeRowActionsHandleCellWidth();
     this.tableHeaderHeight = DomUtils.getRenderedSize(this.containerElt, this.tableHeaderElt).height;
+    this.tickCellWidth = this.computeTickCellWidth();
   }
 
   // ////////////////////////////////////////////////////////////////////////////
@@ -108,7 +112,8 @@ export abstract class AbstractTable<T> {
     const targetColumn = this.dataColumns.find((column) => column.id === columnId);
 
     if (targetColumn?.sorter != null) {
-      this.currentSort = { sortOrder, column: targetColumn, sorter: targetColumn.sorter };
+      this.currentSort =
+        sortOrder === 'default' ? null : { sortOrder, column: targetColumn, sorter: targetColumn.sorter };
 
       this.updateNodes({ performSorting: true });
     }
@@ -189,12 +194,8 @@ export abstract class AbstractTable<T> {
   }
 
   protected updateNodes(options?: { performFiltering?: boolean; performSorting?: boolean }): void {
-    if (options?.performFiltering != null && options.performFiltering && this.currentFilter) {
-      this.handleFilter(this.currentFilter.matcher);
-    }
-    if (options?.performSorting != null && options.performSorting && this.currentSort) {
-      this.nodes = this.handleSort(this.currentSort.column, this.currentSort.sortOrder, this.currentSort.sorter);
-    }
+    if (options?.performFiltering != null && options.performFiltering) this.handleFilter();
+    if (options?.performSorting != null && options.performSorting) this.nodes = this.handleSort();
 
     this.setActiveNodeIndexes();
 
@@ -215,6 +216,30 @@ export abstract class AbstractTable<T> {
   }
 
   // ////////////////////////////////////////////////////////////////////////////
+
+  private computeRowActionsHandleCellWidth(): number {
+    let rowActionsHandleCellWidth = 0;
+    if (this.options.rowActions) {
+      const rowActionsHandleElt = this.tableHeaderRowElt.lastElementChild as HTMLElement;
+      if (rowActionsHandleElt.classList.contains(TableUtils.STICKY_CLS)) {
+        rowActionsHandleCellWidth = DomUtils.getComputedWidth(rowActionsHandleElt);
+      }
+    }
+
+    return rowActionsHandleCellWidth;
+  }
+
+  private computeTickCellWidth(): number {
+    let tickCellWidth = 0;
+    if (this.options.selectable != null) {
+      const tickCellElt = this.tableHeaderRowElt.firstElementChild as HTMLElement;
+      if (tickCellElt.classList.contains(TableUtils.STICKY_CLS)) {
+        tickCellWidth = DomUtils.getComputedWidth(tickCellElt);
+      }
+    }
+
+    return tickCellWidth;
+  }
 
   private convertToPixel({ value, unit }: { value: number; unit: ColumnWidthUnit }): number {
     switch (unit) {
@@ -419,37 +444,40 @@ export abstract class AbstractTable<T> {
     return ids.map((id) => this.nodes.find((node) => node.id === id)).filter((node) => node) as Node<T>[];
   }
 
-  private handleFilter(filter: (value: T) => boolean): void {
-    const nodesLength = this.nodes.length;
+  private handleFilter(): void {
+    if (this.currentFilter) {
+      const nodesLength = this.nodes.length;
 
-    for (let i = nodesLength - 1; i >= 0; i--) {
-      const node = this.nodes[i];
+      for (let i = nodesLength - 1; i >= 0; i--) {
+        const node = this.nodes[i];
 
-      node.isMatching = filter(node.value);
+        node.isMatching = this.currentFilter.matcher(node.value);
 
-      if (!node.isMatching && !node.isLeaf) {
-        let nextnodeIndex = i + 1;
+        if (!node.isMatching && !node.isLeaf) {
+          let nextnodeIndex = i + 1;
 
-        while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
-          if (this.nodes[nextnodeIndex].isMatching) {
-            node.isMatching = true;
-            break;
+          while (nextnodeIndex < nodesLength && this.nodes[nextnodeIndex].level > node.level) {
+            if (this.nodes[nextnodeIndex].isMatching) {
+              node.isMatching = true;
+              break;
+            }
+            nextnodeIndex++;
           }
-          nextnodeIndex++;
         }
       }
     }
   }
 
-  private handleSort(column: Column<T>, sortOrder: SortOrder, sort: (a: T, b: T) => number): Node<T>[] {
+  private handleSort(): Node<T>[] {
     let sortedNodes: Node<T>[] = [];
 
     this.resetColumnSortHandles();
 
-    if (sortOrder === 'default') {
+    if (!this.currentSort) {
       sortedNodes = this.nodes.sort((a, b) => a.initialPos - b.initialPos);
     } else {
-      const orderedSort = (a: T, b: T): number => sort(a, b) * (sortOrder === 'asc' ? 1 : -1);
+      const currentSort = this.currentSort;
+      const orderedSort = (a: T, b: T): number => currentSort.sorter(a, b) * (currentSort.sortOrder === 'asc' ? 1 : -1);
       const nodesLength = this.nodes.length;
       const rootNodes = [];
       const sortedChildrenByParentNodeId = new Map<number, Node<T>[]>();
@@ -480,9 +508,9 @@ export abstract class AbstractTable<T> {
         sortedNodes.push(node);
         Array.prototype.push.apply(stack, sortedChildrenByParentNodeId.get(node.id) as Node<T>[]);
       }
-    }
 
-    this.setColumnSortOrder(column, sortOrder);
+      this.setColumnSortOrder(currentSort.column, currentSort.sortOrder);
+    }
 
     return sortedNodes;
   }
@@ -524,11 +552,11 @@ export abstract class AbstractTable<T> {
 
   private onClickTableBodyRowActionsHandle(nodeIndex: number, event: Event): void {
     const eventTarget = event.target as HTMLElement;
-    const rowActionsHandleElt = eventTarget.closest(`.${TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS}`) as HTMLElement;
+    const rowActionsHandleCellElt = eventTarget.closest(`.${TableUtils.TABLE_ROW_ACTIONS_HANDLE_CLS}`) as HTMLElement;
     if (this.options.rowActions && this.options.rowActions.length > 0) {
       const listElt = DomUtils.createElt('ul');
       const node = this.getNodeByIndex(nodeIndex);
-      const overlayElt = this.createOverlayElt(() => rowActionsHandleElt.classList.remove(TableUtils.ACTIVE_CLS));
+      const overlayElt = this.createOverlayElt(() => rowActionsHandleCellElt.classList.remove(TableUtils.ACTIVE_CLS));
 
       const createRowActionsGroup = (rowActions: { callback: (item: T) => void; label: string }[]): void => {
         for (let i = 0, len = rowActions.length; i < len; i++) {
@@ -553,28 +581,36 @@ export abstract class AbstractTable<T> {
 
       // Set overlay size
       const { height, width } = DomUtils.getRenderedSize(this.containerElt, overlayElt);
+      const { bottom, left, top } = rowActionsHandleCellElt.getBoundingClientRect();
 
-      if (rowActionsHandleElt.getBoundingClientRect().top + height <= window.innerHeight) {
-        overlayElt.style.top = DomUtils.withPx(rowActionsHandleElt.getBoundingClientRect().top);
+      if (top + height <= window.innerHeight) {
+        overlayElt.style.top = DomUtils.withPx(top);
       } else {
-        overlayElt.style.top = DomUtils.withPx(rowActionsHandleElt.getBoundingClientRect().bottom - height);
+        overlayElt.style.top = DomUtils.withPx(bottom - height);
       }
 
-      if (width + rowActionsHandleElt.getBoundingClientRect().left + 40 <= window.innerWidth) {
-        overlayElt.style.left = DomUtils.withPx(rowActionsHandleElt.getBoundingClientRect().left + 40);
+      if (width + left + this.rowActionsHandleCellWidth <= window.innerWidth) {
+        overlayElt.style.left = DomUtils.withPx(left + this.rowActionsHandleCellWidth);
       } else {
-        overlayElt.style.left = DomUtils.withPx(rowActionsHandleElt.getBoundingClientRect().left - width);
+        overlayElt.style.left = DomUtils.withPx(left - width);
       }
       overlayElt.style.maxHeight = DomUtils.withPx(window.innerHeight);
 
       // Append overlay
       this.containerElt.appendChild(overlayElt);
-      rowActionsHandleElt.classList.add(TableUtils.ACTIVE_CLS);
+      rowActionsHandleCellElt.classList.add(TableUtils.ACTIVE_CLS);
     }
   }
 
   private onClickTableHeaderCell(columnIndex: number): void {
-    this.sort(this.dataColumns[columnIndex].id, this.currentSort?.sortOrder === 'asc' ? 'desc' : 'asc');
+    const column = this.dataColumns[columnIndex];
+    const sortOrder =
+      !this.currentSort || this.currentSort.column.id !== column.id
+        ? 'asc'
+        : this.currentSort.sortOrder === 'asc'
+        ? 'desc'
+        : 'default';
+    this.sort(column.id, sortOrder);
   }
 
   private onClickTableHeaderTick(): void {
@@ -761,28 +797,12 @@ export abstract class AbstractTable<T> {
     }
     const stickyDataColumnsWidthLen = stickyDataColumnsWidth.length;
 
-    let tickCellWidth = 0;
-    if (this.options.selectable != null) {
-      const tickCellElt = this.tableHeaderRowElt.firstElementChild as HTMLElement;
-      if (tickCellElt.classList.contains(TableUtils.STICKY_CLS)) {
-        tickCellWidth = DomUtils.getComputedWidth(tickCellElt);
-      }
-    }
-
-    let rowActionsHandleCellWidth = 0;
-    if (this.options.rowActions) {
-      const rowActionsHandleElt = this.tableHeaderRowElt.lastElementChild as HTMLElement;
-      if (rowActionsHandleElt.classList.contains(TableUtils.STICKY_CLS)) {
-        rowActionsHandleCellWidth = DomUtils.getComputedWidth(rowActionsHandleElt);
-      }
-    }
-
     for (let i = 0, tableHeaderCellEltsLen = tableHeaderCellElts.length; i < tableHeaderCellEltsLen; i++) {
       const column = this.dataColumns[i];
       const tableHeaderCellElt = tableHeaderCellElts[i];
 
       if (column.pinned === 'left') {
-        let offset = tickCellWidth;
+        let offset = this.tickCellWidth;
         for (let j = 0; j < i; j++) offset += stickyDataColumnsWidth[j];
         const offsetInPx = DomUtils.withPx(offset);
 
@@ -791,7 +811,7 @@ export abstract class AbstractTable<T> {
           this.getDataCellElts(this.tableBodyRowElts[j])[i].style.left = offsetInPx;
         }
       } else if (column.pinned === 'right') {
-        let offset = rowActionsHandleCellWidth;
+        let offset = this.rowActionsHandleCellWidth;
         for (let j = i + 1; j < stickyDataColumnsWidthLen; j++) offset += stickyDataColumnsWidth[j];
         const offsetInPx = DomUtils.withPx(offset);
 
