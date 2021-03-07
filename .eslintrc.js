@@ -6,8 +6,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:jest/recommended',
     'plugin:jest/style',
-    'plugin:prettier/recommended',
-    'prettier/@typescript-eslint'
+    'plugin:prettier/recommended'
   ],
   ignorePatterns: ['dist/**', 'examples/**', 'lib/**', 'node_modules/**', 'jest.*'],
   parser: '@typescript-eslint/parser',
