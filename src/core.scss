@@ -21,18 +21,6 @@
   z-index: 2;
 }
 
-.oo-table-text-center {
-  text-align: center;
-}
-
-.oo-table-text-left {
-  text-align: left;
-}
-
-.oo-table-text-right {
-  text-align: right;
-}
-
 /* Header ****************************************************************** */
 
 .oo-table-header {
@@ -52,6 +40,18 @@
 
   .oo-table-row.oo-table-hidden {
     display: none;
+  }
+
+  .oo-table-text-center {
+    text-align: center;
+  }
+
+  .oo-table-text-left {
+    text-align: left;
+  }
+
+  .oo-table-text-right {
+    text-align: right;
   }
 }
 

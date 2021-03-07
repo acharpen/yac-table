@@ -297,6 +297,15 @@ export abstract class AbstractTable<T> {
     return elt;
   }
 
+  private createSortHandlesElt(ctx: { columnIndex: number }): HTMLElement {
+    const elt = DomUtils.createElt('div', TableUtils.SORT_HANDLE_CLS);
+
+    elt.appendChild(this.createSortHandleElt('asc', ctx));
+    elt.appendChild(this.createSortHandleElt('desc', ctx));
+
+    return elt;
+  }
+
   private createTableBodyCellContentElt(column: Column<T>): HTMLElement {
     return DomUtils.createElt('div', TableUtils.TABLE_CELL_CONTENT_CLS, TableUtils.getTextAlignCls(column.align));
   }
@@ -371,13 +380,10 @@ export abstract class AbstractTable<T> {
     if (column.classList) elt.classList.add(...column.classList);
     if (column.pinned != null) elt.classList.add(TableUtils.STICKY_CLS);
 
-    elt.appendChild(this.createTableHeaderCellContentElt(column));
+    elt.appendChild(this.createTableHeaderCellContentElt(column, ctx));
 
     if (column.sorter) {
       elt.classList.add(TableUtils.SORTABLE_CLS);
-
-      elt.appendChild(this.createSortHandleElt('asc', ctx));
-      elt.appendChild(this.createSortHandleElt('desc', ctx));
     }
     if (column.resizable != null) {
       elt.appendChild(this.createResizeHandleElt(ctx));
@@ -386,9 +392,15 @@ export abstract class AbstractTable<T> {
     return elt;
   }
 
-  private createTableHeaderCellContentElt(column: Column<T>): HTMLElement {
+  private createTableHeaderCellContentElt(column: Column<T>, ctx: { columnIndex: number }): HTMLElement {
     const elt = DomUtils.createElt('div', TableUtils.TABLE_CELL_CONTENT_CLS, TableUtils.getTextAlignCls(column.align));
     elt.textContent = column.title ?? '';
+
+    if (column.sorter) {
+      elt.classList.add(TableUtils.SORTABLE_CLS);
+
+      elt.appendChild(this.createSortHandlesElt(ctx));
+    }
 
     return elt;
   }
@@ -434,9 +446,11 @@ export abstract class AbstractTable<T> {
   }
 
   private getColumnSortHandles(headerCellElt: HTMLElement): { sortAscElt: HTMLElement; sortDescElt: HTMLElement } {
+    const sortHandlesElt = headerCellElt.getElementsByClassName(TableUtils.SORT_HANDLE_CLS).item(0) as HTMLElement;
+
     return {
-      sortAscElt: headerCellElt.getElementsByClassName(TableUtils.SORT_ASC_HANDLE_CLS).item(0) as HTMLElement,
-      sortDescElt: headerCellElt.getElementsByClassName(TableUtils.SORT_DESC_HANDLE_CLS).item(0) as HTMLElement
+      sortAscElt: sortHandlesElt.firstElementChild as HTMLElement,
+      sortDescElt: sortHandlesElt.lastElementChild as HTMLElement
     };
   }
 

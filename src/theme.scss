@@ -65,7 +65,7 @@ $table-header-height: 40px;
 }
 
 .oo-table,
-.oo-table-body .oo-table-row:hover .oo-table-cell-tick i,
+.oo-table-row:hover .oo-table-cell-tick i,
 .oo-table-expand-toggler i,
 .oo-table-header .oo-table-cell:hover .oo-table-sort-asc-handle i,
 .oo-table-header .oo-table-cell:hover .oo-table-sort-desc-handle i {
@@ -81,19 +81,18 @@ $table-header-height: 40px;
 }
 
 .oo-table-body .oo-table-row-actions-handle,
-.oo-table-cell-tick,
-.oo-table-cell-tick i,
-.oo-table-sort-asc-handle,
-.oo-table-sort-desc-handle {
-  justify-content: center;
-}
-
-.oo-table-body .oo-table-row-actions-handle,
 .oo-table-expand-toggler,
 .oo-table-header .oo-table-cell,
 .oo-table-header .oo-table-cell-tick,
 .oo-table-overlay ul li.oo-table-list-item {
   cursor: pointer;
+}
+
+.oo-table-body .oo-table-row-actions-handle,
+.oo-table-cell-tick,
+.oo-table-cell-tick i,
+.oo-table-sort-handle {
+  justify-content: center;
 }
 
 .oo-table-body .oo-table-row-actions-handle:hover,
@@ -174,10 +173,6 @@ $table-header-height: 40px;
 .oo-table-cell {
   padding-left: $table-cell-padding;
   padding-right: $table-cell-padding;
-
-  &.oo-table-sortable .oo-table-cell-content {
-    margin-right: calc(#{$resize-handle-width + $sort-handle-width - $table-cell-padding} + 8px);
-  }
 }
 
 .oo-table-cell-content {
@@ -207,11 +202,16 @@ $table-header-height: 40px;
 .oo-table-sort-desc-handle {
   display: flex;
   position: absolute;
-  right: $resize-handle-width;
-  width: $sort-handle-width;
 
   i {
     border-color: transparent;
+  }
+}
+
+.oo-table-text-center,
+.oo-table-text-left {
+  .oo-table-sort-handle {
+    margin-left: 8px;
   }
 }
 
@@ -222,8 +222,25 @@ $table-header-height: 40px;
     background-color: var(--oo-table-color-box-header-blue-bg); // mandatory
   }
 
+  .oo-table-cell-content {
+    display: flex;
+  }
+
   .oo-table-row {
     height: $table-header-height; // mandatory
+  }
+
+  .oo-table-text-center {
+    justify-content: center;
+  }
+
+  .oo-table-text-left {
+    justify-content: flex-start;
+  }
+
+  .oo-table-text-right {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
   }
 }
 
@@ -258,6 +275,17 @@ $table-header-height: 40px;
 
   i {
     transform: rotate(45deg);
+  }
+}
+
+.oo-table-sort-handle {
+  display: flex;
+  width: $sort-handle-width;
+}
+
+.oo-table-text-right {
+  .oo-table-sort-handle {
+    margin-right: 8px;
   }
 }
 
