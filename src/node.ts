@@ -16,4 +16,4 @@ export interface TreeNode<T> {
 
 export type ListNodeView<T> = Pick<Node<T>, 'id' | 'value' | 'isMatching' | 'isSelected'>;
 
-export type TreeNodeView<T> = Pick<Node<T>, 'id' | 'value' | 'isMatching' | 'isSelected' | 'isExpanded'>;
+export type TreeNodeView<T> = Pick<Node<T>, 'id' | 'value' | 'isMatching' | 'isSelected' | 'isExpanded' | 'level'>;

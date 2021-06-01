@@ -244,7 +244,8 @@ export class TreeTable<T> extends AbstractTable<T> {
       value: node.value,
       isMatching: node.isMatching,
       isSelected: node.isSelected,
-      isExpanded: node.isExpanded
+      isExpanded: node.isExpanded,
+      level: node.level
     };
   }
 
