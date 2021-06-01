@@ -86,8 +86,13 @@ export abstract class AbstractTable<T> {
     this.updateNodes();
   }
 
-  public deselectNodes(nodeIds: number[]): void {
-    this.toggleNodesSelection(nodeIds, false);
+  public deselectNodes(
+    nodeIds: number[],
+    options: { onlyMatching: boolean } = {
+      onlyMatching: false
+    }
+  ): void {
+    this.toggleNodesSelection(nodeIds, false, options.onlyMatching);
 
     // Update nodes selection indicator in table header
     if (this.nodes.every((node) => !node.isSelected)) {
@@ -103,8 +108,13 @@ export abstract class AbstractTable<T> {
     this.updateNodes({ performFiltering: true });
   }
 
-  public selectNodes(nodeIds: number[]): void {
-    this.toggleNodesSelection(nodeIds, true);
+  public selectNodes(
+    nodeIds: number[],
+    options: { onlyMatching: boolean } = {
+      onlyMatching: false
+    }
+  ): void {
+    this.toggleNodesSelection(nodeIds, true, options.onlyMatching);
 
     // Update nodes selection indicator in table header
     if (this.nodes.some((node) => node.isSelected)) {
@@ -695,9 +705,11 @@ export abstract class AbstractTable<T> {
     this.visibleNodeIndexes = this.activeNodeIndexes.slice(startIndex, startIndex + this.virtualNodesCount);
   }
 
-  private toggleNodesSelection(nodeIds: number[], isSelected: boolean): void {
+  private toggleNodesSelection(nodeIds: number[], isSelected: boolean, shouldMatch: boolean): void {
     (nodeIds.length > 0
-      ? (nodeIds.map((nodeId) => this.nodes.find((node) => node.id === nodeId)).filter((node) => node) as Node<T>[])
+      ? (nodeIds
+          .map((nodeId) => this.nodes.find((node) => node.id === nodeId))
+          .filter((node) => node) as Node<T>[]).filter((node) => !shouldMatch || node.isMatching)
       : this.nodes
     ).forEach((node) => {
       node.isSelected = isSelected;

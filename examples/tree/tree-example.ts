@@ -50,9 +50,9 @@ const table = new TreeTable<ExampleObject>(tableContainerElt, {
 tableContainerElt.addEventListener('onClickNode', (event) => {
   const { node } = (event as CustomEvent<{ node: TreeNodeView<ExampleObject> }>).detail;
   if (node.isSelected) {
-    table.deselectNodes([node.id], { withChildren: true, withParents: false });
+    table.deselectNodes([node.id], { onlyMatching: false, withChildren: true, withParents: false });
   } else {
-    table.selectNodes([node.id], { withChildren: true, withParents: false });
+    table.selectNodes([node.id], { onlyMatching: false, withChildren: true, withParents: false });
   }
 });
 

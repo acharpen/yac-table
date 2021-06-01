@@ -78,7 +78,8 @@ export class TreeTable<T> extends AbstractTable<T> {
 
   public deselectNodes(
     nodeIds: number[],
-    options: { withChildren: false | true | number; withParents: false | true | number } = {
+    options: { onlyMatching: boolean; withChildren: false | true | number; withParents: false | true | number } = {
+      onlyMatching: false,
       withChildren: false,
       withParents: false
     }
@@ -86,7 +87,8 @@ export class TreeTable<T> extends AbstractTable<T> {
     super.deselectNodes(
       options.withChildren === false && options.withParents === false
         ? nodeIds
-        : this.handleToggleNodes(nodeIds, options)
+        : this.getNodesWithParentsAndChildren(nodeIds, options),
+      options
     );
   }
 
@@ -100,7 +102,8 @@ export class TreeTable<T> extends AbstractTable<T> {
 
   public selectNodes(
     nodeIds: number[],
-    options: { withChildren: false | true | number; withParents: false | true | number } = {
+    options: { onlyMatching: boolean; withChildren: false | true | number; withParents: false | true | number } = {
+      onlyMatching: false,
       withChildren: false,
       withParents: false
     }
@@ -108,7 +111,8 @@ export class TreeTable<T> extends AbstractTable<T> {
     super.selectNodes(
       options.withChildren === false && options.withParents === false
         ? nodeIds
-        : this.handleToggleNodes(nodeIds, options)
+        : this.getNodesWithParentsAndChildren(nodeIds, options),
+      options
     );
   }
 
@@ -249,7 +253,7 @@ export class TreeTable<T> extends AbstractTable<T> {
     this.rootElt.dispatchEvent(event);
   }
 
-  private handleToggleNodes(
+  private getNodesWithParentsAndChildren(
     nodeIds: number[],
     { withChildren, withParents }: { withChildren: false | true | number; withParents: false | true | number }
   ): number[] {
