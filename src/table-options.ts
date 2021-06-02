@@ -1,6 +1,7 @@
 export interface TableOptions<T> {
   frozenColumns: number;
   nodeHeight: number;
+  scrollbarWidth: number;
   visibleNodes: number;
   rowColor?: (item: T) => { backgroundColor?: string; color?: string } | null;
 }

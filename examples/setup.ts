@@ -66,4 +66,4 @@ export const columnOptions = [
   }
 ];
 
-export const tableOptions = { frozenColumns: 1, nodeHeight: 40, visibleNodes: 10 };
+export const tableOptions = { frozenColumns: 1, nodeHeight: 40, scrollbarWidth: 8, visibleNodes: 10 };

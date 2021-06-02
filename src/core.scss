@@ -100,7 +100,7 @@ $frozen-column--z-index: calc(#{$z-index-base} + 1);
 
 .yac-table-body {
   max-width: 100%;
-  overflow: overlay;
+  overflow: auto;
 
   & > div {
     overflow: hidden;

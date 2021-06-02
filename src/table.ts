@@ -226,7 +226,7 @@ export abstract class AbstractTable<T> {
     }
 
     //
-    this.updateTableWidth(`${DomUtils.getEltWidth(this.tableBodyElt) + newColumnWidth}px`);
+    this.updateTableWidth(DomUtils.getEltWidth(this.tableBodyElt) + newColumnWidth);
     this.updateVisibleNodes();
   }
 
@@ -261,7 +261,7 @@ export abstract class AbstractTable<T> {
     }
 
     //
-    this.updateTableWidth(`${DomUtils.getEltWidth(this.tableBodyElt) - columnWidth}px`);
+    this.updateTableWidth(DomUtils.getEltWidth(this.tableBodyElt) - columnWidth);
     this.updateVisibleNodes();
   }
 
@@ -667,7 +667,7 @@ export abstract class AbstractTable<T> {
 
     // Distribute available width to other columns
     const rootEltWidth = DomUtils.getEltComputedWidth(this.rootElt);
-    const availableWidth = rootEltWidth - columnsWidth;
+    const availableWidth = rootEltWidth - columnsWidth - this.options.scrollbarWidth;
 
     if (availableWidth > 0) {
       const columnWidth = availableWidth / this.columns.filter((column) => !column.width).length;
@@ -689,7 +689,7 @@ export abstract class AbstractTable<T> {
     }
 
     //
-    this.updateTableWidth(`${columnsWidth}px`);
+    this.updateTableWidth(columnsWidth);
   }
 
   private setTableBodyHeight(): void {
@@ -758,10 +758,10 @@ export abstract class AbstractTable<T> {
     }
   }
 
-  private updateTableWidth(formattedWidth: string): void {
-    (this.tableHeaderElt.firstElementChild as HTMLElement).style.width = formattedWidth;
-    this.tableBodyElt.style.width = formattedWidth;
-    (this.tableBodyElt.firstElementChild as HTMLElement).style.width = formattedWidth;
+  private updateTableWidth(width: number): void {
+    (this.tableHeaderElt.firstElementChild as HTMLElement).style.width = `${width + this.options.scrollbarWidth}px`;
+    this.tableBodyElt.style.width = `${width + this.options.scrollbarWidth}px`;
+    (this.tableBodyElt.firstElementChild as HTMLElement).style.width = `${width}px`;
   }
 
   // ////////////////////////////////////////////////////////////////////////////
@@ -797,10 +797,9 @@ export abstract class AbstractTable<T> {
 
       const columnWidth = Math.max(originalColumnWidth + (eventPageX - originalPageX), AbstractTable.COLUMN_MIN_WIDTH);
       const formattedColumnWidth = `${columnWidth}px`;
-      const formattedTableWidth = `${originalTableWidth - originalColumnWidth + columnWidth}px`;
 
       // Table width
-      this.updateTableWidth(formattedTableWidth);
+      this.updateTableWidth(originalTableWidth - originalColumnWidth + columnWidth);
 
       // Header cell width
       headerCellElt.style.width = formattedColumnWidth;
